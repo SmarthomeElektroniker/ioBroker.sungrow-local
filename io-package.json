@@ -28,19 +28,6 @@
                 "pl": "Admin: zakładka Status z diagnostyką na żywo, ostrzeżenia o interwałach; przetłumaczone nazwy diagnostyki; puls lastRound/roundDuration dla grup i info.lastValueUpdate; rejestry: tekst wartości (states) i min/max, poprawione role i jednostki, kontrola zapisu (tylko ostrzeżenie).",
                 "uk": "Адмін: вкладка «Статус» з діагностикою в реальному часі, попередження про інтервали; перекладені назви діагностики; пульс lastRound/roundDuration для груп та info.lastValueUpdate; регістри: текст значень (states) і min/max, виправлені ролі та одиниці, перевірка запису (лише попередження).",
                 "zh-cn": "管理界面：带实时诊断的状态页，轮询间隔警告；诊断名称已翻译；每组心跳 lastRound/roundDuration 及 info.lastValueUpdate；寄存器：数值文本 (states) 和 min/max，修正角色和单位，写入检查（仅警告）。"
-            },
-            "0.1.0": {
-                "en": "First version: one coordinated Modbus TCP connection to the WiNet-S2, poll interval per register group, prioritised writes with confirmation, diagnostics per group.",
-                "de": "Erste Version: eine koordinierte Modbus-TCP-Verbindung zum WiNet-S2, Abfragetakt je Registergruppe, Schreiben mit Vorrang und Bestätigung, Diagnose je Gruppe.",
-                "ru": "First version: one coordinated Modbus TCP connection to the WiNet-S2, poll interval per register group, prioritised writes with confirmation, diagnostics per group.",
-                "pt": "First version: one coordinated Modbus TCP connection to the WiNet-S2, poll interval per register group, prioritised writes with confirmation, diagnostics per group.",
-                "nl": "First version: one coordinated Modbus TCP connection to the WiNet-S2, poll interval per register group, prioritised writes with confirmation, diagnostics per group.",
-                "fr": "First version: one coordinated Modbus TCP connection to the WiNet-S2, poll interval per register group, prioritised writes with confirmation, diagnostics per group.",
-                "it": "First version: one coordinated Modbus TCP connection to the WiNet-S2, poll interval per register group, prioritised writes with confirmation, diagnostics per group.",
-                "es": "First version: one coordinated Modbus TCP connection to the WiNet-S2, poll interval per register group, prioritised writes with confirmation, diagnostics per group.",
-                "pl": "First version: one coordinated Modbus TCP connection to the WiNet-S2, poll interval per register group, prioritised writes with confirmation, diagnostics per group.",
-                "uk": "First version: one coordinated Modbus TCP connection to the WiNet-S2, poll interval per register group, prioritised writes with confirmation, diagnostics per group.",
-                "zh-cn": "First version: one coordinated Modbus TCP connection to the WiNet-S2, poll interval per register group, prioritised writes with confirmation, diagnostics per group."
             }
         },
         "titleLang": {
