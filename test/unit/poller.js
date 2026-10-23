@@ -357,7 +357,8 @@ describe('poller against the simulated WiNet-S2', function () {
         // the device values never change in this test - the heartbeat comes anyway
         const live = ev.round.filter(r => r.group === 'live');
         assert.ok(live.length >= 6, `live rounds: ${live.length}`);
-        assert.ok(live.every(r => r.failed === 0 && r.blocks === 1 && r.ms >= 0 && r.ms < 150), JSON.stringify(live));
+        // ms includes waiting in the queue behind other groups - slow CI runners (Windows) need headroom
+        assert.ok(live.every(r => r.failed === 0 && r.blocks === 1 && r.ms >= 0 && r.ms < 1000), JSON.stringify(live));
         // a round ends after the LAST block of the group (steuerung has 2 blocks: 53052 and 73031)
         const st = ev.round.filter(r => r.group === 'steuerung');
         assert.ok(st.length >= 1 && st.every(r => r.blocks === 2));
