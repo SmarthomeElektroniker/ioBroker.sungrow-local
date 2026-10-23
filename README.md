@@ -103,6 +103,13 @@ adapter.
   use the iSolarCloud (internet) or the WiNet web socket API. This adapter uses only the documented local
   Modbus TCP interface.
 
+## Visualisation (vis templates)
+
+The folder [`vis-templates/`](vis-templates/) contains ready-made **vis 1** views (animated energy flow,
+battery, inverter & grid, adapter diagnostics) and a battery symbol widget in two colours. They use only
+data points of `sungrow-local.0` – no scripts, no other adapters. Import instructions:
+[vis-templates/README.md](vis-templates/README.md).
+
 ## Notes
 
 - `35016` is the current of MPPT 3. Its ID stays `35016_MPPT_2_Current` for compatibility with existing

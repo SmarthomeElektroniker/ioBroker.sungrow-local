@@ -25,3 +25,11 @@ iSolarCloud. Er ersetzt eine generische `ioBroker.modbus`-Instanz und behält de
   sofort `ECONNRESET` – die IP des ioBroker-Rechners (nach NAT) im WiNet eintragen.
 - Die Vorgabetabellen sind englisch beschriftet; Namen, Klartexte, Einheiten und Grenzen lassen sich in den
   Registertabellen ändern, ohne dass sich die IDs ändern.
+
+## Visualisierung (vis-Vorlagen)
+
+Im Ordner [`vis-templates/`](vis-templates/) liegen fertige **vis-1**-Ansichten (animierter Energiefluss, Akku,
+Wechselrichter & Netz, Adapter-Diagnose) und ein Akku-Symbol als Widget in zwei Farben. Sie nutzen nur
+Datenpunkte von `sungrow-local.0` – keine Skripte, keine anderen Adapter. Import siehe
+[vis-templates/README.md](vis-templates/README.md).
+
