@@ -1,0 +1,66 @@
+{
+ "inputRegs": [
+  {
+   "_address": 43022,
+   "address": 13021
+  },
+  {
+   "_address": 40741,
+   "address": 10740
+  },
+  {
+   "_address": 40744,
+   "address": 10743
+  },
+  {
+   "_address": 40745,
+   "address": 10744
+  },
+  {
+   "_address": 40746,
+   "address": 10745
+  },
+  {
+   "_address": 40748,
+   "address": 10747
+  }
+ ],
+ "holdingRegs": [
+  {
+   "_address": 70230,
+   "address": 30229
+  },
+  {
+   "_address": 72535,
+   "address": 32534
+  },
+  {
+   "_address": 73031,
+   "address": 33030
+  },
+  {
+   "_address": 73032,
+   "address": 33031
+  },
+  {
+   "_address": 53050,
+   "address": 13049
+  },
+  {
+   "_address": 53051,
+   "address": 13050
+  },
+  {
+   "_address": 53052,
+   "address": 13051
+  },
+  {
+   "_address": 53075,
+   "address": 13074
+  },
+  {
+   "_address": 53100,
+   "address": 13099
+  }
+ ]
+}
