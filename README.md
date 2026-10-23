@@ -136,6 +136,8 @@ requests, late answers, total failure and connection loss.
 - Default register tables in English (object names and plain texts), no default room.
 - Control registers with plain text use the role `level` (`level.mode` is not a valid role).
 - Admin UI translated into all languages.
+- Every level of the state IDs exists as an object: a folder per register type and a device per Modbus unit
+  (`inputRegisters.1`, `inputRegisters.2`, …); the state IDs are unchanged.
 
 Older entries (versions before the first public release) are in [CHANGELOG_OLD.md](CHANGELOG_OLD.md).
 

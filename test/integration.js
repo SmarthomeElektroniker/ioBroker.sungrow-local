@@ -91,6 +91,10 @@ tests.integration(path.join(__dirname, '..'), {
                 assert.deepStrictEqual([maxSoc.common.min, maxSoc.common.max, maxSoc.common.role], [0, 100, 'level']);
                 const mppt3 = await harness.objects.getObjectAsync(`${ns}.inputRegisters.1.35016_MPPT_2_Current`);
                 assert.deepStrictEqual([mppt3.common.name, mppt3.common.role], ['MPPT3 current', 'value.current']);
+                // 0.2.1: every level of the ID exists as an object (folder per register type, device per unit)
+                const unit2 = await harness.objects.getObjectAsync(`${ns}.inputRegisters.2`);
+                const folder = await harness.objects.getObjectAsync(`${ns}.holdingRegisters`);
+                assert.deepStrictEqual([unit2.type, unit2.common.name, folder.type], ['device', 'Unit 2', 'folder']);
 
                 // heartbeat per group, also without value changes (the fake values never change)
                 const r1 = await waitFor('info.groups.live.lastRound', v => v > 0);

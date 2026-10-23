@@ -331,15 +331,23 @@ class SungrowLocal extends utils.Adapter {
      */
     async createRegisterObjects(regs) {
         await this.extendObjectAsync('inputRegisters', {
-            type: 'channel',
+            type: 'folder',
             common: { name: 'Input registers' },
             native: {},
         });
         await this.extendObjectAsync('holdingRegisters', {
-            type: 'channel',
+            type: 'folder',
             common: { name: 'Holding registers' },
             native: {},
         });
+        // one device per Modbus unit (inputRegisters.1, inputRegisters.2, ...) - no state ID changes
+        const unitFolders = new Map();
+        for (const r of regs) {
+            unitFolders.set(r.id.split('.').slice(0, 2).join('.'), r.deviceId);
+        }
+        for (const [id, unit] of unitFolders) {
+            await this.extendObjectAsync(id, { type: 'device', common: { name: `Unit ${unit}` }, native: {} });
+        }
         for (const r of regs) {
             /** @type {Record<string, any>} */
             const common = {
