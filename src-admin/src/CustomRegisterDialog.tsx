@@ -270,7 +270,12 @@ export default function CustomRegisterDialog(props: Props): React.JSX.Element {
                         severity="warning"
                         sx={{ mt: 2 }}
                     >
-                        {t('alreadyKnown', knownLabel(known), known.column, known.enabled ? t('active') : t('inactive'))}
+                        {t(
+                            'alreadyKnown',
+                            knownLabel(known),
+                            known.column,
+                            known.enabled ? t('active') : t('inactive'),
+                        )}
                     </Alert>
                 ) : null}
                 {a && !known && (below || above) ? (
@@ -403,7 +408,9 @@ export default function CustomRegisterDialog(props: Props): React.JSX.Element {
                             'testResult',
                             String(test.result.value),
                             unitText,
-                            (test.result.words || []).map((w: number) => `0x${w.toString(16).padStart(4, '0')}`).join(' '),
+                            (test.result.words || [])
+                                .map((w: number) => `0x${w.toString(16).padStart(4, '0')}`)
+                                .join(' '),
                             String(test.result.ms),
                         )}
                     </Alert>

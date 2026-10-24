@@ -33,11 +33,13 @@ All calculations are vis bindings (`{a:id;b:id;formula}`) inside the HTML widget
 
 - **Battery power with direction:** register 43022 `Battery_power` has no sign.
   The direction comes from the sign of 43021 `Battery_current`
-  (positive = charging, negative = discharging).
-  Battery (+ discharge) = `43021 < 0 ? +43022 : (43021 > 0 ? −43022 : 0)`.
+  (**positive = discharging, negative = charging** – verified on the reference installation: positive current,
+  falling state of charge; corrected in 0.4.0, earlier templates showed the direction inverted).
+  Battery (+ discharge) = `43021 > 0 ? +43022 : (43021 < 0 ? −43022 : 0)`. The battery view shows the current
+  with the sign inverted (+ = charging) to match its legend.
 - **House consumption** = `max(0, 35017 Total_DC_Power + battery(+discharge) + 35601 power_total-EnergyMeter)`.
   35601: positive = import from grid, negative = export. Inverter losses are
-  included. 43008 `Load_power` is not used because it reads 0 on several devices.
+  included (about 150 W on an SH20T). More exact: 43034 `Total active power output` + 35601. 43008 `Load_power` is not used because it reads 0 on several devices.
 - **Battery state:** |battery power| < 20 W → idle (no animation), otherwise
   charging/discharging. The light band in the battery moves up when charging
   (3.5 s) and down/left when discharging (5 s). `prefers-reduced-motion` is respected.

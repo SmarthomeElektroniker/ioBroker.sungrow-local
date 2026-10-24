@@ -91,3 +91,62 @@ describe('registers: write release', () => {
         }
     });
 });
+
+describe('migration to template v4: value tables (states) of writable registers', () => {
+    const { META } = require('../../lib/catalog');
+
+    it('every holding register with a value table has it translated into all 11 languages', () => {
+        const langs = ['en', 'de', 'ru', 'pt', 'nl', 'fr', 'it', 'es', 'pl', 'uk', 'zh-cn'];
+        const withStates = Object.entries(META.registers).filter(([, m]) => m.states);
+        assert.ok(withStates.length >= 20, String(withStates.length));
+        for (const [key, m] of withStates) {
+            assert.ok(key.startsWith('holdingRegs:'), key);
+            assert.deepStrictEqual(Object.keys(m.states), Object.keys(R.parseStates(m.statesDefault)), key);
+            for (const texts of Object.values(m.states)) {
+                for (const l of langs) {
+                    assert.ok(texts[l], `${key} ${l}`);
+                }
+            }
+        }
+        // EMS mode with an explanation per mode
+        const ems = META.registers['holdingRegs:1:53050'];
+        assert.strictEqual(ems.states['0'].de, 'Eigenverbrauch');
+        assert.strictEqual(ems.states['2'].de, 'Zwangsmodus (Laden/Entladen)');
+        assert.ok(ems.statesHelp['2'].de.includes('13051'));
+    });
+
+    it('an empty states column gets the template table, an own text of the user stays', () => {
+        const before = v2Native();
+        const ems = before.holdingRegs.find(r => r._address === 53050);
+        ems.states = '';
+        const off = before.holdingRegs.find(r => r._address === 53075);
+        off.states = '170:Notstrom an;85:Notstrom aus';
+        const { native } = mergeCatalog(before);
+        assert.strictEqual(
+            native.holdingRegs.find(r => r._address === 53050).states,
+            META.registers['holdingRegs:1:53050'].statesDefault,
+        );
+        assert.strictEqual(
+            native.holdingRegs.find(r => r._address === 53075).states,
+            '170:Notstrom an;85:Notstrom aus',
+        );
+    });
+
+    it('the write check names the allowed values', () => {
+        const reg = R.normalise('holdingRegs', [
+            {
+                _address: 53050,
+                deviceId: 1,
+                name: 'EMS',
+                type: 'uint16be',
+                poll: true,
+                states: '0:Self-consumption;2:Forced',
+            },
+        ]).regs[0];
+        assert.strictEqual(R.checkWriteValue(reg, 2), '');
+        assert.match(
+            R.checkWriteValue(reg, 5),
+            /5 is not an allowed value - allowed: 0 = Self-consumption, 2 = Forced/,
+        );
+    });
+});

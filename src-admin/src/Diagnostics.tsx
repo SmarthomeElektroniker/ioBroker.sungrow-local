@@ -3,7 +3,17 @@
  * rounds, timeouts, errors, last error), connection and write statistics - live from info.*.
  */
 import React from 'react';
-import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography } from '@mui/material';
+import {
+    Box,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Tooltip,
+    Typography,
+} from '@mui/material';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 
 import { type Native, LEVEL_COLORS, ago, num, t, useStates, groupColor } from './shared';
@@ -106,7 +116,14 @@ export function DiagnosticsView(props: ConfigGenericProps): React.JSX.Element {
                                 >
                                     <TableCell>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                            <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: groupColor(g.name, i) }} />
+                                            <Box
+                                                sx={{
+                                                    width: 10,
+                                                    height: 10,
+                                                    borderRadius: '50%',
+                                                    bgcolor: groupColor(g.name, i),
+                                                }}
+                                            />
                                             <span>
                                                 {g.name} · {t('everyN', num(g.interval, 60))}
                                             </span>

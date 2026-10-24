@@ -254,6 +254,14 @@ requests, late answers, total failure and connection loss.
 - A too short answer (fewer registers than requested) discards the whole block and counts as an answer, not as a
   connection error.
 - Messages for the admin: `probe` (test read, FC3/FC4 only), `wizardTest`, `analyse`.
+- Value tables of writable registers (EMS mode, charge/discharge command, backup, load control, forced charging,
+  on/off switches – 24 registers) in 11 languages: the states appear as a selection in admin/vis/apps, the tab
+  *Control* offers them as a menu with a short explanation per mode and writes only after a confirmation. With
+  "reject" a value outside the table is not written (template version 4 adds missing tables; own texts stay).
+- Fix: battery direction. A positive battery current (43021) means **discharging** (verified with 4 days of history
+  and raw reads); the overview and the vis templates showed it inverted. House consumption = AC output (43034) +
+  meter (35601); a result clearly below zero (a generator the inverter does not measure) is shown as
+  "not balanceable" instead of 0 W.
 
 ### 0.3.0 (2026-10-24)
 

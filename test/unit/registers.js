@@ -231,7 +231,7 @@ describe('registers: states, min, max and the write check', () => {
         assert.match(R.checkWriteValue(soc, 1000), /above the maximum 100/);
         assert.match(R.checkWriteValue(soc, -1), /below the minimum 0/);
         assert.strictEqual(R.checkWriteValue(soc, '95,5'), '');
-        assert.match(R.checkWriteValue(cmd, 171), /none of the known values/);
+        assert.match(R.checkWriteValue(cmd, 171), /not an allowed value/);
         assert.strictEqual(R.checkWriteValue(cmd, '204'), '');
         assert.match(R.checkWriteValue(free, 'abc'), /not a number/);
         assert.strictEqual(R.checkWriteValue(free, 123456), '');

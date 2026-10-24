@@ -96,7 +96,14 @@ tests.integration(path.join(__dirname, '..'), {
                 assert.deepStrictEqual([typeof mppt3.common.name, mppt3.common.role], ['object', 'value.current']);
                 assert.ok(/MPPT ?3/.test(mppt3.common.name.en), mppt3.common.name.en);
                 // not released for writing: common.write false
-                const ems = await harness.objects.getObjectAsync(`${ns}.holdingRegisters.1.53050_EMS_mode_selection`);
+                let ems;
+                const endObj = Date.now() + 15000;
+                while (!ems && Date.now() < endObj) {
+                    ems = await harness.objects.getObjectAsync(`${ns}.holdingRegisters.1.53050_EMS_mode_selection`);
+                    if (!ems) {
+                        await new Promise(r => setTimeout(r, 300));
+                    }
+                }
                 assert.strictEqual(ems.common.write, false);
                 // 0.2.1: every level of the ID exists as an object (folder per register type, device per unit)
                 const unit2 = await harness.objects.getObjectAsync(`${ns}.inputRegisters.2`);
@@ -357,6 +364,90 @@ tests.integration(path.join(__dirname, '..'), {
                     writes,
                     'nothing written',
                 );
+            });
+        });
+
+        suite('Value tables of writable registers (0.4.0)', getHarness => {
+            let fake;
+            before(async () => {
+                fake = await createFakeWinet({ units: { 1: { latency: 10 }, 2: { latency: 10 } } });
+                fake.set(1, 'holding', 13049, [0, 204, 0]); // EMS self-consumption, command stop, power 0
+            });
+            after(async () => {
+                await fake.close();
+            });
+
+            it('EMS mode is a selection with texts; with "reject" a value outside the table is not written', async function () {
+                this.timeout(60000);
+                const harness = getHarness();
+                const holdingRegs = io.native.holdingRegs.map(r => ({
+                    ...r,
+                    allowWrite: r._address === 53050 || r._address === 53051,
+                }));
+                // replace the whole configuration (changeAdapterConfig would merge the arrays row by row)
+                const instObj = await harness.objects.getObjectAsync('system.adapter.sungrow-local.0');
+                instObj.native = {
+                    ...io.native,
+                    holdingRegs,
+                    host: fake.host,
+                    port: fake.port,
+                    readOnly: false,
+                    writeCheck: 'reject',
+                    requestGap: 20,
+                    writeTimeout: 1500,
+                    templateVersion: 99,
+                    groups: [{ enabled: true, name: 'steuerung', interval: 1, timeout: 800, pauseAfter: 0 }],
+                };
+                await harness.objects.setObjectAsync('system.adapter.sungrow-local.0', instObj);
+                await harness.startAdapterAndWait();
+                const ns = 'sungrow-local.0';
+                let ems;
+                const endObj = Date.now() + 15000;
+                while (!ems && Date.now() < endObj) {
+                    ems = await harness.objects.getObjectAsync(`${ns}.holdingRegisters.1.53050_EMS_mode_selection`);
+                    if (!ems) {
+                        await new Promise(r => setTimeout(r, 300));
+                    }
+                }
+                assert.strictEqual(ems.common.write, true);
+                assert.deepStrictEqual(Object.keys(ems.common.states), ['0', '2', '3', '4', '8']);
+                assert.ok(/self-consumption/i.test(ems.common.states['0']), ems.common.states['0']);
+                const id = `${ns}.holdingRegisters.1.53050_EMS_mode_selection`;
+                const end = Date.now() + 15000;
+                for (;;) {
+                    const st = await harness.states.getStateAsync(id);
+                    if ((st && st.ack && st.val === 0) || Date.now() > end) {
+                        break;
+                    }
+                    await new Promise(r => setTimeout(r, 200));
+                }
+                const writes = fake.count(r => r.fc === 6 && r.addr === 13049);
+                // 5 is not in the value table: rejected, nothing written, device value restored, logged
+                await harness.states.setStateAsync(id, { val: 5, ack: false });
+                await new Promise(r => setTimeout(r, 2000));
+                const after = await harness.states.getStateAsync(id);
+                assert.deepStrictEqual([after.val, after.ack], [0, true]);
+                assert.strictEqual(
+                    fake.count(r => r.fc === 6 && r.addr === 13049),
+                    writes,
+                    'nothing written',
+                );
+                const log = JSON.parse((await harness.states.getStateAsync(`${ns}.info.write.log`)).val);
+                assert.strictEqual(log[0].result, 'rejected');
+                assert.match(log[0].detail, /not an allowed value/);
+                // 2 (forced mode) is allowed and written (simulated gateway only)
+                await harness.states.setStateAsync(id, { val: 2, ack: false });
+                const end2 = Date.now() + 10000;
+                let ok;
+                for (;;) {
+                    ok = await harness.states.getStateAsync(id);
+                    if ((ok && ok.ack && ok.val === 2) || Date.now() > end2) {
+                        break;
+                    }
+                    await new Promise(r => setTimeout(r, 200));
+                }
+                assert.deepStrictEqual([ok.val, ok.ack], [2, true]);
+                assert.strictEqual(fake.state.units[1].holding.get(13049), 2);
             });
         });
     },

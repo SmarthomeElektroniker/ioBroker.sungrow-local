@@ -52,6 +52,9 @@ import {
     useStates,
 } from './shared';
 import Wizard from './Wizard';
+import flowLib from '../../lib/flow.js';
+
+const { energyFlow } = flowLib;
 
 const DEFAULT_TILES = ['pv', 'battery', 'soc', 'grid', 'house', 'pvToday'];
 
@@ -65,9 +68,7 @@ const SOURCES: Record<string, { regType: RegType; unit: number; alias: number }[
     ],
     grid: [{ regType: 'inputRegs', unit: 1, alias: 35601 }],
     house: [
-        { regType: 'inputRegs', unit: 1, alias: 35017 },
-        { regType: 'inputRegs', unit: 1, alias: 43022 },
-        { regType: 'inputRegs', unit: 1, alias: 43021 },
+        { regType: 'inputRegs', unit: 1, alias: 43034 },
         { regType: 'inputRegs', unit: 1, alias: 35601 },
     ],
     pvToday: [{ regType: 'inputRegs', unit: 1, alias: 43002 }],
@@ -76,6 +77,13 @@ const SOURCES: Record<string, { regType: RegType; unit: number; alias: number }[
     exportToday: [{ regType: 'inputRegs', unit: 1, alias: 43045 }],
 };
 const FIXED = Object.keys(SOURCES);
+/** optional extra sources (used when they are read, never required) */
+const OPTIONAL = {
+    battSigned: { regType: 'inputRegs' as RegType, unit: 1, alias: 35214 },
+    pv: { regType: 'inputRegs' as RegType, unit: 1, alias: 35017 },
+    battPower: { regType: 'inputRegs' as RegType, unit: 1, alias: 43022 },
+    battCurrent: { regType: 'inputRegs' as RegType, unit: 1, alias: 43021 },
+};
 
 function findRow(data: Native, s: { regType: RegType; unit: number; alias: number }): Row | undefined {
     return (data[s.regType] || []).find(r => r && aliasOf(r) === s.alias && unitOf(r) === s.unit);
@@ -287,12 +295,19 @@ export function OverviewView(props: ConfigGenericProps & { onData: (d: Native) =
     const data = props.data as Native;
     const [wizard, setWizard] = React.useState(!String(data.host || '').trim());
     const [addMenu, setAddMenu] = React.useState<HTMLElement | null>(null);
-    const tiles: string[] = Array.isArray(data.overviewTiles) && data.overviewTiles.length ? data.overviewTiles : DEFAULT_TILES;
+    const tiles: string[] =
+        Array.isArray(data.overviewTiles) && data.overviewTiles.length ? data.overviewTiles : DEFAULT_TILES;
     const groups = (data.groups || []).filter(g => g && g.name && g.enabled !== false);
     const gk = (name: string): string => `info.groups.${name.replace(/[^A-Za-z0-9_-]/g, '_')}`;
 
     // state IDs: tiles + diagnostics
     const tileIds = new Set<string>();
+    for (const s of Object.values(OPTIONAL)) {
+        const row = findRow(data, s);
+        if (row) {
+            tileIds.add(rowStateId(s.regType, row));
+        }
+    }
     for (const id of tiles) {
         if (id.startsWith('reg:')) {
             tileIds.add(id.substring(4));
@@ -340,15 +355,19 @@ export function OverviewView(props: ConfigGenericProps & { onData: (d: Native) =
         return out;
     };
 
-    const battSigned = (): number | undefined => {
-        const p = val(SOURCES.battery[0]);
-        const i = val(SOURCES.battery[1]);
-        if (p === undefined) {
-            return undefined;
-        }
-        // 13022 battery power is an absolute value - the sign of the battery current gives the direction
-        return i !== undefined && i < 0 ? -Math.abs(p) : Math.abs(p);
+    // battery direction and house consumption: lib/flow.js (signs verified on the reference installation)
+    const activeVal = (x: { regType: RegType; unit: number; alias: number }): number | undefined => {
+        const row = findRow(data, x);
+        return row && isActive({ regType: x.regType, index: 0, row, key: '' }) ? val(x) : undefined;
     };
+    const flow = energyFlow({
+        pv: val(OPTIONAL.pv),
+        battPower: val(OPTIONAL.battPower),
+        battCurrent: val(OPTIONAL.battCurrent),
+        battSigned: activeVal(OPTIONAL.battSigned),
+        acPower: activeVal(SOURCES.house[0]),
+        grid: val(SOURCES.grid[0]),
+    });
 
     const tileValue = (id: string): TileValue => {
         const missing = missingOf(id);
@@ -366,12 +385,24 @@ export function OverviewView(props: ConfigGenericProps & { onData: (d: Native) =
                 return { title, value: v === undefined ? '–' : `${fmt(v, 1)} %`, sub: t('tileSub_soc') };
             }
             case 'battery': {
-                const b = battSigned();
+                const b = flow.battery;
                 return {
                     title,
                     value: power(b === undefined ? undefined : Math.abs(b)),
-                    color: b === undefined || b === 0 ? undefined : b > 0 ? '#2e9d57' : '#2e7dd7',
-                    sub: b === undefined || Math.abs(b) < 1 ? t('battIdle') : b > 0 ? t('battCharging') : t('battDischarging'),
+                    color:
+                        flow.direction === 'charge'
+                            ? '#2e9d57'
+                            : flow.direction === 'discharge'
+                              ? '#2e7dd7'
+                              : undefined,
+                    sub:
+                        flow.direction === 'charge'
+                            ? t('battCharging')
+                            : flow.direction === 'discharge'
+                              ? t('battDischarging')
+                              : flow.direction === 'idle'
+                                ? t('battIdle')
+                                : '',
                 };
             }
             case 'grid': {
@@ -384,11 +415,14 @@ export function OverviewView(props: ConfigGenericProps & { onData: (d: Native) =
                 };
             }
             case 'house': {
-                const pv = val(SOURCES.pv[0]);
-                const b = battSigned();
-                const g = val(SOURCES.grid[0]);
-                const v = pv === undefined || b === undefined || g === undefined ? undefined : Math.max(0, pv - b + g);
-                return { title, value: power(v), sub: t('tileSub_house') };
+                if (flow.unbalanced) {
+                    return { title, value: t('houseUnbalanced'), color: '#e0a100', sub: t('houseUnbalancedHint') };
+                }
+                return {
+                    title,
+                    value: power(flow.house === undefined ? undefined : Math.max(0, flow.house)),
+                    sub: flow.houseSource === 'balance' ? t('tileSub_houseBalance') : t('tileSub_house'),
+                };
             }
             case 'pvToday':
             case 'gridToday':
@@ -410,7 +444,9 @@ export function OverviewView(props: ConfigGenericProps & { onData: (d: Native) =
                 const unit = ref.row.unit ? ` ${String(ref.row.unit)}` : '';
                 return {
                     title: rowLabel(ref.regType, ref.row),
-                    value: st ? `${typeof st.val === 'number' ? fmt(st.val, Number.isInteger(st.val) ? 0 : 1) : String(st.val)}${unit}` : '–',
+                    value: st
+                        ? `${typeof st.val === 'number' ? fmt(st.val, Number.isInteger(st.val) ? 0 : 1) : String(st.val)}${unit}`
+                        : '–',
                     sub: st ? ago(st.ts) : '',
                     missing: isActive(ref) ? undefined : [{ regType: ref.regType, row: ref.row, index: ref.index }],
                 };
@@ -467,7 +503,13 @@ export function OverviewView(props: ConfigGenericProps & { onData: (d: Native) =
     const lastAge = lastTs ? (now - lastTs) / 1000 : Infinity;
     // the state of a value is derived from its age compared with its interval - no interval is shown
     const stateText = (level: Level | 'off', hasData: boolean): string =>
-        !hasData ? t('stateWaiting') : level === 'ok' ? t('stateCurrent') : level === 'warn' ? t('stateDelayed') : t('stateError');
+        !hasData
+            ? t('stateWaiting')
+            : level === 'ok'
+              ? t('stateCurrent')
+              : level === 'warn'
+                ? t('stateDelayed')
+                : t('stateError');
     const lastLevel: Level = lastAge < minInterval * 3 ? 'ok' : lastAge < minInterval * 10 ? 'warn' : 'over';
     cards.push({
         title: t('stLastValues'),
@@ -641,7 +683,10 @@ export function OverviewView(props: ConfigGenericProps & { onData: (d: Native) =
 export default class Overview extends ConfigGeneric<ConfigGenericProps, ConfigGenericState> {
     onData = (data: Native): void => {
         this.props.onChange(data, undefined, () => {
-            this.props.oContext.forceUpdate(['inputRegs', 'holdingRegs', 'groups', 'host', 'port', 'overviewTiles'], data);
+            this.props.oContext.forceUpdate(
+                ['inputRegs', 'holdingRegs', 'groups', 'host', 'port', 'overviewTiles'],
+                data,
+            );
         });
     };
 

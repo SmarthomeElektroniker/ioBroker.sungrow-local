@@ -101,6 +101,11 @@ class SungrowLocal extends utils.Adapter {
         }
         const regs = [...input.regs, ...holding.regs];
         for (const r of regs) {
+            // translated value table of the template (system language) while the states column is unchanged
+            const st = this.localStates(r);
+            if (st) {
+                r.states = st;
+            }
             this.regsById.set(`${this.namespace}.${r.id}`, r);
         }
 
@@ -494,6 +499,28 @@ class SungrowLocal extends utils.Adapter {
             }
         }
         return r.description || r.name;
+    }
+
+    /**
+     * Value table in the system language for a register whose states column is still the template text (or empty).
+     *
+     * @param {import('./lib/registers').Reg} r Register
+     * @returns {Record<string, string>|undefined} common.states or undefined (keep the configured texts)
+     */
+    localStates(r) {
+        const m = META.registers && META.registers[`${r.regType}:${r.deviceId}:${r.alias}`];
+        if (!m || !m.states || !m.statesDefault) {
+            return undefined;
+        }
+        if (r.statesRaw && r.statesRaw !== m.statesDefault) {
+            return undefined;
+        }
+        /** @type {Record<string, string>} */
+        const out = {};
+        for (const [k, t] of Object.entries(m.states)) {
+            out[k] = t[this.lang] || t.en;
+        }
+        return out;
     }
 
     /**

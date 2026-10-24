@@ -34,7 +34,19 @@ export function renderAll(host: string): Record<string, string> {
         out[name] = renderToString(
             <ThemeProvider theme={theme}>
                 <C
-                    oContext={{ adapterName: 'sungrow-local', socket, instance: 0, themeType: 'light', isFloatComma: true, dateFormat: '', forceUpdate: () => {}, systemConfig: {}, theme, _themeName: 'light', onCommandRunning: () => {} }}
+                    oContext={{
+                        adapterName: 'sungrow-local',
+                        socket,
+                        instance: 0,
+                        themeType: 'light',
+                        isFloatComma: true,
+                        dateFormat: '',
+                        forceUpdate: () => {},
+                        systemConfig: {},
+                        theme,
+                        _themeName: 'light',
+                        onCommandRunning: () => {},
+                    }}
                     alive={false}
                     changed={false}
                     themeName="light"

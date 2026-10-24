@@ -14,7 +14,10 @@ html = html.replace(/<script type="module" crossorigin src="\.\/([^"]+)"><\/scri
     const js = fs.readFileSync(path.join(dir, f), 'utf8').replace(/<\/script/g, '<\\/script');
     return `<script type="module">${js}</script>`;
 });
-html = html.replace(/<link rel="stylesheet" crossorigin href="\.\/([^"]+)">/g, (_m, f) => `<style>${fs.readFileSync(path.join(dir, f), 'utf8')}</style>`);
+html = html.replace(
+    /<link rel="stylesheet" crossorigin href="\.\/([^"]+)">/g,
+    (_m, f) => `<style>${fs.readFileSync(path.join(dir, f), 'utf8')}</style>`,
+);
 if (/src="\.\/assets/.test(html)) {
     throw new Error('not all scripts inlined');
 }

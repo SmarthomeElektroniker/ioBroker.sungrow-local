@@ -35,4 +35,6 @@ fs.copyFileSync(path.join(build, 'mf-manifest.json'), path.join(target, 'mf-mani
 for (const f of fs.readdirSync(path.join(here, 'src', 'i18n'))) {
     fs.copyFileSync(path.join(here, 'src', 'i18n', f), path.join(target, 'i18n', f));
 }
-console.log(`admin/custom: ${seen.size} scripts, mf-manifest.json, ${fs.readdirSync(path.join(target, 'i18n')).length} translations`);
+console.log(
+    `admin/custom: ${seen.size} scripts, mf-manifest.json, ${fs.readdirSync(path.join(target, 'i18n')).length} translations`,
+);

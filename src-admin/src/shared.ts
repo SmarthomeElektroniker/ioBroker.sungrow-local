@@ -166,6 +166,25 @@ export function rowDescription(regType: RegType, row: Row): string {
     return m?.desc?.[l] || m?.desc?.en || '';
 }
 
+/** Value table of a row: translated template texts while the states column is unchanged, otherwise the own texts */
+export function stateTexts(regType: RegType, row: Row): Record<string, string> | undefined {
+    const m = metaOf(regType, row) as
+        (MetaEntry & { states?: Record<string, Record<string, string>>; statesDefault?: string }) | undefined;
+    const own = String(row.states || '').trim();
+    if (m?.states && (!own || own === m.statesDefault)) {
+        const l = lang();
+        return Object.fromEntries(Object.entries(m.states).map(([k, tx]) => [k, tx[l] || tx.en]));
+    }
+    return parseStates(own) || undefined;
+}
+
+/** Short explanation of one value of a value table (template only) */
+export function stateHelp(regType: RegType, row: Row, value: string): string {
+    const m = metaOf(regType, row) as (MetaEntry & { statesHelp?: Record<string, Record<string, string>> }) | undefined;
+    const h = m?.statesHelp?.[value];
+    return h ? h[lang()] || h.en : '';
+}
+
 export function themeOf(regType: RegType, row: Row): Theme {
     const m = metaOf(regType, row);
     if (m?.theme && (THEMES as readonly string[]).includes(m.theme)) {
@@ -176,7 +195,12 @@ export function themeOf(regType: RegType, row: Row): Theme {
 
 /** State ID below the namespace (same function as the adapter) */
 export function rowStateId(regType: RegType, row: Row): string {
-    return stateId(regType, unitOf(row), aliasOf(row), row.name === undefined || row.name === null ? '' : String(row.name));
+    return stateId(
+        regType,
+        unitOf(row),
+        aliasOf(row),
+        row.name === undefined || row.name === null ? '' : String(row.name),
+    );
 }
 
 export interface RowRef {

@@ -114,7 +114,10 @@ if (process.argv.includes('--render') || fs.existsSync(path.join(here, 'node_mod
                 assert.ok(h.length > 200, `${name} rendered (${h.length} chars)`);
             }
             if (!host) {
-                assert.ok(/Setup wizard/.test(html.Overview), `wizard shown without address: ${html.Overview.replace(/<[^>]+>/g, ' ').slice(0, 300)}`);
+                assert.ok(
+                    /Setup wizard/.test(html.Overview),
+                    `wizard shown without address: ${html.Overview.replace(/<[^>]+>/g, ' ').slice(0, 300)}`,
+                );
             }
             assert.ok(/Bus load/.test(html.Catalog), 'catalog shows the bus load');
         }

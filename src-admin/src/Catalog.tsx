@@ -703,9 +703,17 @@ export function CatalogView(props: ConfigGenericProps & { onData: (data: Native)
                 onDragCancel={() => setDragRef(null)}
                 accessibility={{
                     announcements: {
-                        onDragStart: ({ active }) => t('ariaPick', rowLabel((active.data.current as any).ref.regType, (active.data.current as any).ref.row)),
+                        onDragStart: ({ active }) =>
+                            t(
+                                'ariaPick',
+                                rowLabel(
+                                    (active.data.current as any).ref.regType,
+                                    (active.data.current as any).ref.row,
+                                ),
+                            ),
                         onDragOver: ({ over }) => (over ? t('ariaOver', String(over.id).replace('group:', '')) : ''),
-                        onDragEnd: ({ over }) => (over ? t('ariaDrop', String(over.id).replace('group:', '')) : t('ariaCancel')),
+                        onDragEnd: ({ over }) =>
+                            over ? t('ariaDrop', String(over.id).replace('group:', '')) : t('ariaCancel'),
                         onDragCancel: () => t('ariaCancel'),
                     },
                     screenReaderInstructions: { draggable: t('ariaInstructions') },
@@ -757,7 +765,11 @@ export function CatalogView(props: ConfigGenericProps & { onData: (data: Native)
                             exclusive
                             value={theme}
                             onChange={(_e, v) => v && setTheme(v)}
-                            sx={{ flexWrap: 'wrap', mt: 1, '& .MuiToggleButton-root': { textTransform: 'none', py: 0.25 } }}
+                            sx={{
+                                flexWrap: 'wrap',
+                                mt: 1,
+                                '& .MuiToggleButton-root': { textTransform: 'none', py: 0.25 },
+                            }}
                             aria-label={t('themeFilter')}
                         >
                             <ToggleButton value="all">{t('theme_all')}</ToggleButton>
@@ -944,14 +956,17 @@ export function CatalogView(props: ConfigGenericProps & { onData: (data: Native)
                     groups={groups}
                     onClose={() => setCustom({ open: false })}
                     onSave={(regType: RegType, row: Row, index?: number) => {
-                        apply(n => {
-                            if (index !== undefined) {
-                                n[regType][index] = row;
-                                return { regType, index, row, key: '' };
-                            }
-                            n[regType] = [...(n[regType] || []), row];
-                            return { regType, index: n[regType].length - 1, row, key: '' };
-                        }, index !== undefined ? t('verbChanged') : t('verbAdded'));
+                        apply(
+                            n => {
+                                if (index !== undefined) {
+                                    n[regType][index] = row;
+                                    return { regType, index, row, key: '' };
+                                }
+                                n[regType] = [...(n[regType] || []), row];
+                                return { regType, index: n[regType].length - 1, row, key: '' };
+                            },
+                            index !== undefined ? t('verbChanged') : t('verbAdded'),
+                        );
                         setCustom({ open: false });
                     }}
                 />

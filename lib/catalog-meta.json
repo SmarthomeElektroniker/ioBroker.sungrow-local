@@ -1,5 +1,5 @@
 {
- "version": 3,
+ "version": 4,
  "registers": {
   "holdingRegs:1:45000": {
    "doc": 5000,
@@ -223,7 +223,36 @@
     "uk": "Запускає або зупиняє інвертор - використовуйте обережно.",
     "zh-cn": "启动或停止逆变器 - 小心使用。"
    },
-   "descDefault": "Start/stop the inverter (207 = start, 206 = stop) - write only, careful!"
+   "descDefault": "Start/stop the inverter (207 = start, 206 = stop) - write only, careful!",
+   "statesDefault": "206:Stop;207:Start",
+   "states": {
+    "206": {
+     "en": "Stop",
+     "de": "Stopp",
+     "ru": "Стоп",
+     "pt": "Parar",
+     "nl": "Stop",
+     "fr": "Arrêt",
+     "it": "Stop",
+     "es": "Detener",
+     "pl": "Stop",
+     "uk": "Стоп",
+     "zh-cn": "停止"
+    },
+    "207": {
+     "en": "Start",
+     "de": "Start",
+     "ru": "Пуск",
+     "pt": "Iniciar",
+     "nl": "Start",
+     "fr": "Démarrer",
+     "it": "Avvio",
+     "es": "Iniciar",
+     "pl": "Start",
+     "uk": "Пуск",
+     "zh-cn": "启动"
+    }
+   }
   },
   "holdingRegs:1:53001": {
    "doc": 13001,
@@ -255,7 +284,62 @@
     "uk": "Функція цифрового виходу (DO): вимкнення, керування навантаженням, індикація замикання на землю або мікросітка.",
     "zh-cn": "数字输出（DO）的功能：关闭、负载控制、接地故障指示或微电网。"
    },
-   "descDefault": "Digital output (DO) function"
+   "descDefault": "Digital output (DO) function",
+   "statesDefault": "0:Off;1:Load control;2:Grounding fault indication;3:Micro grid system",
+   "states": {
+    "0": {
+     "en": "Off",
+     "de": "Aus",
+     "ru": "Выкл.",
+     "pt": "Desligado",
+     "nl": "Uit",
+     "fr": "Arrêt",
+     "it": "Spento",
+     "es": "Apagado",
+     "pl": "Wył.",
+     "uk": "Вимк.",
+     "zh-cn": "关"
+    },
+    "1": {
+     "en": "Load control",
+     "de": "Lastregelung",
+     "ru": "Управление нагрузкой",
+     "pt": "Controlo de carga",
+     "nl": "Lastregeling",
+     "fr": "Gestion de charge",
+     "it": "Controllo del carico",
+     "es": "Control de carga",
+     "pl": "Sterowanie obciążeniem",
+     "uk": "Керування навантаженням",
+     "zh-cn": "负载控制"
+    },
+    "2": {
+     "en": "Grounding fault indication",
+     "de": "Erdschlussmeldung",
+     "ru": "Сигнал замыкания на землю",
+     "pt": "Indicação de falha de terra",
+     "nl": "Aardfoutmelding",
+     "fr": "Signalisation défaut de terre",
+     "it": "Segnalazione guasto a terra",
+     "es": "Indicación de fallo a tierra",
+     "pl": "Sygnalizacja zwarcia doziemnego",
+     "uk": "Сигнал замикання на землю",
+     "zh-cn": "接地故障指示"
+    },
+    "3": {
+     "en": "Microgrid system",
+     "de": "Inselnetz-System",
+     "ru": "Система микросети",
+     "pt": "Sistema de microrrede",
+     "nl": "Microgrid-systeem",
+     "fr": "Système micro-réseau",
+     "it": "Sistema microrete",
+     "es": "Sistema de microrred",
+     "pl": "System mikrosieci",
+     "uk": "Система мікромережі",
+     "zh-cn": "微电网系统"
+    }
+   }
   },
   "holdingRegs:1:53002": {
    "doc": 13002,
@@ -287,7 +371,62 @@
     "uk": "Режим виходу керування навантаженням: синхронізація, увімкнення/вимкнення, оптимізоване живлення або вимкнене.",
     "zh-cn": "负载控制输出模式：定时、开/关、功率优化或禁用。"
    },
-   "descDefault": "Load adjustment mode"
+   "descDefault": "Load adjustment mode",
+   "statesDefault": "0:Timing;1:ON/OFF;2:Power optimization;3:Disabled",
+   "states": {
+    "0": {
+     "en": "Timing",
+     "de": "Zeitsteuerung",
+     "ru": "По времени",
+     "pt": "Temporizado",
+     "nl": "Tijdgestuurd",
+     "fr": "Programmation horaire",
+     "it": "A tempo",
+     "es": "Temporizado",
+     "pl": "Czasowo",
+     "uk": "За часом",
+     "zh-cn": "定时"
+    },
+    "1": {
+     "en": "On/off",
+     "de": "Ein/Aus",
+     "ru": "Вкл./выкл.",
+     "pt": "Ligar/desligar",
+     "nl": "Aan/uit",
+     "fr": "Marche/arrêt",
+     "it": "Acceso/spento",
+     "es": "Encendido/apagado",
+     "pl": "Wł./wył.",
+     "uk": "Увімк./вимк.",
+     "zh-cn": "开/关"
+    },
+    "2": {
+     "en": "Power optimization",
+     "de": "Leistungsoptimierung",
+     "ru": "Оптимизация мощности",
+     "pt": "Otimização de potência",
+     "nl": "Vermogensoptimalisatie",
+     "fr": "Optimisation de puissance",
+     "it": "Ottimizzazione della potenza",
+     "es": "Optimización de potencia",
+     "pl": "Optymalizacja mocy",
+     "uk": "Оптимізація потужності",
+     "zh-cn": "功率优化"
+    },
+    "3": {
+     "en": "Disabled",
+     "de": "Deaktiviert",
+     "ru": "Отключено",
+     "pt": "Desativado",
+     "nl": "Uitgeschakeld",
+     "fr": "Désactivé",
+     "it": "Disattivato",
+     "es": "Desactivado",
+     "pl": "Wyłączone",
+     "uk": "Вимкнено",
+     "zh-cn": "已禁用"
+    }
+   }
   },
   "holdingRegs:1:53003": {
    "doc": 13003,
@@ -575,7 +714,36 @@
     "uk": "Перемикає навантаження в режимі включення/виключення.",
     "zh-cn": "将负载切换为开/关模式。"
    },
-   "descDefault": "Load adjustment on/off"
+   "descDefault": "Load adjustment on/off",
+   "statesDefault": "85:Disable;170:Enable",
+   "states": {
+    "85": {
+     "en": "Disabled",
+     "de": "Aus",
+     "ru": "Выкл.",
+     "pt": "Desativado",
+     "nl": "Uit",
+     "fr": "Désactivé",
+     "it": "Disattivato",
+     "es": "Desactivado",
+     "pl": "Wył.",
+     "uk": "Вимк.",
+     "zh-cn": "禁用"
+    },
+    "170": {
+     "en": "Enabled",
+     "de": "An",
+     "ru": "Вкл.",
+     "pt": "Ativado",
+     "nl": "Aan",
+     "fr": "Activé",
+     "it": "Attivato",
+     "es": "Activado",
+     "pl": "Wł.",
+     "uk": "Увімк.",
+     "zh-cn": "启用"
+    }
+   }
   },
   "holdingRegs:1:53012": {
    "doc": 13012,
@@ -767,7 +935,23 @@
     "uk": "Запускає інвертор із режиму очікування при низькому SoC без очікування PV (тільки в режимі електромережі).",
     "zh-cn": "SoC低电平启动逆变器，无需等待PV（仅限电网模式）。"
    },
-   "descDefault": "Forced startup in low-SOC standby (0xAA = start now)"
+   "descDefault": "Forced startup in low-SOC standby (0xAA = start now)",
+   "statesDefault": "170:Forced startup",
+   "states": {
+    "170": {
+     "en": "Forced startup",
+     "de": "Zwangsstart",
+     "ru": "Принудительный пуск",
+     "pt": "Arranque forçado",
+     "nl": "Geforceerde start",
+     "fr": "Démarrage forcé",
+     "it": "Avvio forzato",
+     "es": "Arranque forzado",
+     "pl": "Wymuszony start",
+     "uk": "Примусовий пуск",
+     "zh-cn": "强制启动"
+    }
+   }
   },
   "holdingRegs:1:53018": {
    "doc": 13018,
@@ -799,7 +983,36 @@
     "uk": "Обмежує або дозволяє потужність PV (лише моделі SH-T).",
     "zh-cn": "限制或允许 PV 功率（仅限 SH-T 型号）。"
    },
-   "descDefault": "PV power limitation (SH-T only)"
+   "descDefault": "PV power limitation (SH-T only)",
+   "statesDefault": "85:Allow PV;170:Limit PV",
+   "states": {
+    "85": {
+     "en": "Allow PV",
+     "de": "PV erlauben",
+     "ru": "Разрешить PV",
+     "pt": "Permitir PV",
+     "nl": "PV toestaan",
+     "fr": "Autoriser PV",
+     "it": "Consenti PV",
+     "es": "Permitir PV",
+     "pl": "Zezwól na PV",
+     "uk": "Дозволити PV",
+     "zh-cn": "允许 PV"
+    },
+    "170": {
+     "en": "Limit PV",
+     "de": "PV begrenzen",
+     "ru": "Ограничить PV",
+     "pt": "Limitar PV",
+     "nl": "PV begrenzen",
+     "fr": "Limiter PV",
+     "it": "Limita PV",
+     "es": "Limitar PV",
+     "pl": "Ogranicz PV",
+     "uk": "Обмежити PV",
+     "zh-cn": "限制 PV"
+    }
+   }
   },
   "holdingRegs:1:53050": {
    "doc": 13050,
@@ -831,7 +1044,142 @@
     "uk": "Режим управління енергією: власне споживання, форсований режим або зовнішній EMS.",
     "zh-cn": "能源管理模式：自耗、强制模式或外部EMS。"
    },
-   "descDefault": "EMS mode"
+   "descDefault": "EMS mode",
+   "statesDefault": "0:Self-consumption;2:Forced mode (charge/discharge);3:External EMS;4:VPP;8:Microgrid",
+   "states": {
+    "0": {
+     "en": "Self-consumption",
+     "de": "Eigenverbrauch",
+     "ru": "Собственное потребление",
+     "pt": "Autoconsumo",
+     "nl": "Eigen verbruik",
+     "fr": "Autoconsommation",
+     "it": "Autoconsumo",
+     "es": "Autoconsumo",
+     "pl": "Autokonsumpcja",
+     "uk": "Власне споживання",
+     "zh-cn": "自发自用"
+    },
+    "2": {
+     "en": "Forced mode (charge/discharge)",
+     "de": "Zwangsmodus (Laden/Entladen)",
+     "ru": "Принудительный режим (заряд/разряд)",
+     "pt": "Modo forçado (carga/descarga)",
+     "nl": "Geforceerde modus (laden/ontladen)",
+     "fr": "Mode forcé (charge/décharge)",
+     "it": "Modalità forzata (carica/scarica)",
+     "es": "Modo forzado (carga/descarga)",
+     "pl": "Tryb wymuszony (ładowanie/rozładowanie)",
+     "uk": "Примусовий режим (заряд/розряд)",
+     "zh-cn": "强制模式（充电/放电）"
+    },
+    "3": {
+     "en": "External EMS",
+     "de": "Externes EMS",
+     "ru": "Внешняя EMS",
+     "pt": "EMS externo",
+     "nl": "Externe EMS",
+     "fr": "EMS externe",
+     "it": "EMS esterno",
+     "es": "EMS externo",
+     "pl": "Zewnętrzny EMS",
+     "uk": "Зовнішня EMS",
+     "zh-cn": "外部 EMS"
+    },
+    "4": {
+     "en": "VPP (virtual power plant)",
+     "de": "VPP (virtuelles Kraftwerk)",
+     "ru": "VPP (виртуальная электростанция)",
+     "pt": "VPP (central virtual)",
+     "nl": "VPP (virtuele centrale)",
+     "fr": "VPP (centrale virtuelle)",
+     "it": "VPP (centrale virtuale)",
+     "es": "VPP (central virtual)",
+     "pl": "VPP (wirtualna elektrownia)",
+     "uk": "VPP (віртуальна електростанція)",
+     "zh-cn": "VPP（虚拟电厂）"
+    },
+    "8": {
+     "en": "Microgrid",
+     "de": "Microgrid (Inselnetz)",
+     "ru": "Микросеть",
+     "pt": "Microrrede",
+     "nl": "Microgrid",
+     "fr": "Micro-réseau",
+     "it": "Microrete",
+     "es": "Microrred",
+     "pl": "Mikrosieć",
+     "uk": "Мікромережа",
+     "zh-cn": "微电网"
+    }
+   },
+   "statesHelp": {
+    "0": {
+     "en": "Battery charges with PV surplus and covers the house automatically (normal operation).",
+     "de": "Akku lädt mit PV-Überschuss und versorgt das Haus automatisch (Normalbetrieb).",
+     "ru": "Батарея заряжается от излишков PV и автоматически питает дом (обычный режим).",
+     "pt": "A bateria carrega com o excedente PV e abastece a casa automaticamente (funcionamento normal).",
+     "nl": "Accu laadt met PV-overschot en voedt het huis automatisch (normaal bedrijf).",
+     "fr": "La batterie se charge avec le surplus PV et alimente la maison automatiquement (fonctionnement normal).",
+     "it": "La batteria si carica con il surplus PV e alimenta la casa automaticamente (funzionamento normale).",
+     "es": "La batería se carga con el excedente PV y abastece la casa automáticamente (funcionamiento normal).",
+     "pl": "Akumulator ładuje się nadwyżką PV i automatycznie zasila dom (praca normalna).",
+     "uk": "Батарея заряджається надлишком PV і автоматично живить дім (звичайний режим).",
+     "zh-cn": "电池用 PV 余电充电并自动为家庭供电（正常运行）。"
+    },
+    "2": {
+     "en": "Battery follows the command 13051 (charge/discharge/stop) with the power 13052.",
+     "de": "Akku folgt dem Befehl 13051 (Laden/Entladen/Stopp) mit der Leistung 13052.",
+     "ru": "Батарея выполняет команду 13051 (заряд/разряд/стоп) с мощностью 13052.",
+     "pt": "A bateria segue o comando 13051 (carregar/descarregar/parar) com a potência 13052.",
+     "nl": "Accu volgt opdracht 13051 (laden/ontladen/stop) met vermogen 13052.",
+     "fr": "La batterie suit la commande 13051 (charge/décharge/arrêt) avec la puissance 13052.",
+     "it": "La batteria segue il comando 13051 (carica/scarica/stop) con la potenza 13052.",
+     "es": "La batería sigue la orden 13051 (cargar/descargar/detener) con la potencia 13052.",
+     "pl": "Akumulator wykonuje polecenie 13051 (ładowanie/rozładowanie/stop) z mocą 13052.",
+     "uk": "Батарея виконує команду 13051 (заряд/розряд/стоп) з потужністю 13052.",
+     "zh-cn": "电池按命令 13051（充电/放电/停止）以功率 13052 运行。"
+    },
+    "3": {
+     "en": "An external energy manager controls the inverter.",
+     "de": "Ein externer Energiemanager steuert den Wechselrichter.",
+     "ru": "Инвертором управляет внешний энергоменеджер.",
+     "pt": "Um gestor de energia externo controla o inversor.",
+     "nl": "Een externe energiemanager stuurt de omvormer.",
+     "fr": "Un gestionnaire d’énergie externe pilote l’onduleur.",
+     "it": "Un gestore energetico esterno controlla l’inverter.",
+     "es": "Un gestor de energía externo controla el inversor.",
+     "pl": "Falownikiem steruje zewnętrzny menedżer energii.",
+     "uk": "Інвертором керує зовнішній енергоменеджер.",
+     "zh-cn": "由外部能源管理器控制逆变器。"
+    },
+    "4": {
+     "en": "Control by a virtual power plant operator.",
+     "de": "Steuerung durch einen Betreiber eines virtuellen Kraftwerks.",
+     "ru": "Управление оператором виртуальной электростанции.",
+     "pt": "Controlo por um operador de central virtual.",
+     "nl": "Aansturing door een exploitant van een virtuele centrale.",
+     "fr": "Pilotage par un opérateur de centrale virtuelle.",
+     "it": "Controllo da parte di un operatore di centrale virtuale.",
+     "es": "Control por un operador de central virtual.",
+     "pl": "Sterowanie przez operatora wirtualnej elektrowni.",
+     "uk": "Керування оператором віртуальної електростанції.",
+     "zh-cn": "由虚拟电厂运营商控制。"
+    },
+    "8": {
+     "en": "Operation in a microgrid without a public grid.",
+     "de": "Betrieb in einem Inselnetz ohne öffentliches Netz.",
+     "ru": "Работа в микросети без общей сети.",
+     "pt": "Funcionamento numa microrrede sem rede pública.",
+     "nl": "Bedrijf in een microgrid zonder openbaar net.",
+     "fr": "Fonctionnement en micro-réseau sans réseau public.",
+     "it": "Funzionamento in microrete senza rete pubblica.",
+     "es": "Funcionamiento en microrred sin red pública.",
+     "pl": "Praca w mikrosieci bez sieci publicznej.",
+     "uk": "Робота в мікромережі без загальної мережі.",
+     "zh-cn": "在无公共电网的微电网中运行。"
+    }
+   }
   },
   "holdingRegs:1:53051": {
    "doc": 13051,
@@ -863,7 +1211,90 @@
     "uk": "Команда батареї в примусовому режимі: заряд, розряд або стоп.",
     "zh-cn": "强制模式下的电池命令：充电、放电或停止。"
    },
-   "descDefault": "Charge/discharge command"
+   "descDefault": "Charge/discharge command",
+   "statesDefault": "170:Charge (0xAA);187:Discharge (0xBB);204:Stop (0xCC)",
+   "states": {
+    "170": {
+     "en": "Charge (0xAA)",
+     "de": "Laden (0xAA)",
+     "ru": "Заряд (0xAA)",
+     "pt": "Carregar (0xAA)",
+     "nl": "Laden (0xAA)",
+     "fr": "Charger (0xAA)",
+     "it": "Carica (0xAA)",
+     "es": "Cargar (0xAA)",
+     "pl": "Ładowanie (0xAA)",
+     "uk": "Заряд (0xAA)",
+     "zh-cn": "充电 (0xAA)"
+    },
+    "187": {
+     "en": "Discharge (0xBB)",
+     "de": "Entladen (0xBB)",
+     "ru": "Разряд (0xBB)",
+     "pt": "Descarregar (0xBB)",
+     "nl": "Ontladen (0xBB)",
+     "fr": "Décharger (0xBB)",
+     "it": "Scarica (0xBB)",
+     "es": "Descargar (0xBB)",
+     "pl": "Rozładowanie (0xBB)",
+     "uk": "Розряд (0xBB)",
+     "zh-cn": "放电 (0xBB)"
+    },
+    "204": {
+     "en": "Stop (0xCC)",
+     "de": "Stopp (0xCC)",
+     "ru": "Стоп (0xCC)",
+     "pt": "Parar (0xCC)",
+     "nl": "Stop (0xCC)",
+     "fr": "Arrêt (0xCC)",
+     "it": "Stop (0xCC)",
+     "es": "Detener (0xCC)",
+     "pl": "Stop (0xCC)",
+     "uk": "Стоп (0xCC)",
+     "zh-cn": "停止 (0xCC)"
+    }
+   },
+   "statesHelp": {
+    "170": {
+     "en": "Charge the battery with the power 13052 (only in forced mode).",
+     "de": "Akku mit der Leistung 13052 laden (nur im Zwangsmodus).",
+     "ru": "Заряжать батарею мощностью 13052 (только в принудительном режиме).",
+     "pt": "Carregar a bateria com a potência 13052 (só em modo forçado).",
+     "nl": "Accu laden met vermogen 13052 (alleen in geforceerde modus).",
+     "fr": "Charger la batterie avec la puissance 13052 (mode forcé uniquement).",
+     "it": "Caricare la batteria con la potenza 13052 (solo in modalità forzata).",
+     "es": "Cargar la batería con la potencia 13052 (solo en modo forzado).",
+     "pl": "Ładować akumulator mocą 13052 (tylko w trybie wymuszonym).",
+     "uk": "Заряджати батарею потужністю 13052 (лише в примусовому режимі).",
+     "zh-cn": "以功率 13052 为电池充电（仅强制模式）。"
+    },
+    "187": {
+     "en": "Discharge the battery with the power 13052 (only in forced mode).",
+     "de": "Akku mit der Leistung 13052 entladen (nur im Zwangsmodus).",
+     "ru": "Разряжать батарею мощностью 13052 (только в принудительном режиме).",
+     "pt": "Descarregar a bateria com a potência 13052 (só em modo forçado).",
+     "nl": "Accu ontladen met vermogen 13052 (alleen in geforceerde modus).",
+     "fr": "Décharger la batterie avec la puissance 13052 (mode forcé uniquement).",
+     "it": "Scaricare la batteria con la potenza 13052 (solo in modalità forzata).",
+     "es": "Descargar la batería con la potencia 13052 (solo en modo forzado).",
+     "pl": "Rozładowywać akumulator mocą 13052 (tylko w trybie wymuszonym).",
+     "uk": "Розряджати батарею потужністю 13052 (лише в примусовому режимі).",
+     "zh-cn": "以功率 13052 为电池放电（仅强制模式）。"
+    },
+    "204": {
+     "en": "Battery neither charges nor discharges.",
+     "de": "Akku lädt und entlädt nicht.",
+     "ru": "Батарея не заряжается и не разряжается.",
+     "pt": "A bateria não carrega nem descarrega.",
+     "nl": "Accu laadt noch ontlaadt.",
+     "fr": "La batterie ne se charge ni ne se décharge.",
+     "it": "La batteria non si carica né si scarica.",
+     "es": "La batería no se carga ni se descarga.",
+     "pl": "Akumulator ani się nie ładuje, ani nie rozładowuje.",
+     "uk": "Батарея не заряджається і не розряджається.",
+     "zh-cn": "电池既不充电也不放电。"
+    }
+   }
   },
   "holdingRegs:1:53052": {
    "doc": 13052,
@@ -1023,7 +1454,64 @@
     "uk": "Функція резервного копіювання (відключення від електромережі) увімкнення/вимкнення.",
     "zh-cn": "备用（离网）功能开/关。"
    },
-   "descDefault": "Off-grid option"
+   "descDefault": "Off-grid option",
+   "statesDefault": "170:On (0xAA);85:Off (0x55)",
+   "states": {
+    "170": {
+     "en": "On (0xAA)",
+     "de": "An (0xAA)",
+     "ru": "Вкл. (0xAA)",
+     "pt": "Ligado (0xAA)",
+     "nl": "Aan (0xAA)",
+     "fr": "Marche (0xAA)",
+     "it": "Acceso (0xAA)",
+     "es": "Encendido (0xAA)",
+     "pl": "Wł. (0xAA)",
+     "uk": "Увімк. (0xAA)",
+     "zh-cn": "开 (0xAA)"
+    },
+    "85": {
+     "en": "Off (0x55)",
+     "de": "Aus (0x55)",
+     "ru": "Выкл. (0x55)",
+     "pt": "Desligado (0x55)",
+     "nl": "Uit (0x55)",
+     "fr": "Arrêt (0x55)",
+     "it": "Spento (0x55)",
+     "es": "Apagado (0x55)",
+     "pl": "Wył. (0x55)",
+     "uk": "Вимк. (0x55)",
+     "zh-cn": "关 (0x55)"
+    }
+   },
+   "statesHelp": {
+    "170": {
+     "en": "Backup output active: the house is supplied during a power failure.",
+     "de": "Notstromausgang aktiv: Das Haus wird bei Netzausfall versorgt.",
+     "ru": "Резервный выход активен: дом питается при отключении сети.",
+     "pt": "Saída de emergência ativa: a casa é abastecida em caso de falha da rede.",
+     "nl": "Noodstroomuitgang actief: het huis wordt bij netuitval gevoed.",
+     "fr": "Sortie de secours active : la maison est alimentée en cas de coupure.",
+     "it": "Uscita di emergenza attiva: la casa è alimentata in caso di blackout.",
+     "es": "Salida de emergencia activa: la casa se abastece en caso de corte.",
+     "pl": "Wyjście awaryjne aktywne: dom jest zasilany podczas awarii sieci.",
+     "uk": "Резервний вихід активний: дім живиться під час відключення мережі.",
+     "zh-cn": "应急输出启用：停电时为家庭供电。"
+    },
+    "85": {
+     "en": "No supply during a power failure.",
+     "de": "Keine Versorgung bei Netzausfall.",
+     "ru": "Нет питания при отключении сети.",
+     "pt": "Sem abastecimento em caso de falha da rede.",
+     "nl": "Geen voeding bij netuitval.",
+     "fr": "Pas d’alimentation en cas de coupure.",
+     "it": "Nessuna alimentazione in caso di blackout.",
+     "es": "Sin suministro en caso de corte.",
+     "pl": "Brak zasilania podczas awarii sieci.",
+     "uk": "Немає живлення під час відключення мережі.",
+     "zh-cn": "停电时不供电。"
+    }
+   }
   },
   "holdingRegs:1:53080": {
    "doc": 13080,
@@ -1087,7 +1575,36 @@
     "uk": "Виявлення ввімкнення/вимкнення зв'язку лічильника електроенергії.",
     "zh-cn": "检测电能表通讯开/关。"
    },
-   "descDefault": "Meter communication detection on/off"
+   "descDefault": "Meter communication detection on/off",
+   "statesDefault": "85:Disable;170:Enable",
+   "states": {
+    "85": {
+     "en": "Disabled",
+     "de": "Aus",
+     "ru": "Выкл.",
+     "pt": "Desativado",
+     "nl": "Uit",
+     "fr": "Désactivé",
+     "it": "Disattivato",
+     "es": "Desactivado",
+     "pl": "Wył.",
+     "uk": "Вимк.",
+     "zh-cn": "禁用"
+    },
+    "170": {
+     "en": "Enabled",
+     "de": "An",
+     "ru": "Вкл.",
+     "pt": "Ativado",
+     "nl": "Aan",
+     "fr": "Activé",
+     "it": "Attivato",
+     "es": "Activado",
+     "pl": "Wł.",
+     "uk": "Увімк.",
+     "zh-cn": "启用"
+    }
+   }
   },
   "holdingRegs:1:53087": {
    "doc": 13087,
@@ -1119,7 +1636,36 @@
     "uk": "Вмикає або вимикає обмеження експорту.",
     "zh-cn": "打开或关闭导出限制。"
    },
-   "descDefault": "Export power limitation on/off"
+   "descDefault": "Export power limitation on/off",
+   "statesDefault": "85:Disable;170:Enable",
+   "states": {
+    "85": {
+     "en": "Disabled",
+     "de": "Aus",
+     "ru": "Выкл.",
+     "pt": "Desativado",
+     "nl": "Uit",
+     "fr": "Désactivé",
+     "it": "Disattivato",
+     "es": "Desactivado",
+     "pl": "Wył.",
+     "uk": "Вимк.",
+     "zh-cn": "禁用"
+    },
+    "170": {
+     "en": "Enabled",
+     "de": "An",
+     "ru": "Вкл.",
+     "pt": "Ativado",
+     "nl": "Aan",
+     "fr": "Activé",
+     "it": "Attivato",
+     "es": "Activado",
+     "pl": "Wł.",
+     "uk": "Увімк.",
+     "zh-cn": "启用"
+    }
+   }
   },
   "holdingRegs:1:53088": {
    "doc": 13088,
@@ -1183,7 +1729,36 @@
     "uk": "Вмикає або вимикає обмеження активної потужності.",
     "zh-cn": "打开或关闭有功功率限制。"
    },
-   "descDefault": "Active power limitation on/off"
+   "descDefault": "Active power limitation on/off",
+   "statesDefault": "85:Disable;170:Enable",
+   "states": {
+    "85": {
+     "en": "Disabled",
+     "de": "Aus",
+     "ru": "Выкл.",
+     "pt": "Desativado",
+     "nl": "Uit",
+     "fr": "Désactivé",
+     "it": "Disattivato",
+     "es": "Desactivado",
+     "pl": "Wył.",
+     "uk": "Вимк.",
+     "zh-cn": "禁用"
+    },
+    "170": {
+     "en": "Enabled",
+     "de": "An",
+     "ru": "Вкл.",
+     "pt": "Ativado",
+     "nl": "Aan",
+     "fr": "Activé",
+     "it": "Attivato",
+     "es": "Activado",
+     "pl": "Wł.",
+     "uk": "Увімк.",
+     "zh-cn": "启用"
+    }
+   }
   },
   "holdingRegs:1:53090": {
    "doc": 13090,
@@ -1343,7 +1918,36 @@
     "uk": "MPPT увімкнення/вимкнення сканування у фіксований час.",
     "zh-cn": "MPPT 定时扫描开/关。"
    },
-   "descDefault": "MPPT scanning at a fixed time on/off"
+   "descDefault": "MPPT scanning at a fixed time on/off",
+   "statesDefault": "85:Disable;170:Enable",
+   "states": {
+    "85": {
+     "en": "Disabled",
+     "de": "Aus",
+     "ru": "Выкл.",
+     "pt": "Desativado",
+     "nl": "Uit",
+     "fr": "Désactivé",
+     "it": "Disattivato",
+     "es": "Desactivado",
+     "pl": "Wył.",
+     "uk": "Вимк.",
+     "zh-cn": "禁用"
+    },
+    "170": {
+     "en": "Enabled",
+     "de": "An",
+     "ru": "Вкл.",
+     "pt": "Ativado",
+     "nl": "Aan",
+     "fr": "Activé",
+     "it": "Attivato",
+     "es": "Activado",
+     "pl": "Wł.",
+     "uk": "Увімк.",
+     "zh-cn": "启用"
+    }
+   }
   },
   "holdingRegs:1:70230": {
    "doc": 30230,
@@ -1375,7 +1979,36 @@
     "uk": "Починає ручне сканування кривих MPPT (оптимізація затінення).",
     "zh-cn": "开始手动扫描 MPPT 曲线（阴影优化）。"
    },
-   "descDefault": "Manual scanning on/off"
+   "descDefault": "Manual scanning on/off",
+   "statesDefault": "170:On (0xAA);85:Off (0x55)",
+   "states": {
+    "170": {
+     "en": "On (0xAA)",
+     "de": "An (0xAA)",
+     "ru": "Вкл. (0xAA)",
+     "pt": "Ligado (0xAA)",
+     "nl": "Aan (0xAA)",
+     "fr": "Marche (0xAA)",
+     "it": "Acceso (0xAA)",
+     "es": "Encendido (0xAA)",
+     "pl": "Wł. (0xAA)",
+     "uk": "Увімк. (0xAA)",
+     "zh-cn": "开 (0xAA)"
+    },
+    "85": {
+     "en": "Off (0x55)",
+     "de": "Aus (0x55)",
+     "ru": "Выкл. (0x55)",
+     "pt": "Desligado (0x55)",
+     "nl": "Uit (0x55)",
+     "fr": "Arrêt (0x55)",
+     "it": "Spento (0x55)",
+     "es": "Apagado (0x55)",
+     "pl": "Wył. (0x55)",
+     "uk": "Вимк. (0x55)",
+     "zh-cn": "关 (0x55)"
+    }
+   }
   },
   "holdingRegs:1:70231": {
    "doc": 30231,
@@ -1407,7 +2040,36 @@
     "uk": "Увімкнення/вимкнення періодичного сканування MPPT.",
     "zh-cn": "定期MPPT扫描开/关。"
    },
-   "descDefault": "Periodic MPPT scanning on/off"
+   "descDefault": "Periodic MPPT scanning on/off",
+   "statesDefault": "85:Disable;170:Enable",
+   "states": {
+    "85": {
+     "en": "Disabled",
+     "de": "Aus",
+     "ru": "Выкл.",
+     "pt": "Desativado",
+     "nl": "Uit",
+     "fr": "Désactivé",
+     "it": "Disattivato",
+     "es": "Desactivado",
+     "pl": "Wył.",
+     "uk": "Вимк.",
+     "zh-cn": "禁用"
+    },
+    "170": {
+     "en": "Enabled",
+     "de": "An",
+     "ru": "Вкл.",
+     "pt": "Ativado",
+     "nl": "Aan",
+     "fr": "Activé",
+     "it": "Attivato",
+     "es": "Activado",
+     "pl": "Wł.",
+     "uk": "Увімк.",
+     "zh-cn": "启用"
+    }
+   }
   },
   "holdingRegs:1:70232": {
    "doc": 30232,
@@ -1535,7 +2197,36 @@
     "uk": "Плавний пуск активної потужності після несправності вмикання/вимкнення.",
     "zh-cn": "故障开/关后有功功率软启动。"
    },
-   "descDefault": "Active power soft start after a fault on/off"
+   "descDefault": "Active power soft start after a fault on/off",
+   "statesDefault": "85:Disable;170:Enable",
+   "states": {
+    "85": {
+     "en": "Disabled",
+     "de": "Aus",
+     "ru": "Выкл.",
+     "pt": "Desativado",
+     "nl": "Uit",
+     "fr": "Désactivé",
+     "it": "Disattivato",
+     "es": "Desactivado",
+     "pl": "Wył.",
+     "uk": "Вимк.",
+     "zh-cn": "禁用"
+    },
+    "170": {
+     "en": "Enabled",
+     "de": "An",
+     "ru": "Вкл.",
+     "pt": "Ativado",
+     "nl": "Aan",
+     "fr": "Activé",
+     "it": "Attivato",
+     "es": "Activado",
+     "pl": "Wł.",
+     "uk": "Увімк.",
+     "zh-cn": "启用"
+    }
+   }
   },
   "holdingRegs:1:71197": {
    "doc": 31197,
@@ -1599,7 +2290,36 @@
     "uk": "Увімкнення/вимкнення активного керування градієнтом потужності.",
     "zh-cn": "有功功率梯度控制开/关。"
    },
-   "descDefault": "Active power gradient control on/off"
+   "descDefault": "Active power gradient control on/off",
+   "statesDefault": "85:Disable;170:Enable",
+   "states": {
+    "85": {
+     "en": "Disabled",
+     "de": "Aus",
+     "ru": "Выкл.",
+     "pt": "Desativado",
+     "nl": "Uit",
+     "fr": "Désactivé",
+     "it": "Disattivato",
+     "es": "Desactivado",
+     "pl": "Wył.",
+     "uk": "Вимк.",
+     "zh-cn": "禁用"
+    },
+    "170": {
+     "en": "Enabled",
+     "de": "An",
+     "ru": "Вкл.",
+     "pt": "Ativado",
+     "nl": "Aan",
+     "fr": "Activé",
+     "it": "Attivato",
+     "es": "Activado",
+     "pl": "Wł.",
+     "uk": "Увімк.",
+     "zh-cn": "启用"
+    }
+   }
   },
   "holdingRegs:1:71203": {
    "doc": 31203,
@@ -1631,7 +2351,36 @@
     "uk": "Увімкніть/вимкніть налаштування активної потужності.",
     "zh-cn": "保持有功功率设置打开/关闭。"
    },
-   "descDefault": "Keep active power settings on/off"
+   "descDefault": "Keep active power settings on/off",
+   "statesDefault": "85:Disable;170:Enable",
+   "states": {
+    "85": {
+     "en": "Disabled",
+     "de": "Aus",
+     "ru": "Выкл.",
+     "pt": "Desativado",
+     "nl": "Uit",
+     "fr": "Désactivé",
+     "it": "Disattivato",
+     "es": "Desactivado",
+     "pl": "Wył.",
+     "uk": "Вимк.",
+     "zh-cn": "禁用"
+    },
+    "170": {
+     "en": "Enabled",
+     "de": "An",
+     "ru": "Вкл.",
+     "pt": "Ativado",
+     "nl": "Aan",
+     "fr": "Activé",
+     "it": "Attivato",
+     "es": "Activado",
+     "pl": "Wł.",
+     "uk": "Увімк.",
+     "zh-cn": "启用"
+    }
+   }
   },
   "holdingRegs:1:71204": {
    "doc": 31204,
@@ -1663,7 +2412,36 @@
     "uk": "Увімкнення/вимкнення статичного обмеження експорту.",
     "zh-cn": "静态导出限制开/关。"
    },
-   "descDefault": "Static export limitation on/off"
+   "descDefault": "Static export limitation on/off",
+   "statesDefault": "85:Disable;170:Enable",
+   "states": {
+    "85": {
+     "en": "Disabled",
+     "de": "Aus",
+     "ru": "Выкл.",
+     "pt": "Desativado",
+     "nl": "Uit",
+     "fr": "Désactivé",
+     "it": "Disattivato",
+     "es": "Desactivado",
+     "pl": "Wył.",
+     "uk": "Вимк.",
+     "zh-cn": "禁用"
+    },
+    "170": {
+     "en": "Enabled",
+     "de": "An",
+     "ru": "Вкл.",
+     "pt": "Ativado",
+     "nl": "Aan",
+     "fr": "Activé",
+     "it": "Attivato",
+     "es": "Activado",
+     "pl": "Wł.",
+     "uk": "Увімк.",
+     "zh-cn": "启用"
+    }
+   }
   },
   "holdingRegs:1:71213": {
    "doc": 31213,
@@ -1695,7 +2473,36 @@
     "uk": "Вимикає інвертор, коли межа активної потужності становить 0 %.",
     "zh-cn": "当有功功率限制为 0 % 时关闭逆变器。"
    },
-   "descDefault": "Shut down at 0 % active power limit (on/off)"
+   "descDefault": "Shut down at 0 % active power limit (on/off)",
+   "statesDefault": "85:Disable;170:Enable",
+   "states": {
+    "85": {
+     "en": "Disabled",
+     "de": "Aus",
+     "ru": "Выкл.",
+     "pt": "Desativado",
+     "nl": "Uit",
+     "fr": "Désactivé",
+     "it": "Disattivato",
+     "es": "Desactivado",
+     "pl": "Wył.",
+     "uk": "Вимк.",
+     "zh-cn": "禁用"
+    },
+    "170": {
+     "en": "Enabled",
+     "de": "An",
+     "ru": "Вкл.",
+     "pt": "Ativado",
+     "nl": "Aan",
+     "fr": "Activé",
+     "it": "Attivato",
+     "es": "Activado",
+     "pl": "Wł.",
+     "uk": "Увімк.",
+     "zh-cn": "启用"
+    }
+   }
   },
   "holdingRegs:1:71221": {
    "doc": 31221,
@@ -1727,7 +2534,36 @@
     "uk": "Увімкнення/вимкнення динамічного обмеження експорту.",
     "zh-cn": "动态导出限制开/关。"
    },
-   "descDefault": "Dynamic export limitation on/off"
+   "descDefault": "Dynamic export limitation on/off",
+   "statesDefault": "85:Disable;170:Enable",
+   "states": {
+    "85": {
+     "en": "Disabled",
+     "de": "Aus",
+     "ru": "Выкл.",
+     "pt": "Desativado",
+     "nl": "Uit",
+     "fr": "Désactivé",
+     "it": "Disattivato",
+     "es": "Desactivado",
+     "pl": "Wył.",
+     "uk": "Вимк.",
+     "zh-cn": "禁用"
+    },
+    "170": {
+     "en": "Enabled",
+     "de": "An",
+     "ru": "Вкл.",
+     "pt": "Ativado",
+     "nl": "Aan",
+     "fr": "Activé",
+     "it": "Attivato",
+     "es": "Activado",
+     "pl": "Wł.",
+     "uk": "Увімк.",
+     "zh-cn": "启用"
+    }
+   }
   },
   "holdingRegs:1:71222": {
    "doc": 31222,
@@ -1887,7 +2723,36 @@
     "uk": "Вмикання/вимкнення підключення інвертора до електромережі.",
     "zh-cn": "逆变器并网连接的开/关。"
    },
-   "descDefault": "Grid connection on/off"
+   "descDefault": "Grid connection on/off",
+   "statesDefault": "170:On (0xAA);85:Off (0x55)",
+   "states": {
+    "170": {
+     "en": "On (0xAA)",
+     "de": "An (0xAA)",
+     "ru": "Вкл. (0xAA)",
+     "pt": "Ligado (0xAA)",
+     "nl": "Aan (0xAA)",
+     "fr": "Marche (0xAA)",
+     "it": "Acceso (0xAA)",
+     "es": "Encendido (0xAA)",
+     "pl": "Wł. (0xAA)",
+     "uk": "Увімк. (0xAA)",
+     "zh-cn": "开 (0xAA)"
+    },
+    "85": {
+     "en": "Off (0x55)",
+     "de": "Aus (0x55)",
+     "ru": "Выкл. (0x55)",
+     "pt": "Desligado (0x55)",
+     "nl": "Uit (0x55)",
+     "fr": "Arrêt (0x55)",
+     "it": "Spento (0x55)",
+     "es": "Apagado (0x55)",
+     "pl": "Wył. (0x55)",
+     "uk": "Вимк. (0x55)",
+     "zh-cn": "关 (0x55)"
+    }
+   }
   },
   "holdingRegs:1:72536": {
    "doc": 32536,
@@ -2399,7 +3264,36 @@
     "uk": "Увімкнення/вимкнення примусової зарядки акумулятора з регульованим часом.",
     "zh-cn": "时间控制的电池强制充电开/关。"
    },
-   "descDefault": "Forced charging (time-controlled) on/off"
+   "descDefault": "Forced charging (time-controlled) on/off",
+   "statesDefault": "85:Disable;170:Enable",
+   "states": {
+    "85": {
+     "en": "Disabled",
+     "de": "Aus",
+     "ru": "Выкл.",
+     "pt": "Desativado",
+     "nl": "Uit",
+     "fr": "Désactivé",
+     "it": "Disattivato",
+     "es": "Desactivado",
+     "pl": "Wył.",
+     "uk": "Вимк.",
+     "zh-cn": "禁用"
+    },
+    "170": {
+     "en": "Enabled",
+     "de": "An",
+     "ru": "Вкл.",
+     "pt": "Ativado",
+     "nl": "Aan",
+     "fr": "Activé",
+     "it": "Attivato",
+     "es": "Activado",
+     "pl": "Wł.",
+     "uk": "Увімк.",
+     "zh-cn": "启用"
+    }
+   }
   },
   "holdingRegs:1:73209": {
    "doc": 33209,
@@ -2431,7 +3325,36 @@
     "uk": "Примусова плата діє в будні або щодня.",
     "zh-cn": "强制充电适用于工作日或每天。"
    },
-   "descDefault": "Forced charging valid on weekdays or every day"
+   "descDefault": "Forced charging valid on weekdays or every day",
+   "statesDefault": "0:Weekdays;1:Every day",
+   "states": {
+    "0": {
+     "en": "Weekdays",
+     "de": "Werktage",
+     "ru": "Будни",
+     "pt": "Dias úteis",
+     "nl": "Werkdagen",
+     "fr": "Jours ouvrés",
+     "it": "Giorni feriali",
+     "es": "Días laborables",
+     "pl": "Dni robocze",
+     "uk": "Будні",
+     "zh-cn": "工作日"
+    },
+    "1": {
+     "en": "Every day",
+     "de": "Jeden Tag",
+     "ru": "Каждый день",
+     "pt": "Todos os dias",
+     "nl": "Elke dag",
+     "fr": "Tous les jours",
+     "it": "Ogni giorno",
+     "es": "Todos los días",
+     "pl": "Codziennie",
+     "uk": "Щодня",
+     "zh-cn": "每天"
+    }
+   }
   },
   "holdingRegs:1:73210": {
    "doc": 33210,

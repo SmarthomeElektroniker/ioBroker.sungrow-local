@@ -69,7 +69,9 @@ function modelOf(data: Native, code: number | undefined): string {
     return (states && states[String(code)]) || `0x${code.toString(16).toUpperCase()}`;
 }
 
-export default function Wizard(props: ConfigGenericProps & { onData: (d: Native) => void; onClose?: () => void }): React.JSX.Element {
+export default function Wizard(
+    props: ConfigGenericProps & { onData: (d: Native) => void; onClose?: () => void },
+): React.JSX.Element {
     const data = props.data as Native;
     const [step, setStep] = React.useState(0);
     const [host, setHost] = React.useState(String(data.host || ''));
@@ -261,7 +263,12 @@ export default function Wizard(props: ConfigGenericProps & { onData: (d: Native)
                                 variant="body2"
                                 sx={{ fontWeight: 600 }}
                             >
-                                {t('wizardFound', modelOf(data, result.deviceTypeCode), result.serial || '–', result.ms)}
+                                {t(
+                                    'wizardFound',
+                                    modelOf(data, result.deviceTypeCode),
+                                    result.serial || '–',
+                                    result.ms,
+                                )}
                             </Typography>
                             <Typography variant="body2">
                                 {batteryAt1
@@ -343,7 +350,12 @@ export default function Wizard(props: ConfigGenericProps & { onData: (d: Native)
                                         variant="caption"
                                         sx={{ color: LEVEL_COLORS[a.total.level as 'ok'], display: 'block', mt: 0.5 }}
                                     >
-                                        {t('profileStats', a.total.registers, a.total.requests, Math.round(a.total.load * 100))}
+                                        {t(
+                                            'profileStats',
+                                            a.total.registers,
+                                            a.total.requests,
+                                            Math.round(a.total.load * 100),
+                                        )}
                                     </Typography>
                                 </Box>
                             );
