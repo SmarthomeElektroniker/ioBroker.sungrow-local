@@ -71,6 +71,11 @@ export interface MetaEntry {
     name?: Record<string, string>;
     desc?: Record<string, string>;
     descDefault?: string;
+    descOld?: string[];
+    /** key of the same quantity from the other source (inverter / battery) */
+    pair?: string;
+    /** read test on reference devices: model -> 'ok' | 'exception' */
+    tested?: Record<string, string>;
 }
 
 const META = META_JSON as unknown as { version: number; registers: Record<string, MetaEntry> };
@@ -148,16 +153,32 @@ export function metaByKey(key: string): MetaEntry | undefined {
     return META.registers[key];
 }
 
-/** Display name: translated template name, otherwise the description or the name column */
+/** Display name: the uniform translated catalog name; rows without catalog data: description or name column */
 export function rowLabel(regType: RegType, row: Row): string {
     const m = metaOf(regType, row);
-    const d = String(row.description || '').trim();
-    // an own description (changed by the user) wins over the template name
-    if (d && m && d !== m.descDefault && d !== m.name?.en) {
-        return d;
-    }
     const l = lang();
+    const d = String(row.description || '').trim();
     return m?.name?.[l] || m?.name?.en || d || String(row.name || '');
+}
+
+/** Own description of a catalog row when it differs from the catalog name (shown as a second line) */
+export function ownDescription(regType: RegType, row: Row): string {
+    const m = metaOf(regType, row);
+    const d = String(row.description || '').trim();
+    if (!m || !d) {
+        return '';
+    }
+    const defaults = [m.descDefault, m.name?.en, m.name?.[lang()], ...(m.descOld || [])];
+    return defaults.includes(d) ? '' : d;
+}
+
+/** Sort key that puts the two sources of the same quantity (inverter / battery) next to each other */
+export function pairSortKey(regType: RegType, row: Row): string {
+    const k = rowKey(regType, row);
+    const m = metaOf(regType, row);
+    const base = m?.pair && m.pair < k ? m.pair : k;
+    const [t, u, a] = base.split(':');
+    return `${t}:${a.padStart(6, '0')}:${u}|${k}`;
 }
 
 export function rowDescription(regType: RegType, row: Row): string {

@@ -310,6 +310,12 @@ class SungrowLocal extends utils.Adapter {
             const msg = `Group ${ev.group}: ${what} on ${ev.block} (${ev.error})`;
             if (row === 3) {
                 this.log.warn(`${msg} - ${row} times in a row`);
+                if (/exception 2|illegal data address/i.test(String(ev.error))) {
+                    // the whole request fails when ONE register of the block does not exist on this model
+                    this.log.warn(
+                        `Group ${ev.group}: the device does not know an address of ${ev.block} - deactivate the register(s) activated last in this range (tab "Registers"); all registers of this request are missing until then`,
+                    );
+                }
             } else {
                 this.log.info(msg);
             }
@@ -494,7 +500,8 @@ class SungrowLocal extends utils.Adapter {
         const m = META.registers && META.registers[`${r.regType}:${r.deviceId}:${r.alias}`];
         if (m && m.name && m.name.en) {
             const d = r.description;
-            if (!d || d === m.name.en || (m.descDefault && d === m.descDefault)) {
+            const defaults = [m.name.en, m.descDefault, ...(Array.isArray(m.descOld) ? m.descOld : [])];
+            if (!d || defaults.includes(d)) {
                 return m.name;
             }
         }

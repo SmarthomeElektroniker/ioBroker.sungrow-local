@@ -1,5 +1,5 @@
 {
- "version": 4,
+ "version": 5,
  "groups": [
   {
    "enabled": true,
@@ -3111,7 +3111,7 @@
    "role": "level",
    "states": "",
    "room": "",
-   "group": "steuerung",
+   "group": "info",
    "source": "reference list",
    "note": "reference list",
    "min": 0,
@@ -3331,7 +3331,7 @@
    "role": "level",
    "states": "",
    "room": "",
-   "group": "steuerung",
+   "group": "info",
    "source": "reference list",
    "note": "reference list",
    "min": 0,
@@ -3683,7 +3683,7 @@
    "role": "level",
    "states": "",
    "room": "",
-   "group": "steuerung",
+   "group": "info",
    "source": "Sungrow protocol V1.1.11",
    "note": "Sungrow protocol V1.1.11",
    "min": 0,
@@ -3737,6 +3737,60 @@
    "from": "uint16be",
    "to": "int16be",
    "reason": "phase C current is S16 (M + L)"
+  },
+  {
+   "regType": "inputRegs",
+   "deviceId": 1,
+   "_address": 35001,
+   "field": "group",
+   "from": "energie",
+   "to": "info",
+   "reason": "nominal output power never changes"
+  },
+  {
+   "regType": "inputRegs",
+   "deviceId": 1,
+   "_address": 43024,
+   "field": "group",
+   "from": "energie",
+   "to": "info",
+   "reason": "battery SoH changes over months"
+  },
+  {
+   "regType": "inputRegs",
+   "deviceId": 1,
+   "_address": 43039,
+   "field": "group",
+   "from": "energie",
+   "to": "info",
+   "reason": "battery capacity changes over months"
+  },
+  {
+   "regType": "holdingRegs",
+   "deviceId": 1,
+   "_address": 71225,
+   "field": "group",
+   "from": "steuerung",
+   "to": "info",
+   "reason": "installed PV power (setting)"
+  },
+  {
+   "regType": "holdingRegs",
+   "deviceId": 1,
+   "_address": 73049,
+   "field": "group",
+   "from": "steuerung",
+   "to": "info",
+   "reason": "battery net capacity"
+  },
+  {
+   "regType": "holdingRegs",
+   "deviceId": 1,
+   "_address": 73274,
+   "field": "group",
+   "from": "steuerung",
+   "to": "info",
+   "reason": "rated power of the loads (setting)"
   }
  ]
 }

@@ -17,6 +17,7 @@
     "lokal/**",
     "node_modules/**",
     "src-admin/**",
+    ".dev-server/**",
     "test/**",
     "werkzeuge/**"
   ]

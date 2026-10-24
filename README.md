@@ -258,6 +258,14 @@ requests, late answers, total failure and connection loss.
   on/off switches – 24 registers) in 11 languages: the states appear as a selection in admin/vis/apps, the tab
   *Control* offers them as a menu with a short explanation per mode and writes only after a confirmation. With
   "reject" a value outside the table is not written (template version 4 adds missing tables; own texts stay).
+- Uniform register names (one term per quantity; "(from inverter)" / "(from BMS)" / "(from meter)" where the same
+  quantity comes from two sources; pairs are shown next to each other). IDs do not change; object names follow the
+  catalog as long as the description column still holds a former default text.
+- Nearly constant values (nominal power, battery health, battery capacity, installed PV power, battery net capacity,
+  rated load power) are read in the group `info` (hourly); existing instances move them once if the row still has the
+  default group (template version 5).
+- Read test of every template register on an SH20T behind a WiNet-S2: 67 addresses are rejected there ("illegal data
+  address") and are marked in the catalog; the log explains a request that fails for this reason.
 - Fix: battery direction. A positive battery current (43021) means **discharging** (verified with 4 days of history
   and raw reads); the overview and the vis templates showed it inverted. House consumption = AC output (43034) +
   meter (35601); a result clearly below zero (a generator the inverter does not measure) is shown as

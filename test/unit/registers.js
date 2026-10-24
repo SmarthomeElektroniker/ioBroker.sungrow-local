@@ -87,7 +87,7 @@ describe('registers: compatibility with ioBroker.modbus', () => {
         const soc = input.regs.find(r => r.alias === 40744);
         assert.deepStrictEqual(
             [soc.id, soc.description, soc.unit, soc.factor, soc.type, soc.role, soc.deviceId],
-            ['inputRegisters.2.40744_Battery_level', 'Battery module SoC', '%', 0.1, 'uint16be', 'value.battery', 2],
+            ['inputRegisters.2.40744_Battery_level', 'State of charge (SoC, from BMS)', '%', 0.1, 'uint16be', 'value.battery', 2],
         );
         const total = input.regs.find(r => r.alias === 35004);
         assert.deepStrictEqual([total.type, total.len, total.factor], ['uint32sw', 2, 0.1]);
@@ -149,7 +149,7 @@ describe('registers: display columns (0.2.0) - IDs stay, only names/roles/units/
 
     it('units, MPPT 3 name and whitespace in display names are corrected; the IDs are not', () => {
         assert.strictEqual(byAlias(35001).unit, 'kW');
-        assert.strictEqual(byAlias(35016).description, 'MPPT3 current');
+        assert.strictEqual(byAlias(35016).description, 'MPPT 3 current');
         assert.strictEqual(byAlias(35016).id, 'inputRegisters.1.35016_MPPT_3_Current');
         assert.strictEqual(byAlias(35003).id, 'inputRegisters.1.35003_Daily__Output_Energy');
         for (const r of all) {

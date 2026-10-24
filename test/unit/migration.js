@@ -150,3 +150,29 @@ describe('migration to template v4: value tables (states) of writable registers'
         );
     });
 });
+
+describe('migration to template v5: nearly constant values into the group info', () => {
+    /** @returns {Record<string, any>} 0.3.0 configuration with the old default groups */
+    function old() {
+        const n = v2Native();
+        for (const a of [35001, 43024, 43039]) {
+            n.inputRegs.find(r => r._address === a).group = 'energie';
+        }
+        return n;
+    }
+
+    it('SoH, capacity and nominal power move to info when the row still has the default group', () => {
+        const { native, fixed } = mergeCatalog(old());
+        for (const a of [35001, 43024, 43039]) {
+            assert.strictEqual(native.inputRegs.find(r => r._address === a).group, 'info', String(a));
+        }
+        assert.ok(fixed.includes('43024 group energie -> info'));
+    });
+
+    it('a row the user moved himself stays in his group', () => {
+        const n = old();
+        n.inputRegs.find(r => r._address === 43024).group = 'live';
+        const { native } = mergeCatalog(n);
+        assert.strictEqual(native.inputRegs.find(r => r._address === 43024).group, 'live');
+    });
+});

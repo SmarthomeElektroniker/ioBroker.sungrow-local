@@ -60,9 +60,12 @@ import {
     groupColor,
     groupDescription,
     isActive,
+    metaOf,
     num,
     reasonText,
     requestDelta,
+    ownDescription,
+    pairSortKey,
     rowDescription,
     rowLabel,
     rowStateId,
@@ -200,6 +203,12 @@ function RegisterCard(props: {
                                     <br />
                                 </>
                             ) : null}
+                            {ownDescription(ref.regType, ref.row) ? (
+                                <>
+                                    {t('ownDescription', ownDescription(ref.regType, ref.row))}
+                                    <br />
+                                </>
+                            ) : null}
                             {t('cardTooltip', doc, ref.row.type || 'uint16be', String(ref.row.factor ?? 1))}
                             <br />
                             ID: {rowStateId(ref.regType, ref.row)}
@@ -234,6 +243,22 @@ function RegisterCard(props: {
                             sx={{ height: 18, fontSize: 11 }}
                         />
                     ) : null}
+                    {Object.entries(metaOf(ref.regType, ref.row)?.tested || {})
+                        .filter(([, r]) => r === 'exception')
+                        .map(([model]) => (
+                            <Tooltip
+                                key={model}
+                                title={t('notAnsweredHelp', model)}
+                            >
+                                <Chip
+                                    size="small"
+                                    color="warning"
+                                    variant="outlined"
+                                    label={t('notAnswered', model)}
+                                    sx={{ height: 18, fontSize: 11 }}
+                                />
+                            </Tooltip>
+                        ))}
                     {ref.regType === 'holdingRegs' ? (
                         <Chip
                             size="small"
@@ -688,7 +713,9 @@ export function CatalogView(props: ConfigGenericProps & { onData: (data: Native)
     }
     const byTheme = THEMES.map(th => ({
         theme: th,
-        refs: poolRefs.filter(r => themeOf(r.regType, r.row) === th),
+        refs: poolRefs
+            .filter(r => themeOf(r.regType, r.row) === th)
+            .sort((a, b) => (pairSortKey(a.regType, a.row) < pairSortKey(b.regType, b.row) ? -1 : 1)),
     })).filter(x => x.refs.length);
 
     const activeByGroup = (name: string): RowRef[] => refs.filter(r => isActive(r) && r.row.group === name);
