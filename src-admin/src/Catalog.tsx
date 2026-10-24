@@ -715,7 +715,15 @@ export function CatalogView(props: ConfigGenericProps & { onData: (data: Native)
         theme: th,
         refs: poolRefs
             .filter(r => themeOf(r.regType, r.row) === th)
-            .sort((a, b) => (pairSortKey(a.regType, a.row) < pairSortKey(b.regType, b.row) ? -1 : 1)),
+            .sort((a, b) => {
+                // registers the reference device does not answer go to the end of their topic
+                const na = Object.values(metaOf(a.regType, a.row)?.tested || {}).includes('exception') ? 1 : 0;
+                const nb = Object.values(metaOf(b.regType, b.row)?.tested || {}).includes('exception') ? 1 : 0;
+                if (na !== nb) {
+                    return na - nb;
+                }
+                return pairSortKey(a.regType, a.row) < pairSortKey(b.regType, b.row) ? -1 : 1;
+            }),
     })).filter(x => x.refs.length);
 
     const activeByGroup = (name: string): RowRef[] => refs.filter(r => isActive(r) && r.row.group === name);
