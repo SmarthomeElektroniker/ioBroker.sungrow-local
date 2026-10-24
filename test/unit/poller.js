@@ -241,6 +241,23 @@ describe('poller against the simulated WiNet-S2', function () {
         assert.strictEqual(ev.reconnect.length, 0);
     });
 
+    it('a too short answer discards the whole block (like ioBroker.modbus 9.2.2), no reconnect', async () => {
+        // three short answers in a row: they are answers (the link works), so no reconnect with reconnectAfter 2
+        fake.short(1, 3, 3);
+        const { p, ev } = makePoller(fake, { reconnectAfter: 2 });
+        poller = p;
+        p.start();
+        // modbus-serial itself rejects it ("Data length error"), the poller checks the length again
+        await until(() => ev.request.some(r => !r.ok && /short|length/i.test(r.error)), 3000);
+        const bad = ev.request.find(r => !r.ok && /short|length/i.test(r.error));
+        assert.ok(!bad.timeout);
+        // no value of that block was published from the short answer
+        const shortReq = fake.state.requests.find(r => r.short);
+        assert.ok(shortReq);
+        await until(() => ev.request.filter(r => r.ok).length >= 3, 3000);
+        assert.strictEqual(ev.reconnect.length, 0, 'an answer proves the link');
+    });
+
     it('writes go before the next read, are confirmed by reading back and report the device value', async () => {
         const { p, ev, regs } = makePoller(fake);
         poller = p;

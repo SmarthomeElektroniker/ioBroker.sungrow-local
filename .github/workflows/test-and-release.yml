@@ -46,6 +46,8 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           os: ${{ matrix.os }}
+          # builds the admin components (src-admin -> admin/custom) before the tests
+          build: true
           # Uncomment the following line if your adapter cannot be installed using 'npm ci'
           # install-command: "npm install"
 
@@ -71,6 +73,7 @@ jobs:
       - uses: ioBroker/testing-action-deploy@v1
         with:
           node-version: "24.x"
+          build: true
           # Uncomment the following line if your adapter cannot be installed using 'npm ci'
           # install-command: "npm install"
           # Uses npm trusted publishing (OIDC) — configure it for this package on npmjs.com.

@@ -1,6 +1,6 @@
 {
   "name": "iobroker.sungrow-local",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Sungrow hybrid inverter and battery via WiNet-S2 Modbus TCP - one connection, own poll interval per register group.",
   "author": {
     "name": "Immanuel",
@@ -56,8 +56,12 @@
     "test:package": "mocha test/package --exit",
     "test:integration": "mocha test/integration --exit",
     "test:unit": "mocha test/unit --exit",
-    "test": "npm run test:package && npm run test:unit",
+    "test": "npm run test:package && npm run test:unit && npm run test:admin",
     "lint": "eslint .",
-    "release": "release-script"
+    "release": "release-script",
+    "build:admin": "npm --prefix src-admin ci --no-audit --no-fund && npm --prefix src-admin run build && node src-admin/copy.mjs",
+    "build": "npm run build:admin",
+    "test:admin": "node src-admin/smoke.mjs",
+    "check:admin": "npm --prefix src-admin exec tsc -- -p src-admin/tsconfig.json"
   }
 }

@@ -50,9 +50,9 @@ function oldNative() {
 }
 
 describe('catalog: register template', () => {
-    it('has 100 rows (74 input, 26 holding) with valid types, unique IDs and a source', () => {
-        assert.strictEqual(CATALOG.inputRegs.length, 74);
-        assert.strictEqual(CATALOG.holdingRegs.length, 26);
+    it('has 187 rows (109 input, 78 holding) with valid types, unique IDs and a source', () => {
+        assert.strictEqual(CATALOG.inputRegs.length, 109);
+        assert.strictEqual(CATALOG.holdingRegs.length, 78);
         for (const t of /** @type {('inputRegs'|'holdingRegs')[]} */ (['inputRegs', 'holdingRegs'])) {
             const rows = CATALOG[t].map(r => ({ ...r, enabled: true }));
             const { regs, problems } = R.normalise(t, rows);
@@ -109,11 +109,11 @@ describe('catalog: migration of an existing instance (0.2.x -> 0.3.0)', () => {
         assert.deepStrictEqual(activeIds(before), fixtureIds);
         const { changed, native, added } = mergeCatalog(before);
         assert.ok(changed);
-        assert.strictEqual(added, 100);
+        assert.strictEqual(added, 187);
         assert.deepStrictEqual(activeIds(native), fixtureIds, 'the same registers are read as before');
         assert.ok(native.inputRegs.slice(0, 68).every(r => r.enabled === true));
-        assert.strictEqual(native.inputRegs.length, 68 + 74);
-        assert.strictEqual(native.holdingRegs.length, 9 + 26);
+        assert.strictEqual(native.inputRegs.length, 68 + 109);
+        assert.strictEqual(native.holdingRegs.length, 9 + 78);
         assert.ok(native.groups.some(g => g.name === 'info' && g.interval === 3600));
         assert.strictEqual(native.templateVersion, CATALOG.version);
         // the input is not modified
@@ -133,7 +133,7 @@ describe('catalog: migration of an existing instance (0.2.x -> 0.3.0)', () => {
         const n = { ...oldNative(), catalogVersion: 1 };
         const { changed, native, added } = mergeCatalog(n);
         assert.ok(changed);
-        assert.strictEqual(added, 100);
+        assert.strictEqual(added, 187);
         assert.strictEqual(native.catalogVersion, undefined);
     });
 

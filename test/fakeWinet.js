@@ -11,6 +11,7 @@
  * - `late(unit, n, ms)` answers the next n requests only after ms (later than the client's timeout).
  * - `stall(true)` stops answering everything (dead gateway with open socket).
  * - `kick()` closes all client sockets (gateway restart / network loss).
+ * - `short(unit, n, missing)` answers the next n reads of a unit with `missing` registers less than asked.
  */
 
 const net = require('node:net');
@@ -33,6 +34,8 @@ async function createFakeWinet(opts = {}) {
             lateCount: 0,
             lateMs: 0,
             exceptions: new Set(),
+            shortCount: 0,
+            shortBy: 0,
             ...u,
         };
     }
@@ -101,10 +104,16 @@ async function createFakeWinet(opts = {}) {
             if ([...Array(qtyOrVal).keys()].some(i => u.exceptions.has(addr + i))) {
                 pdu = Buffer.from([fc | 0x80, 2]);
             } else {
-                pdu = Buffer.alloc(2 + qtyOrVal * 2);
+                let qty = qtyOrVal;
+                if (u.shortCount > 0) {
+                    u.shortCount--;
+                    rec.short = true;
+                    qty = Math.max(0, qtyOrVal - u.shortBy);
+                }
+                pdu = Buffer.alloc(2 + qty * 2);
                 pdu[0] = fc;
-                pdu[1] = qtyOrVal * 2;
-                for (let i = 0; i < qtyOrVal; i++) {
+                pdu[1] = qty * 2;
+                for (let i = 0; i < qty; i++) {
                     pdu.writeUInt16BE(map.get(addr + i) || 0, 2 + i * 2);
                 }
             }
@@ -184,6 +193,10 @@ async function createFakeWinet(opts = {}) {
         late(unit, n, ms) {
             units[unit].lateCount = n;
             units[unit].lateMs = ms;
+        },
+        short(unit, n, missing) {
+            units[unit].shortCount = n;
+            units[unit].shortBy = missing;
         },
         stall(on) {
             state.stalled = on;

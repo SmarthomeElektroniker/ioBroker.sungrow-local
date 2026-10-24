@@ -55,7 +55,7 @@ describe('diagnostics: timing of the battery group', () => {
 });
 
 describe('admin: interval warnings of the group table', () => {
-    const cols = jsonConfig.items.tabGroups.items.groups.items;
+    const cols = jsonConfig.items.tabExpert.items.groups.items;
     const checks = cols
         .filter(c => c.validator)
         .map(c => ({ attr: c.attr, fn: new Function('data', `return ${c.validator}`) }));

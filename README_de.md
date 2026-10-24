@@ -18,15 +18,23 @@ iSolarCloud. Er ersetzt eine generische `ioBroker.modbus`-Instanz und behält de
   bestätigten Wert. Optionaler Nur-Lese-Modus.
 - **Diagnose je Gruppe** unter `info.groups.<gruppe>.*` mit Herzschlag `lastRound` – alte Zeitstempel an
   Registern sind normal (geschrieben wird nur bei Änderung), ein hängender Bus zeigt sich an `lastRound`.
-- **Reiter „Status“** in der Instanz-Konfiguration mit Verbindung, Herzschlag und Zählern je Gruppe.
+- **Neue Einstellungsseite (0.4.0, Admin ≥ 8.2):** Reiter *Übersicht* (Ampeln, Live-Kacheln, Einrichtungs-
+  Assistent mit Verbindungstest und Modellerkennung), *Register* (Katalog nach Themen mit Suche, aktivieren per
+  Klick oder Drag & Drop in eine Abfragegruppe, Busauslastung je Gruppe und gesamt mit Begründung jeder
+  zusätzlichen Anfrage, eigene Register in jeder Adressschreibweise mit Testlesen), *Steuerung* (Schreiben je
+  Register freigeben, Wertebereich, Protokoll der letzten Schreibbefehle), *Verbindung* (mit aufklappbarem
+  „Erweitert“), *Werkzeuge* (Umrechnungshilfe, Diagnose) und *Experte* (die bisherigen Tabellen).
+- **Busauslastung:** etwa 1,25 Anfragen/s schafft der WiNet-S2 dauerhaft (gemessen: live 5 s + energie 60 s +
+  steuerung 60 s + akku 120 s stabil, live 3 s ließ Runden aus, akku 60 s erzeugte Timeouts); Pausen langsamer
+  Geräte (SBH: 5 s) kommen hinzu. Grün < 80 %, gelb bis 100 %, rot darüber.
 - **Umstieg von ioBroker.modbus:** gleiche IDs, Namen, Einheiten, Faktoren, Typen und Rollen – Textersatz
   `modbus.N.` → `sungrow-local.0.`. Die alte Modbus-Instanz vorher abschalten: das WiNet soll nur einen Client sehen.
 - **Falle Weißliste:** Das WiNet-S2 hat eine IP-Weißliste für Modbus TCP. Nicht eingetragene Absender bekommen
   sofort `ECONNRESET` – die IP des ioBroker-Rechners (nach NAT) im WiNet eintragen.
 - Die Vorgabetabellen sind englisch beschriftet; Namen, Klartexte, Einheiten und Grenzen lassen sich in den
   Registertabellen ändern, ohne dass sich die IDs ändern.
-- **Register-Vorlage:** Neben den vorab gelesenen Registern stehen 100 weitere bekannte Sungrow-Register in den
-  Tabellen (74 Input, 26 Holding, nicht angehakt): Gerätetyp, Seriennummer, Firmware, MPPT 4, Akkuleistung und
+- **Register-Vorlage:** Neben den vorab gelesenen Registern stehen 187 weitere bekannte Sungrow-Register im
+  Katalog (109 Input, 78 Holding, nicht aktiv; Namen in 11 Sprachen): Gerätetyp, Seriennummer, Firmware, MPPT 4, Akkuleistung und
   -strom mit Vorzeichen, Zähler des Energiezählers, Monatserträge, Fehlercodes, Akkustrom/-temperatur des SBH,
   Uhr, Einspeisebegrenzung, Lade-/Entladegrenzen, Zwangsladung u. a. Häkchen setzen und speichern – das Register
   wird im Leseblock seiner Gruppe mitgelesen. Quellen: Home-Assistant-Integration von mkaiser (MIT) und die

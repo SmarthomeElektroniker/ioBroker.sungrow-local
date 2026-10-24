@@ -30,9 +30,15 @@ tests.integration(path.join(__dirname, '..'), {
             it('same IDs as an ioBroker.modbus instance, values per group, unit-2 timeouts isolated, confirmed writes, diagnostics', async function () {
                 this.timeout(90000);
                 const harness = getHarness();
+                // 0.4.0: writing is released per holding register - release all but the EMS mode
+                const holdingRegs = io.native.holdingRegs.map(r => ({
+                    ...r,
+                    allowWrite: r._address !== 53050,
+                }));
                 await harness.changeAdapterConfig('sungrow-local', {
                     native: {
                         ...io.native,
+                        holdingRegs,
                         host: fake.host,
                         port: fake.port,
                         requestGap: 20,
@@ -71,16 +77,12 @@ tests.integration(path.join(__dirname, '..'), {
 
                 // objects like ioBroker.modbus: name = description, unit, role, holding writable
                 const soc = await harness.objects.getObjectAsync(`${ns}.inputRegisters.2.40744_Battery_level`);
+                // 0.4.0: unchanged default description -> translated name of the register catalog
+                assert.strictEqual(typeof soc.common.name, 'object');
+                assert.strictEqual(soc.common.name.en.length > 0 && !!soc.common.name.de, true);
                 assert.deepStrictEqual(
-                    [
-                        soc.common.name,
-                        soc.common.unit,
-                        soc.common.role,
-                        soc.common.write,
-                        soc.native.address,
-                        soc.native.deviceId,
-                    ],
-                    ['Battery module SoC', '%', 'value.battery', false, 10743, 2],
+                    [soc.common.unit, soc.common.role, soc.common.write, soc.native.address, soc.native.deviceId],
+                    ['%', 'value.battery', false, 10743, 2],
                 );
                 const charge = await harness.objects.getObjectAsync(
                     `${ns}.holdingRegisters.1.53051_Charge/discharge_command`,
@@ -91,7 +93,11 @@ tests.integration(path.join(__dirname, '..'), {
                 const maxSoc = await harness.objects.getObjectAsync(`${ns}.holdingRegisters.1.73031_Max_SOC`);
                 assert.deepStrictEqual([maxSoc.common.min, maxSoc.common.max, maxSoc.common.role], [0, 100, 'level']);
                 const mppt3 = await harness.objects.getObjectAsync(`${ns}.inputRegisters.1.35016_MPPT_3_Current`);
-                assert.deepStrictEqual([mppt3.common.name, mppt3.common.role], ['MPPT3 current', 'value.current']);
+                assert.deepStrictEqual([typeof mppt3.common.name, mppt3.common.role], ['object', 'value.current']);
+                assert.ok(/MPPT ?3/.test(mppt3.common.name.en), mppt3.common.name.en);
+                // not released for writing: common.write false
+                const ems = await harness.objects.getObjectAsync(`${ns}.holdingRegisters.1.53050_EMS_mode_selection`);
+                assert.strictEqual(ems.common.write, false);
                 // 0.2.1: every level of the ID exists as an object (folder per register type, device per unit)
                 const unit2 = await harness.objects.getObjectAsync(`${ns}.inputRegisters.2`);
                 const folder = await harness.objects.getObjectAsync(`${ns}.holdingRegisters`);
@@ -146,6 +152,33 @@ tests.integration(path.join(__dirname, '..'), {
                 await waitFor('holdingRegisters.1.73031_Max_SOC', (v, s) => v === 150 && s.ack, 10000);
                 assert.strictEqual(fake.state.units[1].holding.get(33030), 1500);
 
+                // 0.4.0: not released -> rejected, value restored, logged
+                const emsBefore = fake.state.requests.filter(r => r.fc === 6 && r.addr === 13049).length;
+                await harness.states.setStateAsync(`${ns}.holdingRegisters.1.53050_EMS_mode_selection`, {
+                    val: 2,
+                    ack: false,
+                });
+                await waitFor('holdingRegisters.1.53050_EMS_mode_selection', (v, s) => v === 0 && s.ack, 5000);
+                assert.strictEqual(fake.state.requests.filter(r => r.fc === 6 && r.addr === 13049).length, emsBefore);
+                const log = await waitFor('info.write.log', v => /notReleased/.test(v), 5000);
+                const entries = JSON.parse(log.val);
+                assert.strictEqual(entries[0].result, 'notReleased');
+                assert.ok(entries.some(e => e.result === 'ok' && /73031/.test(e.id)));
+
+                // admin messages: bus load and test read (FC4, read only)
+                await harness.enableSendTo();
+                const load = await new Promise(resolve => harness.sendTo('sungrow-local.0', 'analyse', {}, resolve));
+                assert.ok(load.total && load.total.requests > 0, JSON.stringify(load).slice(0, 200));
+                const probe = await new Promise(resolve =>
+                    harness.sendTo(
+                        'sungrow-local.0',
+                        'probe',
+                        { regType: 'inputRegs', deviceId: 1, address: 13022, type: 'uint16be', factor: 0.1 },
+                        resolve,
+                    ),
+                );
+                assert.deepStrictEqual([probe.words, probe.value], [[955], 95.5]);
+
                 // input registers are read-only: a foreign write is reset
                 await harness.states.setStateAsync(`${ns}.inputRegisters.1.35017_Total_DC_Power`, {
                     val: 1,
@@ -177,6 +210,7 @@ tests.integration(path.join(__dirname, '..'), {
                         .map(r => {
                             const c = { ...r };
                             delete c.enabled;
+                            delete c.allowWrite;
                             return c;
                         });
                 }
@@ -203,7 +237,10 @@ tests.integration(path.join(__dirname, '..'), {
                     await new Promise(r => setTimeout(r, 300));
                 }
                 assert.strictEqual(inst.native.templateVersion, CATALOG.version);
-                assert.strictEqual(inst.native.inputRegs.length, 68 + 74);
+                assert.strictEqual(inst.native.inputRegs.length, 68 + CATALOG.inputRegs.length);
+                // 0.4.0: the ticked holding rows of a 0.2.x instance stay writable
+                assert.ok(inst.native.holdingRegs.filter(r => r.enabled).every(r => r.allowWrite === true));
+                assert.ok(inst.native.holdingRegs.filter(r => !r.enabled).every(r => r.allowWrite === false));
                 assert.strictEqual(inst.native.inputRegs.filter(r => r.enabled).length, 68);
                 assert.ok(inst.native.groups.some(g => g.name === 'info'));
 

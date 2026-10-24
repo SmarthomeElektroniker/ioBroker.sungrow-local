@@ -61,21 +61,44 @@ during which the bus is blocked. With a generic Modbus instance this leads to:
   address of the ioBroker host (as seen by the WiNet, i.e. after NAT) in the WiNet web interface.
 - Only one Modbus client at a time should talk to the WiNet. Disable other Modbus instances that poll the same
   gateway before enabling this adapter.
-- js-controller >= 6.0.11, admin >= 7.6.20, Node.js >= 22.
+- js-controller >= 6.0.11, **admin >= 8.2.0** (the configuration page uses React components of the admin), Node.js >= 22.
 
 ## Configuration
 
-1. **Connection** – IP address and port (502) of the WiNet-S2, minimum pause between requests, reconnect
-   behaviour, write timeout/retries, read-only mode, block building (max. registers per request, max. gap) and
-   number of decimal places.
-2. **Poll groups** – interval, timeout and pause per group. The admin UI shows the limits that were measured
-   to be stable and marks shorter values red.
-3. **Input registers / Holding registers** – the register tables (same columns as ioBroker.modbus plus
-   *read*, *group*, *states*, *min*, *max* and *source / note*). Ticked by default: 68 input registers (inverter
-   unit 1 and battery unit 2) and 9 holding registers (EMS mode, charge/discharge command and power, SoC
-   limits, …). The other rows are the register template (see below).
-4. **Conversion helper** – see below.
-5. **Status** – live view of the running instance.
+The configuration page has six tabs. Everything works with mouse, keyboard and touch; drag & drop is always
+optional (there is a button for every action).
+
+1. **Overview** – traffic lights for instance, connection, last values and every poll group (last round, round
+   duration, timeouts/errors/skipped rounds today) and live tiles: PV power, battery power with direction
+   (sign of the battery current `43021`), battery level, grid (`35601`, + import / − feed-in), house consumption
+   (calculated: PV + battery discharge + grid) and any other register. Tiles can be added, removed and ordered.
+   On a new instance (no address yet) the **setup wizard** opens here: gateway address, connection test (device
+   type code → model, serial number, battery at the inverter, SBH battery at unit 2) and a profile
+   *Basic / Battery / Extended* with a preview of the bus load.
+2. **Registers** – the register catalog by topic (PV, battery, grid, inverter, control, info, own) with search.
+   Activate a register with a click (into its default group, arrow = other group) or drag it into a poll group.
+   Every group is a column with its interval and the requests it sends; the **bus load bar** (per group and in
+   total) is calculated from the real block building of the adapter and shows *why* a register costs another
+   request ("+1 request because 13050 is not next to the others"). **Own registers**: address in any notation
+   (Sungrow document from 1, protocol from 0, column 30001/40001, Modicon) with off-by-one warning and a test
+   read before saving.
+3. **Control** – the writable holding registers. Writing is **released per register** (new in 0.4.0; existing
+   installations keep their ticked registers writable), value range (min/max or value table), behaviour outside
+   the range (warn or reject), the read-only master switch and the log of the last write commands
+   (`info.write.log`).
+4. **Connection** – address and port of the WiNet-S2; *Advanced* (folded): pauses, reconnect behaviour, write
+   timeout/retries, block building, decimals and the bus capacity used for the load bars.
+5. **Tools** – conversion helper (see below) and diagnostics of all groups in one table.
+6. **Expert** – the plain tables (groups, input and holding registers) for bulk changes.
+
+### Bus load model
+
+The gateway handles about **1.25 requests per second** over a longer time (measured on the reference installation
+SH20T + SBH400 behind a WiNet-S2): `live` 5 s + `energie` 60 s + `steuerung` 60 s + `akku` 120 s (1.14 requests/s)
+ran stable, `live` 3 s (1.81/s) skipped rounds and `akku` 60 s produced timeouts. A request to a slow bus device
+blocks the bus for its pause on top (SBH battery: 5 s). Load = requests per second / capacity + pause share; green
+below 80 %, yellow up to 100 % (fully used), red above. A group whose interval is shorter than the pause of another
+group will skip rounds. The capacity can be changed under *Connection → Advanced*.
 
 ## Register template
 
@@ -213,6 +236,24 @@ requests, late answers, total failure and connection loss.
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
+
+### 0.4.0 (2026-10-24)
+
+- New configuration page with React components (admin >= 8.2): overview with traffic lights and live tiles,
+  register catalog by topic with search, drag & drop into poll groups and a live bus load per group and in
+  total (from the real block building, with the reason for every extra request), own registers in any address
+  notation with test read, setup wizard (connection test, model detection, profile), tab *Control*, tab
+  *Tools* with conversion helper and diagnostics, tab *Expert* with the plain tables.
+- Register catalog: 187 further known registers (109 input, 78 holding: Sungrow protocol V1.1.11, register list
+  of the reference installation, Home Assistant integration by mkaiser), every register with a name and a
+  description in 11 languages; object names are translated as long as the description column is unchanged.
+- Writing is released per holding register (`allowWrite`); a write to a register that is not released is
+  rejected and the device value restored. Existing installations keep their ticked registers writable
+  (template version 3). New option: reject values outside the range instead of only warning.
+- Write log `info.write.log` (last 25 write commands with result).
+- A too short answer (fewer registers than requested) discards the whole block and counts as an answer, not as a
+  connection error.
+- Messages for the admin: `probe` (test read, FC3/FC4 only), `wizardTest`, `analyse`.
 
 ### 0.3.0 (2026-10-24)
 

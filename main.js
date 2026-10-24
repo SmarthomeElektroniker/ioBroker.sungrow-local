@@ -19,10 +19,12 @@ const {
     num,
     flag,
     checkWriteValue,
+    extract,
 } = require('./lib/registers');
 const { mergeCatalog } = require('./lib/catalog');
 const { explain, resolve, implausible } = require('./lib/convert');
 const { Poller } = require('./lib/poller');
+const { analyse } = require('./lib/load');
 const {
     T,
     DIAG,
@@ -34,6 +36,17 @@ const {
     groupKey,
     dayKey,
 } = require('./lib/diagnostics');
+
+/** Translated register names of the template (key regType:unit:_address); optional file */
+let META = { registers: {} };
+try {
+    META = require('./lib/catalog-meta.json');
+} catch {
+    // no translations - names come from the description column
+}
+
+/** Entries kept in info.write.log */
+const WRITE_LOG_MAX = 25;
 
 class SungrowLocal extends utils.Adapter {
     /** @param {Partial<utils.AdapterOptions>} [options] Adapter options */
@@ -62,6 +75,10 @@ class SungrowLocal extends utils.Adapter {
         this.lang = 'en';
         /** pause after requests per unit (from the groups, e.g. 5000 ms for the SBH400) */
         this.unitPause = new Map();
+        /** last write commands (info.write.log) */
+        this.writeLog = [];
+        /** connection test of the setup wizard running */
+        this.wizardRunning = false;
     }
 
     async onReady() {
@@ -142,6 +159,19 @@ class SungrowLocal extends utils.Adapter {
                     .map(b => `unit ${b.deviceId} ${b.regType === 'inputRegs' ? 'FC4' : 'FC3'} ${b.start}+${b.count}`)
                     .join(', ')})`,
             );
+        }
+        try {
+            const load = analyse(c);
+            this.log.info(
+                `Bus load: ${load.total.requests} requests per round set, ${load.total.perSecond.toFixed(2)} requests/s, ${Math.round(load.total.load * 100)} % of the measured capacity (${load.capacity}/s)`,
+            );
+            if (load.total.level === 'over') {
+                this.log.warn(
+                    'Bus load above the measured capacity of the gateway - expect skipped rounds and timeouts (see the tab "Registers")',
+                );
+            }
+        } catch (e) {
+            this.log.debug(`Bus load: ${e}`);
         }
         for (const r of regs) {
             if (r.poll && !known.has(r.group)) {
@@ -229,15 +259,19 @@ class SungrowLocal extends utils.Adapter {
             void this.setState(reg.id, val, true);
             if (written && requested !== undefined && Number(requested) !== val && String(requested) !== String(val)) {
                 this.log.warn(`${reg.id}: wrote ${requested}, device reports ${val}`);
+                this.logWrite(reg, requested, 'mismatch', String(val));
             } else if (written) {
                 this.log.debug(`${reg.id}: ${val} written and confirmed`);
+                this.logWrite(reg, requested !== undefined ? requested : val, 'ok', String(val));
             }
         });
         p.on('readbackFailed', ({ reg, error }) => {
             this.log.warn(`${reg.id}: confirmation read failed (${error}) - value follows with the next poll`);
+            this.logWrite(reg, undefined, 'unconfirmed', String(error));
         });
         p.on('writeFailed', ({ reg, requested, error }) => {
             this.log.warn(`${reg.id}: writing ${requested} failed: ${error}`);
+            this.logWrite(reg, requested, 'failed', String(error));
             void this.count(WRITE_DIAG.key, { failedTotal: 1 }, error);
         });
     }
@@ -392,7 +426,7 @@ class SungrowLocal extends utils.Adapter {
         for (const r of regs) {
             /** @type {Record<string, any>} */
             const common = {
-                name: r.description || r.name,
+                name: this.displayName(r),
                 role: r.role,
                 type: ['string', 'stringle'].includes(r.type) ? 'string' : 'number',
                 read: r.regType === 'inputRegs' ? true : r.poll,
@@ -442,6 +476,24 @@ class SungrowLocal extends utils.Adapter {
                 }
             }
         }
+    }
+
+    /**
+     * Object name of a register: the translated template name as long as the description column is empty or
+     * still the English default of the template; an own description always wins.
+     *
+     * @param {import('./lib/registers').Reg} r Register
+     * @returns {string|Record<string, string>} Name
+     */
+    displayName(r) {
+        const m = META.registers && META.registers[`${r.regType}:${r.deviceId}:${r.alias}`];
+        if (m && m.name && m.name.en) {
+            const d = r.description;
+            if (!d || d === m.name.en || (m.descDefault && d === m.descDefault)) {
+                return m.name;
+            }
+        }
+        return r.description || r.name;
     }
 
     /**
@@ -504,6 +556,13 @@ class SungrowLocal extends utils.Adapter {
             }
             this.diag.set(ch.key, counters);
         }
+        try {
+            const s = await this.getStateAsync('info.write.log');
+            const list = s && typeof s.val === 'string' ? JSON.parse(s.val) : [];
+            this.writeLog = Array.isArray(list) ? list.slice(0, WRITE_LOG_MAX) : [];
+        } catch {
+            this.writeLog = [];
+        }
         // channels of groups that no longer exist
         const existing = await this.getObjectViewAsync('system', 'channel', {
             startkey: `${this.namespace}.info.groups.`,
@@ -530,7 +589,12 @@ class SungrowLocal extends utils.Adapter {
             return;
         }
         if (!reg.write) {
-            // input registers are read-only: restore the device value
+            if (reg.regType === 'holdingRegs') {
+                // holding register that is not released for writing (tab "Control")
+                this.log.warn(`${id}: writing is not released for this register - ${state.val} rejected`);
+                this.logWrite(reg, state.val, 'notReleased');
+            }
+            // restore the device value
             if (this.lastVal.has(id)) {
                 void this.setState(id, this.lastVal.get(id), true);
             }
@@ -539,6 +603,7 @@ class SungrowLocal extends utils.Adapter {
         if (this.config.readOnly) {
             // read-only operation (e.g. first days after the migration): never write to the inverter
             this.log.warn(`${id}: read-only mode - write of ${state.val} rejected`);
+            this.logWrite(reg, state.val, 'readOnly');
             if (this.lastVal.has(id)) {
                 void this.setState(id, this.lastVal.get(id), true);
             }
@@ -550,6 +615,14 @@ class SungrowLocal extends utils.Adapter {
         }
         // plausibility (min/max/states of the register): for now only a warning, the value is still written
         const problem = checkWriteValue(reg, state.val);
+        if (problem && this.config.writeCheck === 'reject') {
+            this.log.warn(`${id}: value rejected - ${problem}`);
+            this.logWrite(reg, state.val, 'rejected', problem);
+            if (this.lastVal.has(id)) {
+                void this.setState(id, this.lastVal.get(id), true);
+            }
+            return;
+        }
         if (problem) {
             this.log.warn(`${id}: implausible value - ${problem} (written anyway; the check only warns)`);
         }
@@ -598,6 +671,25 @@ class SungrowLocal extends utils.Adapter {
         if (!obj || !obj.command) {
             return;
         }
+        if (obj.command === 'probe' || obj.command === 'wizardTest' || obj.command === 'analyse') {
+            let res;
+            try {
+                const q = typeof obj.message === 'string' ? JSON.parse(obj.message) : obj.message || {};
+                if (obj.command === 'probe') {
+                    res = await this.probeRegister(q);
+                } else if (obj.command === 'wizardTest') {
+                    res = await this.wizardTest(q);
+                } else {
+                    res = analyse(q.native || this.config);
+                }
+            } catch (e) {
+                res = { error: (e && e.message) || String(e) };
+            }
+            if (obj.callback) {
+                this.sendTo(obj.from, obj.command, res, obj.callback);
+            }
+            return;
+        }
         if (obj.command === 'convert') {
             let res;
             try {
@@ -623,6 +715,157 @@ class SungrowLocal extends utils.Adapter {
                     obj.callback,
                 );
             }
+        }
+    }
+
+    /**
+     * Test read of one register for the admin ("own register" dialog): read only, FC4 input / FC3 holding,
+     * over the running connection. Returns the raw words and the value with type, factor and offset.
+     *
+     * @param {Record<string, any>} q {regType, deviceId, address (protocol), type, len, factor, offset}
+     * @returns {Promise<Record<string, any>>} {words, raw, value, ms} or {error}
+     */
+    async probeRegister(q) {
+        const regType = q.regType === 'holdingRegs' ? 'holdingRegs' : 'inputRegs';
+        const address = parseInt(q.address, 10);
+        if (!Number.isInteger(address) || address < 0 || address > 0xffff) {
+            return { error: 'invalid address' };
+        }
+        if (!this.poller || !this.poller.connected) {
+            return { error: 'not connected' };
+        }
+        const unit = parseInt(q.deviceId, 10) || 1;
+        const type = TYPE_LEN[q.type] || STRING_TYPES.includes(q.type) ? q.type : 'uint16be';
+        const count = STRING_TYPES.includes(type)
+            ? Math.min(32, Math.max(1, parseInt(q.len, 10) || 1))
+            : TYPE_LEN[type] || 1;
+        const r = await this.poller.probe({
+            regType,
+            deviceId: unit,
+            address,
+            count,
+            timeout: Math.max(10000, (this.unitPause.get(unit) || 0) + 5000),
+            pauseAfter: this.unitPause.get(unit) || 0,
+        });
+        const words = [];
+        for (let i = 0; i < count; i++) {
+            words.push(r.buffer.readUInt16BE(i * 2));
+        }
+        const raw = extract(type, count, r.buffer, 0);
+        const factor = num(q.factor, 1) || 1;
+        const offset = num(q.offset, 0);
+        const value = typeof raw === 'number' ? Math.round((raw * factor + offset) * 10000) / 10000 : raw;
+        return { words, raw, value, ms: r.ms };
+    }
+
+    /**
+     * Connection test of the setup wizard: reads device type code, serial number and battery indicators.
+     * Uses the running connection when it goes to the same gateway, otherwise ONE short own connection
+     * (the WiNet-S2 accepts only one Modbus client reliably - the admin warns when another instance is
+     * connected to the same address).
+     *
+     * @param {Record<string, any>} q {host, port, unit, battery2}
+     * @returns {Promise<Record<string, any>>} Result
+     */
+    async wizardTest(q) {
+        const host = String(q.host || '').trim();
+        const port = parseInt(q.port, 10) || 502;
+        const unit = parseInt(q.unit, 10) || 1;
+        if (!host) {
+            return { ok: false, error: 'no address' };
+        }
+        if (this.wizardRunning) {
+            return { ok: false, error: 'test already running' };
+        }
+        this.wizardRunning = true;
+        const t0 = Date.now();
+        /** @type {(fc: 3|4, unitId: number, address: number, count: number, timeout?: number) => Promise<Buffer>} */
+        let read;
+        let close = async () => {};
+        try {
+            const own = !(this.poller && this.poller.connected && host === String(this.config.host || '').trim());
+            if (!own && this.poller) {
+                const p = this.poller;
+                read = async (fc, unitId, address, count, timeout = 10000) =>
+                    (
+                        await p.probe({
+                            regType: fc === 4 ? 'inputRegs' : 'holdingRegs',
+                            deviceId: unitId,
+                            address,
+                            count,
+                            timeout,
+                            pauseAfter: this.unitPause.get(unitId) || 0,
+                        })
+                    ).buffer;
+            } else {
+                const client = new ModbusRTU();
+                client.on('error', () => {});
+                close = () =>
+                    new Promise(resolve => {
+                        try {
+                            client.close(() => resolve(undefined));
+                        } catch {
+                            resolve(undefined);
+                        }
+                    });
+                await Promise.race([
+                    client.connectTCP(host, { port }),
+                    new Promise((_, reject) =>
+                        this.setTimeout(() => reject(new Error(`no connection to ${host}:${port}`)), 8000),
+                    ),
+                ]);
+                read = async (fc, unitId, address, count, timeout = 8000) => {
+                    client.setID(unitId);
+                    client.setTimeout(timeout);
+                    const res =
+                        fc === 4
+                            ? await client.readInputRegisters(address, count)
+                            : await client.readHoldingRegisters(address, count);
+                    await this.delay(150);
+                    return res.buffer;
+                };
+            }
+            const out = { ok: true, shared: !own, ms: 0, unit };
+            // device type code: Sungrow document 5000 = protocol 4999 (FC4)
+            const type = await read(4, unit, 4999, 1);
+            out.deviceTypeCode = type.readUInt16BE(0);
+            try {
+                out.serial = String(extract('string', 10, await read(4, unit, 4989, 10), 0)).trim();
+            } catch (e) {
+                out.serialError = String((e && e.message) || e);
+            }
+            try {
+                // battery voltage (doc 13020, 0.1 V) and level (doc 13023, 0.1 %) at the inverter
+                const b = await read(4, unit, 13019, 4);
+                out.batteryVoltage = b.readUInt16BE(0) / 10;
+                out.batteryLevel = b.readUInt16BE(6) / 10;
+            } catch (e) {
+                out.batteryError = String((e && e.message) || e);
+            }
+            if (q.battery2) {
+                try {
+                    // SBH battery at unit 2 (slow bus device): level doc 10744 = protocol 10743
+                    const b2 = await read(4, 2, 10743, 1, 15000);
+                    out.unit2Level = b2.readUInt16BE(0) / 10;
+                } catch (e) {
+                    out.unit2Error = String((e && e.message) || e);
+                }
+            }
+            out.ms = Date.now() - t0;
+            return out;
+        } catch (e) {
+            const err = /** @type {any} */ (e);
+            return {
+                ok: false,
+                error:
+                    err && err.modbusCode !== undefined
+                        ? `Modbus exception ${err.modbusCode}`
+                        : (err && err.message) || String(err),
+                ms: Date.now() - t0,
+            };
+        } finally {
+            await close().catch(() => {});
+            this.wizardRunning = false;
         }
     }
 
@@ -696,6 +939,27 @@ class SungrowLocal extends utils.Adapter {
         } finally {
             this.probeRunning = null;
         }
+    }
+
+    /**
+     * Adds an entry to the write log (info.write.log, newest first) - shown in the tab "Control".
+     *
+     * @param {import('./lib/registers').Reg} reg Register
+     * @param {unknown} value Requested value
+     * @param {'ok'|'mismatch'|'failed'|'unconfirmed'|'readOnly'|'notReleased'|'rejected'} result Outcome
+     * @param {string} [detail] Device value or error
+     */
+    logWrite(reg, value, result, detail) {
+        this.writeLog.unshift({
+            ts: Date.now(),
+            id: reg.id,
+            name: reg.description || reg.name,
+            value: value === undefined ? null : value,
+            result,
+            detail: detail || '',
+        });
+        this.writeLog.length = Math.min(this.writeLog.length, WRITE_LOG_MAX);
+        void this.setState('info.write.log', JSON.stringify(this.writeLog), true);
     }
 
     /** @param {() => void} callback Done */

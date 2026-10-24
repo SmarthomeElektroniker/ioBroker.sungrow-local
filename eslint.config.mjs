@@ -3,7 +3,7 @@ import config from '@iobroker/eslint-config';
 export default [
     ...config,
     {
-        ignores: ['node_modules/**', 'admin/**', 'test/**', 'coverage/**', 'werkzeuge/**', 'lokal/**', 'docs/**', '*.config.mjs'],
+        ignores: ['node_modules/**', 'admin/**', 'test/**', 'coverage/**', 'werkzeuge/**', 'lokal/**', 'docs/**', 'src-admin/**', '*.config.mjs'],
     },
     {
         // plain JavaScript with JSDoc types (checkJs is off): @typedef/@type/@property are wanted here

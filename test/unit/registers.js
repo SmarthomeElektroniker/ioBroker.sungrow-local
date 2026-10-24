@@ -79,7 +79,8 @@ describe('registers: compatibility with ioBroker.modbus', () => {
             assert.ok(b.count <= 100);
             assert.ok(b.regs.every(r => r.address >= b.start && r.address + r.len <= b.start + b.count));
         }
-        assert.ok(holding.regs.every(r => r.group === 'steuerung' && r.poll && r.write));
+        // new installations: writing is released per register (tab "Control"), nothing by default
+        assert.ok(holding.regs.every(r => r.group === 'steuerung' && r.poll && !r.write));
     });
 
     it('copies name, unit, factor, type and role', () => {
@@ -183,7 +184,17 @@ describe('registers: display columns (0.2.0) - IDs stay, only names/roles/units/
         assert.strictEqual(byAlias(43000).states['-32768'], 'Stop');
         assert.deepStrictEqual([byAlias(73031).min, byAlias(73031).max], [0, 100]);
         // typical device values must not trigger the write warning
-        const now = { 53050: 0, 53051: 187, 53052: 3690, 53075: 170, 53100: 5, 70230: 85, 72535: 170, 73031: 100, 73032: 5 };
+        const now = {
+            53050: 0,
+            53051: 187,
+            53052: 3690,
+            53075: 170,
+            53100: 5,
+            70230: 85,
+            72535: 170,
+            73031: 100,
+            73032: 5,
+        };
         for (const [a, v] of Object.entries(now)) {
             assert.strictEqual(R.checkWriteValue(byAlias(Number(a)), v), '', a);
         }

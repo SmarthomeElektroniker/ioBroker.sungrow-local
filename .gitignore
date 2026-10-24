@@ -16,3 +16,9 @@ lokal/
 docs/
 werkzeuge/
 __pycache__/
+
+# Admin-Komponenten: Quellen in src-admin, gebautes Ergebnis in admin/custom (wird mit ausgeliefert)
+src-admin/node_modules/
+src-admin/build/
+src-admin/build-harness/
+src-admin/.__mf__temp/
