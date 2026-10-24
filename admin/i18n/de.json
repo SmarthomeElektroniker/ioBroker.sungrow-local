@@ -91,7 +91,7 @@
     "tipStates": "Texte für bekannte Werte: Wert:Text;Wert:Text, z. B. 170:an;85:aus",
     "colMin": "Min",
     "colMax": "Max",
-    "textRegistersInput": "Gleiche Spalten wie ioBroker.modbus. Datenpunkt = <Adresse>_<Name>, Adresse mit Offset (30001 Input / 40001 Holding). 'Gruppe' bestimmt die Abfragegruppe. Hinweis: 35016 ist der Strom von MPPT 3; die ID bleibt aus Kompatibilitätsgründen 35016_MPPT_2_Current.",
+    "textRegistersInput": "Gleiche Spalten wie ioBroker.modbus. Datenpunkt = <Adresse>_<Name>, Adresse mit Offset (30001 Input / 40001 Holding). 'Gruppe' bestimmt die Abfragegruppe. Hinweis: Bis 0.3.0 hieß 35016 (Strom von MPPT 3) in der Vorgabe 'MPPT 2 Current'; neue Installationen nutzen 35016_MPPT_3_Current, bestehende behalten ihre ID, bis die Zeile umbenannt wird.",
     "colRead": "Lesen",
     "tipRead": "Angehakt = das Register wird gelesen und bekommt einen Datenpunkt. Nicht angehakt = wird nicht gelesen (Vorlage).",
     "colNote": "Quelle / Hinweis",

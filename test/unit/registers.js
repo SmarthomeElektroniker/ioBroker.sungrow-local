@@ -149,7 +149,7 @@ describe('registers: display columns (0.2.0) - IDs stay, only names/roles/units/
     it('units, MPPT 3 name and whitespace in display names are corrected; the IDs are not', () => {
         assert.strictEqual(byAlias(35001).unit, 'kW');
         assert.strictEqual(byAlias(35016).description, 'MPPT3 current');
-        assert.strictEqual(byAlias(35016).id, 'inputRegisters.1.35016_MPPT_2_Current');
+        assert.strictEqual(byAlias(35016).id, 'inputRegisters.1.35016_MPPT_3_Current');
         assert.strictEqual(byAlias(35003).id, 'inputRegisters.1.35003_Daily__Output_Energy');
         for (const r of all) {
             assert.strictEqual(r.description, r.description.replace(/\s+/g, ' ').trim(), r.id);

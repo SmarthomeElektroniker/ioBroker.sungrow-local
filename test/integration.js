@@ -90,7 +90,7 @@ tests.integration(path.join(__dirname, '..'), {
                 assert.strictEqual(charge.common.states['187'], 'Discharge (0xBB)');
                 const maxSoc = await harness.objects.getObjectAsync(`${ns}.holdingRegisters.1.73031_Max_SOC`);
                 assert.deepStrictEqual([maxSoc.common.min, maxSoc.common.max, maxSoc.common.role], [0, 100, 'level']);
-                const mppt3 = await harness.objects.getObjectAsync(`${ns}.inputRegisters.1.35016_MPPT_2_Current`);
+                const mppt3 = await harness.objects.getObjectAsync(`${ns}.inputRegisters.1.35016_MPPT_3_Current`);
                 assert.deepStrictEqual([mppt3.common.name, mppt3.common.role], ['MPPT3 current', 'value.current']);
                 // 0.2.1: every level of the ID exists as an object (folder per register type, device per unit)
                 const unit2 = await harness.objects.getObjectAsync(`${ns}.inputRegisters.2`);

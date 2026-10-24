@@ -16,7 +16,7 @@ inputRegisters.1.35012_MPPT_1_Current
 inputRegisters.1.35013_MPPT_2_Voltage
 inputRegisters.1.35014_MPPT_2_Current
 inputRegisters.1.35015_MPPT_3_Voltage
-inputRegisters.1.35016_MPPT_2_Current
+inputRegisters.1.35016_MPPT_3_Current
 inputRegisters.1.35017_Total_DC_Power
 inputRegisters.1.35019_Spannung_Ph_A
 inputRegisters.1.35020_Spannung_Ph_B

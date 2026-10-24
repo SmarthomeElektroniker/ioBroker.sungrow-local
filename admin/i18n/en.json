@@ -91,7 +91,7 @@
     "tipStates": "Texts for known values: value:text;value:text, e.g. 170:on;85:off",
     "colMin": "Min",
     "colMax": "Max",
-    "textRegistersInput": "Same columns as ioBroker.modbus. State ID = <address>_<name>, address with offset (30001 input / 40001 holding). 'Group' assigns the poll group. Note: 35016 is the current of MPPT 3; its ID stays 35016_MPPT_2_Current for compatibility.",
+    "textRegistersInput": "Same columns as ioBroker.modbus. State ID = <address>_<name>, address with offset (30001 input / 40001 holding). 'Group' assigns the poll group. Note: up to 0.3.0 the default named 35016 (current of MPPT 3) 'MPPT 2 Current'; new installations use 35016_MPPT_3_Current, existing ones keep their ID until the row is renamed.",
     "colRead": "Read",
     "tipRead": "Ticked = the register is read and gets a data point. Unticked = not read (template).",
     "colNote": "Source / note",

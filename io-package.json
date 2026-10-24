@@ -337,7 +337,7 @@
             {
                 "_address": 35016,
                 "deviceId": 1,
-                "name": "MPPT 2 Current",
+                "name": "MPPT 3 Current",
                 "description": "MPPT3 current",
                 "unit": "A",
                 "type": "uint16be",

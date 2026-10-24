@@ -180,8 +180,9 @@ data points of `sungrow-local.0` – no scripts, no other adapters. Import instr
 
 ## Notes
 
-- `35016` is the current of MPPT 3. Its ID stays `35016_MPPT_2_Current` for compatibility with existing
-  installations; only the object name was corrected.
+- `35016` is the current of MPPT 3. Up to 0.3.0 the default row was named "MPPT 2 Current" (inherited from an old
+  modbus configuration). New installations use `35016_MPPT_3_Current`; existing installations keep
+  `35016_MPPT_2_Current` until the row is renamed in the register table (the old object can then be deleted).
 - `43001` (running state) is a bit field and `43030` (grid state) is not clearly documented – both are shown as
   numbers without plain text (`43030` unscaled, factor 1).
 - The upper limit 20000 W of `53052` (charge/discharge power) is an assumption for an SH20T; adjust it for other
