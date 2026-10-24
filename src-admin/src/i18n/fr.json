@@ -228,7 +228,7 @@
     "sgl_tileSub_houseBalance": "PV + batterie + réseau (pertes onduleur incl.)",
     "sgl_tileSub_pv": "DC, tous les MPPT",
     "sgl_tileSub_soc": "état de charge",
-    "sgl_tile_battery": "Puissance batterie",
+    "sgl_tile_battery": "Base + batterie",
     "sgl_tile_exportToday": "Injection aujourd'hui",
     "sgl_tile_grid": "Réseau",
     "sgl_tile_gridToday": "Soutirage réseau aujourd'hui",

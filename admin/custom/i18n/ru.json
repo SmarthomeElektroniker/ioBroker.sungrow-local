@@ -228,7 +228,7 @@
     "sgl_tileSub_houseBalance": "PV + батарея + сеть (с потерями инвертора)",
     "sgl_tileSub_pv": "DC, все MPPT",
     "sgl_tileSub_soc": "уровень заряда",
-    "sgl_tile_battery": "Мощность батареи",
+    "sgl_tile_battery": "База + батарея",
     "sgl_tile_exportToday": "Отдача в сеть сегодня",
     "sgl_tile_grid": "Сеть",
     "sgl_tile_gridToday": "Потребление из сети сегодня",

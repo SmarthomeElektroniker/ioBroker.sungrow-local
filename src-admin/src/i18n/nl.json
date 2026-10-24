@@ -228,7 +228,7 @@
     "sgl_tileSub_houseBalance": "PV + accu + net (incl. omvormerverliezen)",
     "sgl_tileSub_pv": "DC, alle MPPT",
     "sgl_tileSub_soc": "laadtoestand",
-    "sgl_tile_battery": "Batterijvermogen",
+    "sgl_tile_battery": "Basis + accu",
     "sgl_tile_exportToday": "Teruglevering vandaag",
     "sgl_tile_grid": "Net",
     "sgl_tile_gridToday": "Netafname vandaag",

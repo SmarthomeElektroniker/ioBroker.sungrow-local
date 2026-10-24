@@ -37,9 +37,10 @@ All calculations are vis bindings (`{a:id;b:id;formula}`) inside the HTML widget
   falling state of charge; corrected in 0.4.0, earlier templates showed the direction inverted).
   Battery (+ discharge) = `43021 > 0 ? +43022 : (43021 < 0 ? −43022 : 0)`. The battery view shows the current
   with the sign inverted (+ = charging) to match its legend.
-- **House consumption** = `max(0, 35017 Total_DC_Power + battery(+discharge) + 35601 power_total-EnergyMeter)`.
-  35601: positive = import from grid, negative = export. Inverter losses are
-  included (about 150 W on an SH20T). More exact: 43034 `Total active power output` + 35601. 43008 `Load_power` is not used because it reads 0 on several devices.
+- **House consumption** = `max(0, 43034 Total_active_power_output + 35601 power_total-EnergyMeter)`
+  (AC output of the inverter + grid; 35601: positive = import, negative = export). It contains no inverter losses
+  and does not depend on the battery sign. A generator the inverter does not measure (e.g. a small wind turbine)
+  makes it too small; the share bar ("supplied from") still uses PV + battery + grid. 43008 `Load_power` is not used because it reads 0 on several devices.
 - **Battery state:** |battery power| < 20 W → idle (no animation), otherwise
   charging/discharging. The light band in the battery moves up when charging
   (3.5 s) and down/left when discharging (5 s). `prefers-reduced-motion` is respected.

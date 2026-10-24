@@ -228,7 +228,7 @@
     "sgl_tileSub_houseBalance": "PV + akumulator + sieć (z stratami falownika)",
     "sgl_tileSub_pv": "DC, wszystkie MPPT",
     "sgl_tileSub_soc": "stan naładowania",
-    "sgl_tile_battery": "Moc magazynu energii",
+    "sgl_tile_battery": "Baza + akumulator",
     "sgl_tile_exportToday": "Oddane do sieci dziś",
     "sgl_tile_grid": "Sieć",
     "sgl_tile_gridToday": "Pobór z sieci dziś",

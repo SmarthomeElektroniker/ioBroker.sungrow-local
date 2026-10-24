@@ -228,7 +228,7 @@
     "sgl_tileSub_houseBalance": "PV + 电池 + 电网（含逆变器损耗）",
     "sgl_tileSub_pv": "DC，所有 MPPT",
     "sgl_tileSub_soc": "荷电状态",
-    "sgl_tile_battery": "电池功率",
+    "sgl_tile_battery": "基础 + 电池",
     "sgl_tile_exportToday": "今日馈网",
     "sgl_tile_grid": "电网",
     "sgl_tile_gridToday": "今日电网取电",

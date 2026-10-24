@@ -228,7 +228,7 @@
     "sgl_tileSub_houseBalance": "PV + battery + grid (incl. inverter losses)",
     "sgl_tileSub_pv": "DC, all MPPT",
     "sgl_tileSub_soc": "state of charge",
-    "sgl_tile_battery": "Battery power",
+    "sgl_tile_battery": "Base + battery",
     "sgl_tile_exportToday": "Feed-in today",
     "sgl_tile_grid": "Grid",
     "sgl_tile_gridToday": "Grid import today",
