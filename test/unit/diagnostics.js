@@ -17,7 +17,10 @@ describe('diagnostics: names and heartbeat states', () => {
             }
         }
         for (const o of io.instanceObjects) {
-            assert.ok(LANGS.every(l => o.common.name[l]), o._id);
+            assert.ok(
+                LANGS.every(l => o.common.name[l]),
+                o._id,
+            );
         }
     });
 
@@ -53,7 +56,9 @@ describe('diagnostics: timing of the battery group', () => {
 
 describe('admin: interval warnings of the group table', () => {
     const cols = jsonConfig.items.tabGroups.items.groups.items;
-    const checks = cols.filter(c => c.validator).map(c => ({ attr: c.attr, fn: new Function('data', `return ${c.validator}`) }));
+    const checks = cols
+        .filter(c => c.validator)
+        .map(c => ({ attr: c.attr, fn: new Function('data', `return ${c.validator}`) }));
     /** @param {any} row Group row */
     const failing = row => checks.filter(c => c.attr !== 'name' && !c.fn(row)).map(c => c.attr);
 
@@ -92,8 +97,22 @@ describe('admin: interval warnings of the group table', () => {
             used.add(m[2]);
         }
         const typeNames = new Set(require('../../lib/registers').TYPES);
+        // option labels marked noTranslation (short type names, factors in the tables) are shown as they are
+        const walk = o => {
+            if (Array.isArray(o)) {
+                o.forEach(walk);
+            } else if (o && typeof o === 'object') {
+                if (o.noTranslation && typeof o.label === 'string') {
+                    typeNames.add(o.label);
+                }
+                Object.values(o).forEach(walk);
+            }
+        };
+        walk(jsonConfig);
         for (const l of LANGS) {
-            const t = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'admin', 'i18n', `${l}.json`), 'utf8'));
+            const t = JSON.parse(
+                fs.readFileSync(path.join(__dirname, '..', '..', 'admin', 'i18n', `${l}.json`), 'utf8'),
+            );
             const missing = [...used].filter(k => !typeNames.has(k) && !(k in t));
             assert.deepStrictEqual(missing, [], l);
         }

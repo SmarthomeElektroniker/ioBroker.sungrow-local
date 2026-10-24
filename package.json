@@ -1,6 +1,6 @@
 {
   "name": "iobroker.sungrow-local",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Sungrow hybrid inverter and battery via WiNet-S2 Modbus TCP - one connection, own poll interval per register group.",
   "author": {
     "name": "Immanuel",

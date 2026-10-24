@@ -10,7 +10,18 @@
 
 const utils = require('@iobroker/adapter-core');
 const ModbusRTU = require('modbus-serial');
-const { normalise, buildBlocks, REG_NAMES, num, flag, checkWriteValue } = require('./lib/registers');
+const {
+    normalise,
+    buildBlocks,
+    REG_NAMES,
+    TYPE_LEN,
+    STRING_TYPES,
+    num,
+    flag,
+    checkWriteValue,
+} = require('./lib/registers');
+const { mergeCatalog } = require('./lib/catalog');
+const { explain, addresses, implausible } = require('./lib/convert');
 const { Poller } = require('./lib/poller');
 const {
     T,
@@ -31,6 +42,7 @@ class SungrowLocal extends utils.Adapter {
         this.on('ready', this.onReady.bind(this));
         this.on('stateChange', this.onStateChange.bind(this));
         this.on('unload', this.onUnload.bind(this));
+        this.on('message', this.onMessage.bind(this));
         this.poller = null;
         /** full ID -> register */
         this.regsById = new Map();
@@ -42,10 +54,27 @@ class SungrowLocal extends utils.Adapter {
         this.failRow = new Map();
         this.today = dayKey(new Date());
         this.lastQueueLength = -1;
+        /** registers whose first value was checked for plausibility */
+        this.checked = new Set();
+        /** last device read of the conversion helper (to not read on every key stroke) */
+        this.lastProbe = null;
+        this.probeRunning = null;
+        this.lang = 'en';
+        /** pause after requests per unit (from the groups, e.g. 5000 ms for the SBH400) */
+        this.unitPause = new Map();
     }
 
     async onReady() {
         await this.setStateAsync('info.connection', false, true);
+        // register template: add the known registers that are not configured yet (unticked) - once per
+        // template version. The instance goes on with the new configuration (js-controller may restart it).
+        await this.applyCatalog();
+        try {
+            const sys = await this.getForeignObjectAsync('system.config');
+            this.lang = (sys && sys.common && sys.common.language) || 'en';
+        } catch {
+            // keep English
+        }
         const c = this.config;
         const round = Math.pow(10, Math.max(0, Math.min(10, parseInt(String(c.round), 10) || 0)));
         const input = normalise('inputRegs', c.inputRegs);
@@ -98,6 +127,9 @@ class SungrowLocal extends utils.Adapter {
                 blocks,
             };
             groups.push(group);
+            for (const b of blocks) {
+                this.unitPause.set(b.deviceId, Math.max(this.unitPause.get(b.deviceId) || 0, group.pauseAfter));
+            }
             // unit 2 (SBH400) has an instruction interval of 5000 ms in the WiNet: warn about too short pauses
             for (const w of timingWarnings(
                 group,
@@ -118,7 +150,8 @@ class SungrowLocal extends utils.Adapter {
         }
 
         await this.createRegisterObjects(regs);
-        await this.createDiagnostics(groups);
+        // diagnostics only for groups that read something (a group without ticked registers has no channel)
+        await this.createDiagnostics(groups.filter(g => g.blocks.length));
         await this.subscribeStatesAsync('holdingRegisters.*');
         await this.subscribeStatesAsync('inputRegisters.*');
 
@@ -172,6 +205,14 @@ class SungrowLocal extends utils.Adapter {
                     continue;
                 }
                 const id = `${this.namespace}.${reg.id}`;
+                if (!this.checked.has(id)) {
+                    // one hint per register and start: helps with wrong type, factor or word order
+                    this.checked.add(id);
+                    const problem = implausible(reg, val);
+                    if (problem) {
+                        this.log.info(`${reg.id}: first value ${problem}`);
+                    }
+                }
                 if (alwaysUpdate || this.lastVal.get(id) !== val) {
                     this.lastVal.set(id, val);
                     void this.setState(reg.id, val, true);
@@ -516,6 +557,136 @@ class SungrowLocal extends utils.Adapter {
         this.lastVal.delete(id);
         this.log.debug(`${id}: write ${state.val}`);
         this.poller.write(reg, state.val);
+    }
+
+    /**
+     * Adds the register template to the configuration (once per template version) and uses it right away.
+     *
+     * @returns {Promise<boolean>} true when the configuration was extended and saved
+     */
+    async applyCatalog() {
+        const merged = mergeCatalog(this.config);
+        if (!merged.changed) {
+            return false;
+        }
+        const id = `system.adapter.${this.namespace}`;
+        const obj = await this.getForeignObjectAsync(id);
+        if (!obj) {
+            return false;
+        }
+        obj.native = merged.native;
+        this.log.info(
+            `Register template version ${merged.native.templateVersion}: ${merged.added} known registers added to the tables (not ticked - nothing is read until you tick them)`,
+        );
+        await this.setForeignObjectAsync(id, obj);
+        this.config = /** @type {any} */ (merged.native);
+        // js-controller restarts the instance because its configuration changed: wait idle for that instead
+        // of starting to poll (and being killed in the middle of it); without a restart, go on after the pause
+        await this.delay(5000);
+        return true;
+    }
+
+    /**
+     * Messages from the admin: "convert" = conversion helper (optionally reads the register once).
+     *
+     * @param {ioBroker.Message} obj Message
+     */
+    async onMessage(obj) {
+        if (!obj || !obj.command) {
+            return;
+        }
+        if (obj.command === 'convert') {
+            let res;
+            try {
+                const q = typeof obj.message === 'string' ? JSON.parse(obj.message) : obj.message || {};
+                const device = flag(q.live) ? await this.probeForHelper(q) : undefined;
+                res = explain(q, device, this.lang === 'de' ? 'de' : 'en');
+            } catch (e) {
+                res = { text: `Error: ${e && e.message}` };
+            }
+            if (obj.callback) {
+                this.sendTo(
+                    obj.from,
+                    obj.command,
+                    {
+                        text: res.text,
+                        style: {
+                            whiteSpace: 'pre-wrap',
+                            fontFamily: 'monospace',
+                            fontSize: '0.85rem',
+                            lineHeight: 1.5,
+                        },
+                    },
+                    obj.callback,
+                );
+            }
+        }
+    }
+
+    /**
+     * Reads the register of the conversion helper once from the device (read only: FC4 input / FC3 holding).
+     * The same register is read at most every 5 s and never twice at the same time.
+     *
+     * @param {Record<string, any>} q Helper input
+     * @returns {Promise<{words?: number[], ms?: number, error?: string}>} Raw words or error
+     */
+    async probeForHelper(q) {
+        const regType = q.regType === 'holdingRegs' ? 'holdingRegs' : 'inputRegs';
+        const a = addresses(q.address, q.addrMode || 'doc', regType);
+        if (!a) {
+            return { error: 'invalid address' };
+        }
+        if (!this.poller || !this.poller.connected) {
+            return { error: this.lang === 'de' ? 'keine Verbindung zum Gateway' : 'not connected to the gateway' };
+        }
+        const unit = parseInt(q.deviceId, 10) || 1;
+        const type = q.type || 'uint16be';
+        const count = STRING_TYPES.includes(type)
+            ? Math.min(32, Math.max(1, parseInt(q.len, 10) || 1))
+            : TYPE_LEN[type] || 1;
+        const key = `${regType}|${unit}|${a.protocol}|${count}`;
+        if (this.lastProbe && this.lastProbe.key === key && Date.now() - this.lastProbe.at < 5000) {
+            return this.lastProbe.result;
+        }
+        if (this.probeRunning) {
+            await this.probeRunning.catch(() => {});
+            if (this.lastProbe && this.lastProbe.key === key) {
+                return this.lastProbe.result;
+            }
+        }
+        const run = (async () => {
+            let result;
+            try {
+                const r = await this.poller.probe({
+                    regType,
+                    deviceId: unit,
+                    address: a.protocol,
+                    count,
+                    timeout: 10000,
+                    pauseAfter: this.unitPause.get(unit) || 0,
+                });
+                const words = [];
+                for (let i = 0; i < count; i++) {
+                    words.push(r.buffer.readUInt16BE(i * 2));
+                }
+                result = { words, ms: r.ms };
+            } catch (e) {
+                const m =
+                    e && e.modbusCode !== undefined
+                        ? `Modbus exception ${e.modbusCode}`
+                        : (e && e.message) || String(e);
+                result = { error: m };
+            }
+            this.lastProbe = { key, at: Date.now(), result };
+            this.log.debug(`Conversion helper read ${key}: ${JSON.stringify(result)}`);
+            return result;
+        })();
+        this.probeRunning = run;
+        try {
+            return await run;
+        } finally {
+            this.probeRunning = null;
+        }
     }
 
     /** @param {() => void} callback Done */

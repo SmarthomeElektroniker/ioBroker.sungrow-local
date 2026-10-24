@@ -154,6 +154,110 @@ tests.integration(path.join(__dirname, '..'), {
             });
         });
 
+        suite('Register template and conversion helper (0.3.0)', getHarness => {
+            let fake;
+            before(async () => {
+                fake = await createFakeWinet({ units: { 1: { latency: 10 }, 2: { latency: 10 } } });
+                fake.set(1, 'input', 5016, [70000 & 0xffff, 70000 >>> 16]); // 35017 Total DC Power
+                fake.set(1, 'input', 13021, [0xfe70]); // 43022 Battery power (raw -400)
+            });
+            after(async () => {
+                await fake.close();
+            });
+
+            it('a 0.2.x configuration gets the template once (unticked), reads the same registers, helper answers', async function () {
+                this.timeout(90000);
+                const harness = getHarness();
+                // configuration of an instance before 0.3.0: no enabled flags, no template rows, no catalogVersion
+                const old = JSON.parse(JSON.stringify(io.native));
+                for (const t of ['inputRegs', 'holdingRegs']) {
+                    old[t] = old[t]
+                        .filter(r => !r.source)
+                        .map(r => {
+                            const c = { ...r };
+                            delete c.enabled;
+                            return c;
+                        });
+                }
+                // replace the whole configuration (changeAdapterConfig would merge the arrays row by row)
+                const instObj = await harness.objects.getObjectAsync('system.adapter.sungrow-local.0');
+                instObj.native = {
+                    ...old,
+                    host: fake.host,
+                    port: fake.port,
+                    requestGap: 20,
+                    groups: [{ enabled: true, name: 'live', interval: 1, timeout: 800, pauseAfter: 0 }],
+                };
+                await harness.objects.setObjectAsync('system.adapter.sungrow-local.0', instObj);
+                await harness.enableSendTo();
+                await harness.startAdapterAndWait();
+                const ns = 'sungrow-local.0';
+                const end = Date.now() + 30000;
+                let inst;
+                for (;;) {
+                    inst = await harness.objects.getObjectAsync(`system.adapter.${ns}`);
+                    if (inst.native.templateVersion === 1 || Date.now() > end) {
+                        break;
+                    }
+                    await new Promise(r => setTimeout(r, 300));
+                }
+                assert.strictEqual(inst.native.templateVersion, 1);
+                assert.strictEqual(inst.native.inputRegs.length, 68 + 74);
+                assert.strictEqual(inst.native.inputRegs.filter(r => r.enabled).length, 68);
+                assert.ok(inst.native.groups.some(g => g.name === 'info'));
+
+                // after the restart: values as before, no data point for unticked template rows
+                const until = async (fn, ms = 30000) => {
+                    const stop = Date.now() + ms;
+                    for (;;) {
+                        const v = await fn();
+                        if (v || Date.now() > stop) {
+                            return v;
+                        }
+                        await new Promise(r => setTimeout(r, 300));
+                    }
+                };
+                const dc = await until(async () => {
+                    const st = await harness.states.getStateAsync(`${ns}.inputRegisters.1.35017_Total_DC_Power`);
+                    return st && st.ack && st.val === 70000 ? st : null;
+                });
+                assert.ok(dc, 'value after the migration');
+                const list = await harness.objects.getObjectListAsync({
+                    startkey: `${ns}.inputRegisters.`,
+                    endkey: `${ns}.inputRegisters.\u9999`,
+                });
+                assert.strictEqual(list.rows.map(r => r.id).filter(i => /\.\d+_/.test(i)).length, 68);
+                assert.ok(!(await harness.objects.getObjectAsync(`${ns}.inputRegisters.1.35000_Device_type_code`)));
+
+                // conversion helper: reads register 13022 (document numbering) once and explains it
+                const answer = await new Promise(resolve =>
+                    harness.sendTo(
+                        ns,
+                        'convert',
+                        {
+                            addrMode: 'doc',
+                            address: '13022',
+                            regType: 'inputRegs',
+                            deviceId: '1',
+                            type: 'uint16be',
+                            factor: '1',
+                            unitText: 'W',
+                            live: 'true',
+                        },
+                        resolve,
+                    ),
+                );
+                assert.match(answer.text, /43022/);
+                assert.match(answer.text, /0xFE70/);
+                assert.match(answer.text, /-400 W/);
+                assert.strictEqual(
+                    fake.count(r => r.fc === 6 || r.fc === 16),
+                    0,
+                    'the helper never writes',
+                );
+            });
+        });
+
         suite('Read-only mode', getHarness => {
             let fake;
             before(async () => {

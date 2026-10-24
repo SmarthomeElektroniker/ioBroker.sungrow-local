@@ -959,6 +959,19 @@
                     "lg": 12,
                     "xl": 12
                 },
+                "tInputTick": {
+                    "type": "infoBox",
+                    "text": "textTemplate",
+                    "title": "titleTemplate",
+                    "boxType": "info",
+                    "closeable": true,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12
+                },
                 "inputRegs": {
                     "type": "table",
                     "newLine": true,
@@ -971,17 +984,29 @@
                     "xl": 12,
                     "items": [
                         {
+                            "type": "checkbox",
+                            "attr": "enabled",
+                            "title": "colRead",
+                            "width": "3%",
+                            "default": true,
+                            "filter": true,
+                            "sort": true,
+                            "tooltip": "tipRead"
+                        },
+                        {
                             "type": "number",
                             "attr": "_address",
                             "title": "colAddress",
-                            "width": "7%",
-                            "min": 30001
+                            "width": "6%",
+                            "min": 30001,
+                            "sort": true,
+                            "tooltip": "tipAddress"
                         },
                         {
                             "type": "number",
                             "attr": "deviceId",
                             "title": "colUnit",
-                            "width": "4%",
+                            "width": "3%",
                             "min": 0,
                             "max": 247,
                             "default": 1
@@ -990,13 +1015,17 @@
                             "type": "text",
                             "attr": "name",
                             "title": "colName",
-                            "width": "13%"
+                            "width": "11%",
+                            "filter": true,
+                            "sort": true
                         },
                         {
                             "type": "text",
                             "attr": "description",
                             "title": "colDescription",
-                            "width": "13%"
+                            "width": "12%",
+                            "filter": true,
+                            "sort": true
                         },
                         {
                             "type": "text",
@@ -1008,137 +1037,200 @@
                             "type": "select",
                             "attr": "type",
                             "title": "colType",
-                            "width": "8%",
+                            "width": "10%",
                             "options": [
                                 {
-                                    "label": "uint16be",
-                                    "value": "uint16be"
+                                    "label": "U16 · uint16be",
+                                    "value": "uint16be",
+                                    "noTranslation": true
                                 },
                                 {
-                                    "label": "int16be",
-                                    "value": "int16be"
+                                    "label": "S16 · int16be",
+                                    "value": "int16be",
+                                    "noTranslation": true
                                 },
                                 {
-                                    "label": "uint32sw",
-                                    "value": "uint32sw"
+                                    "label": "U32 Sungrow · uint32sw",
+                                    "value": "uint32sw",
+                                    "noTranslation": true
                                 },
                                 {
-                                    "label": "int32sw",
-                                    "value": "int32sw"
+                                    "label": "S32 Sungrow · int32sw",
+                                    "value": "int32sw",
+                                    "noTranslation": true
                                 },
                                 {
-                                    "label": "uint32be",
-                                    "value": "uint32be"
+                                    "label": "U32 · uint32be",
+                                    "value": "uint32be",
+                                    "noTranslation": true
                                 },
                                 {
-                                    "label": "int32be",
-                                    "value": "int32be"
+                                    "label": "S32 · int32be",
+                                    "value": "int32be",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "uint32sb",
-                                    "value": "uint32sb"
+                                    "value": "uint32sb",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "int32sb",
-                                    "value": "int32sb"
+                                    "value": "int32sb",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "uint32le",
-                                    "value": "uint32le"
+                                    "value": "uint32le",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "int32le",
-                                    "value": "int32le"
+                                    "value": "int32le",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "uint16le",
-                                    "value": "uint16le"
+                                    "value": "uint16le",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "int16le",
-                                    "value": "int16le"
+                                    "value": "int16le",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "uint8be",
-                                    "value": "uint8be"
+                                    "value": "uint8be",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "uint8le",
-                                    "value": "uint8le"
+                                    "value": "uint8le",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "int8be",
-                                    "value": "int8be"
+                                    "value": "int8be",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "int8le",
-                                    "value": "int8le"
+                                    "value": "int8le",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "floatbe",
-                                    "value": "floatbe"
+                                    "value": "floatbe",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "floatle",
-                                    "value": "floatle"
+                                    "value": "floatle",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "floatsw",
-                                    "value": "floatsw"
+                                    "value": "floatsw",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "floatsb",
-                                    "value": "floatsb"
+                                    "value": "floatsb",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "doublebe",
-                                    "value": "doublebe"
+                                    "value": "doublebe",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "doublele",
-                                    "value": "doublele"
+                                    "value": "doublele",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "uint64be",
-                                    "value": "uint64be"
+                                    "value": "uint64be",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "uint64le",
-                                    "value": "uint64le"
+                                    "value": "uint64le",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "int64be",
-                                    "value": "int64be"
+                                    "value": "int64be",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "int64le",
-                                    "value": "int64le"
+                                    "value": "int64le",
+                                    "noTranslation": true
                                 },
                                 {
-                                    "label": "string",
-                                    "value": "string"
+                                    "label": "Text · string",
+                                    "value": "string",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "stringle",
-                                    "value": "stringle"
+                                    "value": "stringle",
+                                    "noTranslation": true
                                 }
                             ],
-                            "default": "uint16be"
+                            "default": "uint16be",
+                            "tooltip": "tipType"
                         },
                         {
                             "type": "number",
                             "attr": "len",
                             "title": "colLen",
-                            "width": "4%",
+                            "width": "3%",
                             "min": 1,
                             "default": 1
                         },
                         {
-                            "type": "text",
+                            "type": "autocomplete",
                             "attr": "factor",
                             "title": "colFactor",
-                            "width": "5%",
-                            "default": "1"
+                            "freeSolo": true,
+                            "options": [
+                                {
+                                    "label": "1",
+                                    "value": "1",
+                                    "noTranslation": true
+                                },
+                                {
+                                    "label": "0.1",
+                                    "value": "0.1",
+                                    "noTranslation": true
+                                },
+                                {
+                                    "label": "0.01",
+                                    "value": "0.01",
+                                    "noTranslation": true
+                                },
+                                {
+                                    "label": "0.001",
+                                    "value": "0.001",
+                                    "noTranslation": true
+                                },
+                                {
+                                    "label": "10",
+                                    "value": "10",
+                                    "noTranslation": true
+                                },
+                                {
+                                    "label": "100",
+                                    "value": "100",
+                                    "noTranslation": true
+                                }
+                            ],
+                            "default": "1",
+                            "tooltip": "tipFactor",
+                            "width": "6%"
                         },
                         {
                             "type": "text",
@@ -1151,30 +1243,68 @@
                             "type": "text",
                             "attr": "role",
                             "title": "colRole",
-                            "width": "9%",
+                            "width": "8%",
                             "default": "value"
                         },
                         {
                             "type": "text",
                             "attr": "states",
                             "title": "colStates",
-                            "width": "12%",
+                            "width": "9%",
                             "tooltip": "tipStates"
                         },
                         {
                             "type": "text",
                             "attr": "room",
                             "title": "colRoom",
-                            "width": "9%"
+                            "width": "5%"
+                        },
+                        {
+                            "type": "autocomplete",
+                            "attr": "group",
+                            "title": "colGroup",
+                            "freeSolo": true,
+                            "options": [
+                                {
+                                    "label": "live",
+                                    "value": "live",
+                                    "noTranslation": true
+                                },
+                                {
+                                    "label": "energie",
+                                    "value": "energie",
+                                    "noTranslation": true
+                                },
+                                {
+                                    "label": "steuerung",
+                                    "value": "steuerung",
+                                    "noTranslation": true
+                                },
+                                {
+                                    "label": "akku",
+                                    "value": "akku",
+                                    "noTranslation": true
+                                },
+                                {
+                                    "label": "info",
+                                    "value": "info",
+                                    "noTranslation": true
+                                }
+                            ],
+                            "default": "live",
+                            "filter": true,
+                            "sort": true,
+                            "width": "6%"
                         },
                         {
                             "type": "text",
-                            "attr": "group",
-                            "title": "colGroup",
-                            "width": "8%",
-                            "default": "live"
+                            "attr": "note",
+                            "title": "colNote",
+                            "width": "10%",
+                            "filter": true
                         }
-                    ]
+                    ],
+                    "showFirstAddOnTop": true
                 }
             }
         },
@@ -1185,6 +1315,19 @@
                 "tHolding": {
                     "type": "staticText",
                     "text": "textRegisters",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12
+                },
+                "tHoldingTick": {
+                    "type": "infoBox",
+                    "text": "textTemplate",
+                    "title": "titleTemplate",
+                    "boxType": "info",
+                    "closeable": true,
+                    "newLine": true,
                     "xs": 12,
                     "sm": 12,
                     "md": 12,
@@ -1203,17 +1346,29 @@
                     "xl": 12,
                     "items": [
                         {
+                            "type": "checkbox",
+                            "attr": "enabled",
+                            "title": "colRead",
+                            "width": "3%",
+                            "default": true,
+                            "filter": true,
+                            "sort": true,
+                            "tooltip": "tipRead"
+                        },
+                        {
                             "type": "number",
                             "attr": "_address",
                             "title": "colAddress",
-                            "width": "7%",
-                            "min": 40001
+                            "width": "6%",
+                            "min": 40001,
+                            "sort": true,
+                            "tooltip": "tipAddress"
                         },
                         {
                             "type": "number",
                             "attr": "deviceId",
                             "title": "colUnit",
-                            "width": "4%",
+                            "width": "3%",
                             "min": 0,
                             "max": 247,
                             "default": 1
@@ -1222,140 +1377,173 @@
                             "type": "text",
                             "attr": "name",
                             "title": "colName",
-                            "width": "11%"
+                            "width": "10%",
+                            "filter": true,
+                            "sort": true
                         },
                         {
                             "type": "text",
                             "attr": "description",
                             "title": "colDescription",
-                            "width": "11%"
+                            "width": "10%",
+                            "filter": true,
+                            "sort": true
                         },
                         {
                             "type": "text",
                             "attr": "unit",
                             "title": "colUnitText",
-                            "width": "4%"
+                            "width": "3%"
                         },
                         {
                             "type": "select",
                             "attr": "type",
                             "title": "colType",
-                            "width": "8%",
+                            "width": "9%",
                             "options": [
                                 {
-                                    "label": "uint16be",
-                                    "value": "uint16be"
+                                    "label": "U16 · uint16be",
+                                    "value": "uint16be",
+                                    "noTranslation": true
                                 },
                                 {
-                                    "label": "int16be",
-                                    "value": "int16be"
+                                    "label": "S16 · int16be",
+                                    "value": "int16be",
+                                    "noTranslation": true
                                 },
                                 {
-                                    "label": "uint32sw",
-                                    "value": "uint32sw"
+                                    "label": "U32 Sungrow · uint32sw",
+                                    "value": "uint32sw",
+                                    "noTranslation": true
                                 },
                                 {
-                                    "label": "int32sw",
-                                    "value": "int32sw"
+                                    "label": "S32 Sungrow · int32sw",
+                                    "value": "int32sw",
+                                    "noTranslation": true
                                 },
                                 {
-                                    "label": "uint32be",
-                                    "value": "uint32be"
+                                    "label": "U32 · uint32be",
+                                    "value": "uint32be",
+                                    "noTranslation": true
                                 },
                                 {
-                                    "label": "int32be",
-                                    "value": "int32be"
+                                    "label": "S32 · int32be",
+                                    "value": "int32be",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "uint32sb",
-                                    "value": "uint32sb"
+                                    "value": "uint32sb",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "int32sb",
-                                    "value": "int32sb"
+                                    "value": "int32sb",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "uint32le",
-                                    "value": "uint32le"
+                                    "value": "uint32le",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "int32le",
-                                    "value": "int32le"
+                                    "value": "int32le",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "uint16le",
-                                    "value": "uint16le"
+                                    "value": "uint16le",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "int16le",
-                                    "value": "int16le"
+                                    "value": "int16le",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "uint8be",
-                                    "value": "uint8be"
+                                    "value": "uint8be",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "uint8le",
-                                    "value": "uint8le"
+                                    "value": "uint8le",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "int8be",
-                                    "value": "int8be"
+                                    "value": "int8be",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "int8le",
-                                    "value": "int8le"
+                                    "value": "int8le",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "floatbe",
-                                    "value": "floatbe"
+                                    "value": "floatbe",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "floatle",
-                                    "value": "floatle"
+                                    "value": "floatle",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "floatsw",
-                                    "value": "floatsw"
+                                    "value": "floatsw",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "floatsb",
-                                    "value": "floatsb"
+                                    "value": "floatsb",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "doublebe",
-                                    "value": "doublebe"
+                                    "value": "doublebe",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "doublele",
-                                    "value": "doublele"
+                                    "value": "doublele",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "uint64be",
-                                    "value": "uint64be"
+                                    "value": "uint64be",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "uint64le",
-                                    "value": "uint64le"
+                                    "value": "uint64le",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "int64be",
-                                    "value": "int64be"
+                                    "value": "int64be",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "int64le",
-                                    "value": "int64le"
+                                    "value": "int64le",
+                                    "noTranslation": true
                                 },
                                 {
-                                    "label": "string",
-                                    "value": "string"
+                                    "label": "Text · string",
+                                    "value": "string",
+                                    "noTranslation": true
                                 },
                                 {
                                     "label": "stringle",
-                                    "value": "stringle"
+                                    "value": "stringle",
+                                    "noTranslation": true
                                 }
                             ],
-                            "default": "uint16be"
+                            "default": "uint16be",
+                            "tooltip": "tipType"
                         },
                         {
                             "type": "number",
@@ -1366,31 +1554,65 @@
                             "default": 1
                         },
                         {
-                            "type": "text",
+                            "type": "autocomplete",
                             "attr": "factor",
                             "title": "colFactor",
-                            "width": "5%",
-                            "default": "1"
+                            "freeSolo": true,
+                            "options": [
+                                {
+                                    "label": "1",
+                                    "value": "1",
+                                    "noTranslation": true
+                                },
+                                {
+                                    "label": "0.1",
+                                    "value": "0.1",
+                                    "noTranslation": true
+                                },
+                                {
+                                    "label": "0.01",
+                                    "value": "0.01",
+                                    "noTranslation": true
+                                },
+                                {
+                                    "label": "0.001",
+                                    "value": "0.001",
+                                    "noTranslation": true
+                                },
+                                {
+                                    "label": "10",
+                                    "value": "10",
+                                    "noTranslation": true
+                                },
+                                {
+                                    "label": "100",
+                                    "value": "100",
+                                    "noTranslation": true
+                                }
+                            ],
+                            "default": "1",
+                            "tooltip": "tipFactor",
+                            "width": "5%"
                         },
                         {
                             "type": "text",
                             "attr": "offset",
                             "title": "colOffset",
-                            "width": "4%",
+                            "width": "3%",
                             "default": "0"
                         },
                         {
                             "type": "text",
                             "attr": "role",
                             "title": "colRole",
-                            "width": "7%",
+                            "width": "6%",
                             "default": "value"
                         },
                         {
                             "type": "text",
                             "attr": "states",
                             "title": "colStates",
-                            "width": "12%",
+                            "width": "9%",
                             "tooltip": "tipStates"
                         },
                         {
@@ -1409,14 +1631,44 @@
                             "type": "text",
                             "attr": "room",
                             "title": "colRoom",
-                            "width": "7%"
+                            "width": "4%"
                         },
                         {
-                            "type": "text",
+                            "type": "autocomplete",
                             "attr": "group",
                             "title": "colGroup",
-                            "width": "6%",
-                            "default": "steuerung"
+                            "freeSolo": true,
+                            "options": [
+                                {
+                                    "label": "live",
+                                    "value": "live",
+                                    "noTranslation": true
+                                },
+                                {
+                                    "label": "energie",
+                                    "value": "energie",
+                                    "noTranslation": true
+                                },
+                                {
+                                    "label": "steuerung",
+                                    "value": "steuerung",
+                                    "noTranslation": true
+                                },
+                                {
+                                    "label": "akku",
+                                    "value": "akku",
+                                    "noTranslation": true
+                                },
+                                {
+                                    "label": "info",
+                                    "value": "info",
+                                    "noTranslation": true
+                                }
+                            ],
+                            "default": "steuerung",
+                            "filter": true,
+                            "sort": true,
+                            "width": "6%"
                         },
                         {
                             "type": "checkbox",
@@ -1424,8 +1676,385 @@
                             "title": "colPoll",
                             "width": "3%",
                             "default": true
+                        },
+                        {
+                            "type": "text",
+                            "attr": "note",
+                            "title": "colNote",
+                            "width": "9%",
+                            "filter": true
                         }
-                    ]
+                    ],
+                    "showFirstAddOnTop": true
+                }
+            }
+        },
+        "tabHelper": {
+            "type": "panel",
+            "label": "tabHelper",
+            "items": {
+                "hHelper": {
+                    "type": "header",
+                    "text": "headerHelper",
+                    "size": 2
+                },
+                "tHelper": {
+                    "type": "staticText",
+                    "text": "textHelper",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12
+                },
+                "iHelperAddr": {
+                    "type": "infoBox",
+                    "text": "textHelperAddr",
+                    "title": "titleHelperAddr",
+                    "boxType": "info",
+                    "closeable": false,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12
+                },
+                "iHelperTypes": {
+                    "type": "infoBox",
+                    "text": "textHelperTypes",
+                    "title": "titleHelperTypes",
+                    "boxType": "info",
+                    "closeable": false,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12
+                },
+                "hAddrMode": {
+                    "type": "select",
+                    "label": "labelHAddrMode",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 4,
+                    "default": "doc",
+                    "options": [
+                        {
+                            "label": "optAddrDoc",
+                            "value": "doc"
+                        },
+                        {
+                            "label": "optAddrProtocol",
+                            "value": "protocol"
+                        },
+                        {
+                            "label": "optAddrColumn",
+                            "value": "column"
+                        }
+                    ],
+                    "doNotSave": true
+                },
+                "hAddress": {
+                    "type": "number",
+                    "label": "labelHAddress",
+                    "xs": 6,
+                    "sm": 3,
+                    "md": 2,
+                    "min": 0,
+                    "default": 13023,
+                    "doNotSave": true
+                },
+                "hRegType": {
+                    "type": "select",
+                    "label": "labelHRegType",
+                    "xs": 6,
+                    "sm": 3,
+                    "md": 3,
+                    "default": "inputRegs",
+                    "options": [
+                        {
+                            "label": "optInput",
+                            "value": "inputRegs"
+                        },
+                        {
+                            "label": "optHolding",
+                            "value": "holdingRegs"
+                        }
+                    ],
+                    "doNotSave": true
+                },
+                "hUnit": {
+                    "type": "number",
+                    "label": "labelHUnit",
+                    "xs": 6,
+                    "sm": 3,
+                    "md": 2,
+                    "min": 0,
+                    "max": 247,
+                    "default": 1,
+                    "help": "helpHUnit",
+                    "doNotSave": true
+                },
+                "hType": {
+                    "type": "select",
+                    "label": "labelHType",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 4,
+                    "default": "uint16be",
+                    "options": [
+                        {
+                            "label": "type_uint16be",
+                            "value": "uint16be"
+                        },
+                        {
+                            "label": "type_int16be",
+                            "value": "int16be"
+                        },
+                        {
+                            "label": "type_uint32sw",
+                            "value": "uint32sw"
+                        },
+                        {
+                            "label": "type_int32sw",
+                            "value": "int32sw"
+                        },
+                        {
+                            "label": "type_uint32be",
+                            "value": "uint32be"
+                        },
+                        {
+                            "label": "type_int32be",
+                            "value": "int32be"
+                        },
+                        {
+                            "label": "type_uint32sb",
+                            "value": "uint32sb"
+                        },
+                        {
+                            "label": "type_int32sb",
+                            "value": "int32sb"
+                        },
+                        {
+                            "label": "type_uint32le",
+                            "value": "uint32le"
+                        },
+                        {
+                            "label": "type_int32le",
+                            "value": "int32le"
+                        },
+                        {
+                            "label": "type_uint16le",
+                            "value": "uint16le"
+                        },
+                        {
+                            "label": "type_int16le",
+                            "value": "int16le"
+                        },
+                        {
+                            "label": "type_uint8be",
+                            "value": "uint8be"
+                        },
+                        {
+                            "label": "type_uint8le",
+                            "value": "uint8le"
+                        },
+                        {
+                            "label": "type_int8be",
+                            "value": "int8be"
+                        },
+                        {
+                            "label": "type_int8le",
+                            "value": "int8le"
+                        },
+                        {
+                            "label": "type_floatbe",
+                            "value": "floatbe"
+                        },
+                        {
+                            "label": "type_floatle",
+                            "value": "floatle"
+                        },
+                        {
+                            "label": "type_floatsw",
+                            "value": "floatsw"
+                        },
+                        {
+                            "label": "type_floatsb",
+                            "value": "floatsb"
+                        },
+                        {
+                            "label": "type_doublebe",
+                            "value": "doublebe"
+                        },
+                        {
+                            "label": "type_doublele",
+                            "value": "doublele"
+                        },
+                        {
+                            "label": "type_uint64be",
+                            "value": "uint64be"
+                        },
+                        {
+                            "label": "type_uint64le",
+                            "value": "uint64le"
+                        },
+                        {
+                            "label": "type_int64be",
+                            "value": "int64be"
+                        },
+                        {
+                            "label": "type_int64le",
+                            "value": "int64le"
+                        },
+                        {
+                            "label": "type_string",
+                            "value": "string"
+                        },
+                        {
+                            "label": "type_stringle",
+                            "value": "stringle"
+                        }
+                    ],
+                    "doNotSave": true
+                },
+                "hLen": {
+                    "type": "number",
+                    "label": "labelHLen",
+                    "xs": 6,
+                    "sm": 2,
+                    "md": 1,
+                    "min": 1,
+                    "max": 32,
+                    "default": 1,
+                    "hidden": "!data.hType || !data.hType.startsWith('string')",
+                    "doNotSave": true
+                },
+                "hFactor": {
+                    "type": "autocomplete",
+                    "label": "labelHFactor",
+                    "xs": 6,
+                    "sm": 4,
+                    "md": 3,
+                    "freeSolo": true,
+                    "options": [
+                        {
+                            "label": "factor_1",
+                            "value": "1"
+                        },
+                        {
+                            "label": "factor_0_1",
+                            "value": "0.1"
+                        },
+                        {
+                            "label": "factor_0_01",
+                            "value": "0.01"
+                        },
+                        {
+                            "label": "factor_0_001",
+                            "value": "0.001"
+                        },
+                        {
+                            "label": "factor_10",
+                            "value": "10"
+                        },
+                        {
+                            "label": "factor_100",
+                            "value": "100"
+                        }
+                    ],
+                    "default": "0.1",
+                    "doNotSave": true
+                },
+                "hOffset": {
+                    "type": "text",
+                    "label": "labelHOffset",
+                    "xs": 6,
+                    "sm": 2,
+                    "md": 2,
+                    "default": "0",
+                    "doNotSave": true
+                },
+                "hUnitText": {
+                    "type": "text",
+                    "label": "labelHUnitText",
+                    "xs": 6,
+                    "sm": 2,
+                    "md": 2,
+                    "default": "%",
+                    "help": "helpHUnitText",
+                    "doNotSave": true
+                },
+                "hName": {
+                    "type": "text",
+                    "label": "labelHName",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 4,
+                    "default": "Battery level",
+                    "doNotSave": true
+                },
+                "hWords": {
+                    "type": "text",
+                    "label": "labelHWords",
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 5,
+                    "default": "950",
+                    "help": "helpHWords",
+                    "doNotSave": true
+                },
+                "hLive": {
+                    "type": "checkbox",
+                    "label": "labelHLive",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 3,
+                    "default": false,
+                    "help": "helpHLive",
+                    "doNotSave": true
+                },
+                "hResult": {
+                    "type": "textSendTo",
+                    "container": "div",
+                    "command": "convert",
+                    "newLine": true,
+                    "jsonData": "{\"addrMode\": \"${data.hAddrMode}\", \"address\": \"${data.hAddress}\", \"regType\": \"${data.hRegType}\", \"deviceId\": \"${data.hUnit}\", \"type\": \"${data.hType}\", \"len\": \"${data.hLen}\", \"factor\": \"${data.hFactor}\", \"offset\": \"${data.hOffset}\", \"unitText\": \"${data.hUnitText}\", \"name\": \"${data.hName}\", \"words\": \"${data.hWords}\", \"live\": \"${data.hLive}\"}",
+                    "alsoDependsOn": [
+                        "hAddrMode",
+                        "hAddress",
+                        "hRegType",
+                        "hUnit",
+                        "hType",
+                        "hLen",
+                        "hFactor",
+                        "hOffset",
+                        "hUnitText",
+                        "hName",
+                        "hWords",
+                        "hLive"
+                    ],
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12
+                },
+                "iHelperAlive": {
+                    "type": "staticText",
+                    "text": "textHelperAlive",
+                    "newLine": true,
+                    "hidden": "_alive",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12
                 }
             }
         }

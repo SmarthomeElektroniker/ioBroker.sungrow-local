@@ -47,6 +47,11 @@ during which the bus is blocked. With a generic Modbus instance this leads to:
   `roundDuration` and `lastRoundText`, plus `info.lastValueUpdate`. Register values are only written on change,
   so an old timestamp at a register is no fault – a stuck bus shows in `lastRound`.
 - **Status tab** in the instance settings with connection state, heartbeat, response time and counters per group.
+- **Register template:** besides the registers read by default, the tables contain 100 further known Sungrow
+  registers (unticked). Tick a row to read it – it joins the request blocks of its group, no extra connection.
+  Own registers can still be added.
+- **Conversion helper** tab: addresses in all notations, data type, sign, word order and factor explained, raw
+  values decoded in every common way, plausibility warnings and an optional single test read of the register.
 
 ## Requirements
 
@@ -66,9 +71,62 @@ during which the bus is blocked. With a generic Modbus instance this leads to:
 2. **Poll groups** – interval, timeout and pause per group. The admin UI shows the limits that were measured
    to be stable and marks shorter values red.
 3. **Input registers / Holding registers** – the register tables (same columns as ioBroker.modbus plus
-   *group*, *states*, *min* and *max*). The defaults contain 68 input registers (inverter unit 1 and battery
-   unit 2) and 9 holding registers (EMS mode, charge/discharge command and power, SoC limits, …).
-4. **Status** – live view of the running instance.
+   *read*, *group*, *states*, *min*, *max* and *source / note*). Ticked by default: 68 input registers (inverter
+   unit 1 and battery unit 2) and 9 holding registers (EMS mode, charge/discharge command and power, SoC
+   limits, …). The other rows are the register template (see below).
+4. **Conversion helper** – see below.
+5. **Status** – live view of the running instance.
+
+## Register template
+
+The register tables contain every register this adapter knows, **ticked** ones are read:
+
+- **Ticked by default** are exactly the registers of the earlier versions – an update changes nothing that is
+  read and no state ID.
+- **Unticked** are 74 input and 26 holding registers: device type (with model names), serial number and firmware
+  versions, MPPT 4, signed battery power and current (newer firmware), precise grid frequency, energy meter
+  voltages/currents/totals, monthly PV yields, alarm and fault codes, battery current and temperature of the
+  SBH (unit 2), system clock, export limitation, load adjustment, battery charge/discharge power limits, forced
+  charging and more. Writable rows come with plain text (`states`) or limits.
+- Tick a row and save: the register is added to the request blocks of its group (e.g. battery current and
+  temperature of unit 2 lie inside the existing battery request – no additional request). Rarely changing values
+  are in the group `info` (once per hour).
+- **Unticking** a register that was read before removes its data point (including history settings).
+- Existing installations get the template once on the first start of 0.3.0 (the instance restarts once); rows
+  you configured yourself always win – a template row that overlaps one of your registers is not added.
+- Column *source / note* tells where a row comes from:
+  - **HA mkaiser (MIT)** – [Sungrow-SHx-Inverter-Modbus-Home-Assistant](https://github.com/mkaiser/Sungrow-SHx-Inverter-Modbus-Home-Assistant)
+    by Martin Kaiser, MIT License, Copyright (c) 2025 Martin Kaiser. Register addresses, data types, scaling and
+    the value tables (device type codes, on/off codes, EMS and load adjustment modes) were taken from
+    `modbus_sungrow.yaml`.
+  - **reference list** – register list of the reference installation (SH20T + SBH400 via WiNet-S2), checked on
+    the device; partly with notes (e.g. monthly yields: factor 0.1 measured, the document says 1).
+- Grid code parameters (LVRT/HVRT, frequency/voltage protection, reactive power curves) are deliberately not
+  part of the template – they are installer settings without documented scaling.
+
+## Conversion helper
+
+Sungrow documents, Home Assistant configurations and Modbus tools count addresses differently and describe
+data types in different ways. The tab **Conversion helper** puts one register into all notations:
+
+| Notation | Battery level | Rule |
+|---|---|---|
+| Sungrow document (counts from 1) | 13023 | – |
+| Modbus protocol / Home Assistant `address:` (counts from 0) | 13022 | document − 1 |
+| Column *Address* in this adapter (input / holding) | 43023 | protocol + 30001 / + 40001 |
+
+- **Data types:** 16 bit `U16` (never negative) or `S16` (power, current, temperature – raw values above
+  32767 are negative). 32-bit values use two registers and Sungrow sends the **low word first**: `uint32sw` /
+  `int32sw`. The type list in the tables shows these explanations.
+- **Factor:** Sungrow gives the resolution, e.g. "0.1 kWh" = factor 0.1. Value = raw value × factor + offset.
+- **Raw values:** type them in (`950`, `0x03B6`, `4464 1` for 32 bit) or tick *Read from the device*: the
+  adapter reads the register once over its connection (queued like every other request, at most every 5 s,
+  FC4/FC3 only – never a write).
+- **Output:** all addresses and the resulting state ID, the value of the selected type, the same raw words as
+  U16/S16/U32/S32 in both word orders, warnings (`0xFFFF` = no value, sign, word order, implausible value with a
+  better factor) and the line to enter in the register table.
+- When a register is read for the first time after a start, its value is checked against a plausible range per
+  unit (V, A, W, kWh, %, °C, Hz); an implausible first value is logged as a hint (info).
 
 ## Objects
 
@@ -118,6 +176,10 @@ data points of `sungrow-local.0` – no scripts, no other adapters. Import instr
   numbers without plain text.
 - The upper limit 20000 W of `53052` (charge/discharge power) is an assumption for an SH20T; adjust it for other
   models.
+- Comparison with other projects (kept unchanged for compatibility, you can change type/factor in the table):
+  `43008` (load power) and the phase currents `43031`–`43033` are signed values in other projects (`int32sw` /
+  `int16be`); `43022` (battery power) is an amount without sign – the template row `35214` *Battery power
+  signed* (register 5214, newer firmware) carries the direction.
 
 ## Tests
 
@@ -136,6 +198,20 @@ requests, late answers, total failure and connection loss.
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
+
+### 0.3.0 (2026-10-24)
+
+- Register template: 100 further known registers (74 input, 26 holding) from the Home Assistant integration by
+  mkaiser (MIT) and the register list of the reference installation, unticked in the register tables; existing
+  installations get them once on the first start (one restart). Nothing that was read before changes.
+- New column *Read* (tick) and *Source / note*; readable data type names, factor choice with examples.
+- New tab *Conversion helper*: addresses in all notations, interpretations of raw words, warnings, single test
+  read (read only).
+- New poll group `info` (3600 s) for device information; diagnostics only for groups that read registers.
+- Hint in the log when the first value of a register is implausible for its unit.
+- Fix: the round duration after a reconnect no longer contains the time without connection (was 26 640 904 ms
+  after a night without gateway).
+- Fix: no more warning "setTimeout called, but adapter is shutting down" when the instance stops.
 
 ### 0.2.1 (2026-10-23)
 

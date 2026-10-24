@@ -25,6 +25,16 @@ iSolarCloud. Er ersetzt eine generische `ioBroker.modbus`-Instanz und behält de
   sofort `ECONNRESET` – die IP des ioBroker-Rechners (nach NAT) im WiNet eintragen.
 - Die Vorgabetabellen sind englisch beschriftet; Namen, Klartexte, Einheiten und Grenzen lassen sich in den
   Registertabellen ändern, ohne dass sich die IDs ändern.
+- **Register-Vorlage:** Neben den vorab gelesenen Registern stehen 100 weitere bekannte Sungrow-Register in den
+  Tabellen (74 Input, 26 Holding, nicht angehakt): Gerätetyp, Seriennummer, Firmware, MPPT 4, Akkuleistung und
+  -strom mit Vorzeichen, Zähler des Energiezählers, Monatserträge, Fehlercodes, Akkustrom/-temperatur des SBH,
+  Uhr, Einspeisebegrenzung, Lade-/Entladegrenzen, Zwangsladung u. a. Häkchen setzen und speichern – das Register
+  wird im Leseblock seiner Gruppe mitgelesen. Quellen: Home-Assistant-Integration von mkaiser (MIT) und die
+  Registerliste der Referenzanlage. Abhaken eines bisher gelesenen Registers löscht dessen Datenpunkt.
+- **Umrechnungshilfe** (eigener Reiter): Adresse in allen Schreibweisen (Sungrow-Dokument ab 1, Protokoll/Home
+  Assistant ab 0, Spalte „Adresse“ = Protokoll + 30001/40001), Datentyp, Vorzeichen, Wortreihenfolge (Sungrow:
+  niederwertiges Wort zuerst = `…sw`) und Faktor erklärt; Rohwerte werden auf alle üblichen Arten gelesen, mit
+  Warnungen und auf Wunsch einmaliger Test-Lesung vom Gerät (nur lesen).
 
 ## Visualisierung (vis-Vorlagen)
 

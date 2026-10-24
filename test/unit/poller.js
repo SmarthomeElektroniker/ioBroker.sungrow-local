@@ -25,7 +25,14 @@ function testRegs() {
     ]).regs;
     const holding = R.normalise('holdingRegs', [
         { _address: 73031, name: 'Max SOC', type: 'uint16be', factor: 0.1, poll: true, group: 'steuerung' },
-        { _address: 53052, name: 'Charge/discharge power', type: 'uint16be', factor: 1, poll: true, group: 'steuerung' },
+        {
+            _address: 53052,
+            name: 'Charge/discharge power',
+            type: 'uint16be',
+            factor: 1,
+            poll: true,
+            group: 'steuerung',
+        },
         { _address: 53060, name: 'Long value', type: 'uint32sw', factor: 1, poll: true, group: 'steuerung' },
     ]).regs;
     return { input, holding, all: [...input, ...holding] };
@@ -155,7 +162,9 @@ describe('poller against the simulated WiNet-S2', function () {
         const akkuReq = fake.count(r => r.unit === 2);
         assert.ok(akkuReq >= 2 && akkuReq <= 3, `battery requested ${akkuReq} times in 1.4 s at 600 ms`);
         // the battery block is the same request ioBroker.modbus sent: FC4 address 10740 quantity 9 unit 2
-        assert.ok(fake.state.requests.filter(r => r.unit === 2).every(r => r.fc === 4 && r.addr === 10740 && r.qty === 9));
+        assert.ok(
+            fake.state.requests.filter(r => r.unit === 2).every(r => r.fc === 4 && r.addr === 10740 && r.qty === 9),
+        );
         // strictly serial: never more than one request on the bus
         const reqs = fake.state.requests;
         for (let i = 1; i < reqs.length; i++) {
@@ -226,7 +235,9 @@ describe('poller against the simulated WiNet-S2', function () {
         poller = p;
         p.start();
         await until(() => ev.request.filter(r => r.group === 'akku' && !r.ok).length >= 3, 5000);
-        assert.ok(ev.request.filter(r => r.group === 'akku' && !r.ok).every(r => !r.timeout && /exception/i.test(r.error)));
+        assert.ok(
+            ev.request.filter(r => r.group === 'akku' && !r.ok).every(r => !r.timeout && /exception/i.test(r.error)),
+        );
         assert.strictEqual(ev.reconnect.length, 0);
     });
 
@@ -249,11 +260,12 @@ describe('poller against the simulated WiNet-S2', function () {
         assert.ok(queuedReads >= 2, `reads were waiting: ${queuedReads}`);
         assert.ok(iw >= 0 && iw <= 1, `write was request #${iw} after the call (at most the running one before it)`);
         assert.deepStrictEqual([after[iw].unit, after[iw].addr, after[iw].value], [1, 33030, 950]);
-        assert.deepStrictEqual([after[iw + 1].fc, after[iw + 1].addr, after[iw + 1].qty], [3, 33030, 1], 'confirmation read');
         assert.deepStrictEqual(
-            [ev.readback[0].val, ev.readback[0].requested, ev.readback[0].written],
-            [95, 95, true],
+            [after[iw + 1].fc, after[iw + 1].addr, after[iw + 1].qty],
+            [3, 33030, 1],
+            'confirmation read',
         );
+        assert.deepStrictEqual([ev.readback[0].val, ev.readback[0].requested, ev.readback[0].written], [95, 95, true]);
     });
 
     it('writing the SAME value is confirmed as well (ack must follow even without a change)', async () => {
@@ -346,7 +358,10 @@ describe('poller against the simulated WiNet-S2', function () {
         poller = p;
         p.start();
         await sleep(1500);
-        assert.ok(ev.skipped.some(s => s.group === 'live'), 'live round skipped');
+        assert.ok(
+            ev.skipped.some(s => s.group === 'live'),
+            'live round skipped',
+        );
     });
 
     it('heartbeat: a round event after every complete round, also when no value changed', async () => {
@@ -358,7 +373,10 @@ describe('poller against the simulated WiNet-S2', function () {
         const live = ev.round.filter(r => r.group === 'live');
         assert.ok(live.length >= 6, `live rounds: ${live.length}`);
         // ms includes waiting in the queue behind other groups - slow CI runners (Windows) need headroom
-        assert.ok(live.every(r => r.failed === 0 && r.blocks === 1 && r.ms >= 0 && r.ms < 1000), JSON.stringify(live));
+        assert.ok(
+            live.every(r => r.failed === 0 && r.blocks === 1 && r.ms >= 0 && r.ms < 1000),
+            JSON.stringify(live),
+        );
         // a round ends after the LAST block of the group (steuerung has 2 blocks: 53052 and 73031)
         const st = ev.round.filter(r => r.group === 'steuerung');
         assert.ok(st.length >= 1 && st.every(r => r.blocks === 2));
@@ -377,6 +395,39 @@ describe('poller against the simulated WiNet-S2', function () {
         await until(() => ev.round.some(r => r.group === 'akku' && r.failed === 1), 4000);
         await until(() => ev.round.filter(r => r.group === 'akku').slice(-1)[0].failed === 0, 4000);
         assert.ok(ev.round.filter(r => r.group === 'live').every(r => r.failed === 0));
+    });
+
+    it('the round duration after a reconnect does not contain the outage (bug of 0.2.x: 26 640 904 ms)', async () => {
+        const { p, ev } = makePoller(fake, { reconnectDelay: 1500 });
+        poller = p;
+        p.start();
+        await until(() => ev.round.some(r => r.group === 'live' && r.failed === 0));
+        fake.kick();
+        await until(() => ev.connection.length === 3, 5000);
+        const back = ev.connection[2].t;
+        await until(() => ev.round.some(r => r.group === 'live' && r.failed === 0 && r.t > back), 3000);
+        const first = ev.round.find(r => r.group === 'live' && r.failed === 0 && r.t > back);
+        assert.ok(first.ms < 1000, `round duration ${first.ms} ms contains the outage of 1500 ms`);
+    });
+
+    it('probe(): one read for the conversion helper, before the cyclic reads, never a write', async () => {
+        const { p, ev } = makePoller(fake);
+        poller = p;
+        p.start();
+        await until(() => ev.connection.length === 1);
+        const r = await p.probe({ regType: 'inputRegs', deviceId: 1, address: 5016, count: 2 });
+        assert.deepStrictEqual([r.buffer.readUInt16BE(0), r.buffer.readUInt16BE(2)], [70000 & 0xffff, 70000 >>> 16]);
+        const h = await p.probe({ regType: 'holdingRegs', deviceId: 1, address: 33030, count: 1 });
+        assert.strictEqual(h.buffer.readUInt16BE(0), 1000);
+        assert.strictEqual(
+            fake.count(q => q.fc === 6 || q.fc === 16),
+            0,
+            'no write request',
+        );
+        fake.state.units[1].exceptions.add(9999);
+        await assert.rejects(p.probe({ regType: 'inputRegs', deviceId: 1, address: 9999, count: 1 }));
+        await p.stop();
+        await assert.rejects(p.probe({ regType: 'inputRegs', deviceId: 1, address: 5016, count: 2 }), /stopped/);
     });
 
     it('stop() closes the only connection and leaves no timers running', async () => {
