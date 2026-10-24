@@ -21,7 +21,7 @@ const {
     checkWriteValue,
 } = require('./lib/registers');
 const { mergeCatalog } = require('./lib/catalog');
-const { explain, addresses, implausible } = require('./lib/convert');
+const { explain, resolve, implausible } = require('./lib/convert');
 const { Poller } = require('./lib/poller');
 const {
     T,
@@ -603,7 +603,7 @@ class SungrowLocal extends utils.Adapter {
             try {
                 const q = typeof obj.message === 'string' ? JSON.parse(obj.message) : obj.message || {};
                 const device = flag(q.live) ? await this.probeForHelper(q) : undefined;
-                res = explain(q, device, this.lang === 'de' ? 'de' : 'en');
+                res = explain(q, device, this.lang === 'de' ? 'de' : 'en', this.config);
             } catch (e) {
                 res = { text: `Error: ${e && e.message}` };
             }
@@ -634,11 +634,17 @@ class SungrowLocal extends utils.Adapter {
      * @returns {Promise<{words?: number[], ms?: number, error?: string}>} Raw words or error
      */
     async probeForHelper(q) {
-        const regType = q.regType === 'holdingRegs' ? 'holdingRegs' : 'inputRegs';
-        const a = addresses(q.address, q.addrMode || 'doc', regType);
+        const { a, ambiguous } = resolve(q);
         if (!a) {
-            return { error: 'invalid address' };
+            const de = this.lang === 'de';
+            if (ambiguous) {
+                return {
+                    error: de ? 'Adresse nicht eindeutig – Quelle wählen' : 'address is ambiguous - choose the source',
+                };
+            }
+            return { error: de ? 'ungültige Adresse' : 'invalid address' };
         }
+        const regType = a.regType;
         if (!this.poller || !this.poller.connected) {
             return { error: this.lang === 'de' ? 'keine Verbindung zum Gateway' : 'not connected to the gateway' };
         }

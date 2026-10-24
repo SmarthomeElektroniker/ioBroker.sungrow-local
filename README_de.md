@@ -31,8 +31,10 @@ iSolarCloud. Er ersetzt eine generische `ioBroker.modbus`-Instanz und behält de
   Uhr, Einspeisebegrenzung, Lade-/Entladegrenzen, Zwangsladung u. a. Häkchen setzen und speichern – das Register
   wird im Leseblock seiner Gruppe mitgelesen. Quellen: Home-Assistant-Integration von mkaiser (MIT) und die
   Registerliste der Referenzanlage. Abhaken eines bisher gelesenen Registers löscht dessen Datenpunkt.
-- **Umrechnungshilfe** (eigener Reiter): Adresse in allen Schreibweisen (Sungrow-Dokument ab 1, Protokoll/Home
-  Assistant ab 0, Spalte „Adresse“ = Protokoll + 30001/40001), Datentyp, Vorzeichen, Wortreihenfolge (Sungrow:
+- **Umrechnungshilfe** (eigener Reiter): Adresse in allen Schreibweisen (Sungrow-Doku ab 1 wie SunGather/openHAB;
+  Protokolladresse ab 0 wie Excel-/Registerlisten, Home Assistant, evcc, ioBroker.modbus ohne Aliase; Spalte
+  „Adresse“ = Protokoll + 30001/40001; Modicon 6-stellig), automatische Erkennung wo eindeutig, bekanntes Register
+  an der Adresse und die Nachbarn bei Verzähler um eins (43022 = Battery power, 43023 = Battery level), Datentyp, Vorzeichen, Wortreihenfolge (Sungrow:
   niederwertiges Wort zuerst = `…sw`) und Faktor erklärt; Rohwerte werden auf alle üblichen Arten gelesen, mit
   Warnungen und auf Wunsch einmaliger Test-Lesung vom Gerät (nur lesen).
 

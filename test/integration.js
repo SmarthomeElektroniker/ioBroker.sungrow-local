@@ -251,6 +251,22 @@ tests.integration(path.join(__dirname, '..'), {
                 assert.match(answer.text, /43022/);
                 assert.match(answer.text, /0xFE70/);
                 assert.match(answer.text, /-400 W/);
+                assert.match(answer.text, /Battery power/, 'names the register of the instance at this address');
+
+                // the same register as ioBroker column, detected automatically
+                const ask = message => new Promise(resolve => harness.sendTo(ns, 'convert', message, resolve));
+                const auto = await ask({ addrMode: 'auto', address: '43022', type: 'uint16be', live: 'true' });
+                assert.match(auto.text, /detected: ioBroker column|erkannt: ioBroker-Spalte/);
+                assert.match(auto.text, /0xFE70/);
+                // 13022 alone is ambiguous (document or protocol): explained, but nothing is read
+                const reads = fake.count(r => r.fc === 4 && r.addr === 13021 && r.qty === 1);
+                const amb = await ask({ addrMode: 'auto', address: '13022', live: 'true' });
+                assert.match(amb.text, /13022 (can be|kann)/);
+                assert.match(amb.text, /ambiguous|nicht eindeutig/);
+                assert.strictEqual(
+                    fake.count(r => r.fc === 4 && r.addr === 13021 && r.qty === 1),
+                    reads,
+                );
                 assert.strictEqual(
                     fake.count(r => r.fc === 6 || r.fc === 16),
                     0,

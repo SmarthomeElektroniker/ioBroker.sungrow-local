@@ -109,12 +109,18 @@ The register tables contain every register this adapter knows, **ticked** ones a
 Sungrow documents, Home Assistant configurations and Modbus tools count addresses differently and describe
 data types in different ways. The tab **Conversion helper** puts one register into all notations:
 
-| Notation | Battery level | Rule |
-|---|---|---|
-| Sungrow document (counts from 1) | 13023 | – |
-| Modbus protocol / Home Assistant `address:` (counts from 0) | 13022 | document − 1 |
-| Column *Address* in this adapter (input / holding) | 43023 | protocol + 30001 / + 40001 |
+| Notation | Battery level | Max SoC | Rule | Used by |
+|---|---|---|---|---|
+| Sungrow document, column *Register* (counts from 1) | input 13023 | holding 13058 | – | Sungrow PDF, SunGather, openHAB binding (both subtract 1 before sending) |
+| Protocol address (counts from 0, sent on the bus) | 13022 | 13057 | document − 1 | register lists "address incl. offset", Home Assistant / mkaiser `address: 13022  # reg 13023`, evcc, Loxone, ioBroker.modbus **without** aliases (the usual forum guide, IDs like `13022_Battery_level`) |
+| Column *Address* of this adapter = ioBroker.modbus **with** aliases | 43023 | 53058 | protocol + 30001 / + 40001 | this adapter |
+| Modicon, 6 digits | 313023 | 413058 | protocol + 300001 / + 400001 | Modbus tools |
 
+- **The number is …:** choose the source of your number, or *detect automatically*: column (input ≥ 30001,
+  holding ≥ 40001) and 6-digit Modicon numbers are unambiguous; a smaller number may count from 0 or from 1 –
+  the helper then shows both readings with the register this adapter knows there and reads nothing.
+- **Known register and off-by-one:** the helper names the register of your tables at the address and the
+  neighbours you get when you count from 0 instead of 1 (column 43022 is *battery power*, 43023 *battery level*).
 - **Data types:** 16 bit `U16` (never negative) or `S16` (power, current, temperature – raw values above
   32767 are negative). 32-bit values use two registers and Sungrow sends the **low word first**: `uint32sw` /
   `int32sw`. The type list in the tables shows these explanations.
@@ -138,14 +144,18 @@ data types in different ways. The tab **Conversion helper** puts one register in
 | `info.groups.<group>.*` | diagnostics and heartbeat per poll group |
 | `info.write.*` | diagnostics of writes |
 
-`<address>` is the register address as shown in the Sungrow documentation (30001/40001 based), `<name>` is the
-*name* column with spaces and dots replaced by `_`. The *description* column becomes the object name.
+`<address>` is the *Address* column in the ioBroker.modbus alias notation: input register = 30001 + protocol
+address, holding register = 40001 + protocol address – i.e. Sungrow document number + 30000 / + 40000 (battery level:
+document 13023, protocol 13022, ID `43023_…`). `<name>` is the *name* column with spaces and dots replaced by `_`. The *description* column becomes the object name.
 
 ## Migration from ioBroker.modbus
 
 The IDs, names, units, factors, data types and roles are built exactly like in ioBroker.modbus (with
 *multi device ID* enabled), so the register tables of an existing instance can be copied into this adapter and
 all state IDs stay the same apart from the instance prefix (`modbus.N.` → `sungrow-local.0.`).
+This holds for instances with *aliases* switched on. Most Sungrow guides for ioBroker.modbus switch aliases
+**off** and enter protocol addresses (IDs like `13022_Battery_level`): add 30001 (input) / 40001 (holding) to
+those addresses – the IDs then change (`13022_…` → `43023_…`), scripts and history must be adapted.
 
 Suggested order: back up; switch scripts/watchdogs to the new instance; disable the old Modbus instance (the
 WiNet should only see one client); enter the host and enable this adapter (read-only first); compare the values;
@@ -209,8 +219,10 @@ requests, late answers, total failure and connection loss.
   mkaiser (MIT) and the register list of the reference installation, unticked in the register tables; existing
   installations get them once on the first start (one restart). Nothing that was read before changes.
 - New column *Read* (tick) and *Source / note*; readable data type names, factor choice with examples.
-- New tab *Conversion helper*: addresses in all notations, interpretations of raw words, warnings, single test
-  read (read only).
+- New tab *Conversion helper*: addresses in all notations (Sungrow document from 1, protocol address from 0 as in
+  register lists / Home Assistant / evcc / ioBroker.modbus without aliases, column of this adapter, 6-digit
+  Modicon) with automatic detection where unambiguous, the known register at the address and its off-by-one
+  neighbours, interpretations of raw words, warnings, single test read (read only).
 - New poll group `info` (3600 s) for device information; diagnostics only for groups that read registers.
 - Hint in the log when the first value of a register is implausible for its unit.
 - Fix: the round duration after a reconnect no longer contains the time without connection (was 26 640 904 ms
