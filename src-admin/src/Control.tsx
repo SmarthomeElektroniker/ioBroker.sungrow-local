@@ -104,7 +104,15 @@ function ValueCell(props: {
                     onChange={e => setPending(e.target.value)}
                     disabled={!!props.blocked}
                     sx={{ minWidth: 220 }}
-                    slotProps={{ htmlInput: { 'aria-label': `${t('colValue')}: ${label}` } }}
+                    slotProps={{
+                        htmlInput: { 'aria-label': `${t('colValue')}: ${label}` },
+                        select: {
+                            renderValue: (sel: unknown) =>
+                                texts && texts[String(sel)] !== undefined
+                                    ? `${texts[String(sel)]} (${String(sel)})`
+                                    : '',
+                        },
+                    }}
                     helperText={props.blocked || stateHelp(ref.regType, ref.row, current)}
                 >
                     {Object.entries(texts).map(([k, x]) => (

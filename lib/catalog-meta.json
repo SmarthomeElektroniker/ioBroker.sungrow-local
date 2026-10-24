@@ -1195,7 +1195,7 @@
    "statesHelp": {
     "0": {
      "en": "Battery charges with PV surplus and covers the house automatically (normal operation).",
-     "de": "Akku lädt mit PV-Überschuss und versorgt das Haus automatisch (Normalbetrieb).",
+     "de": "Batterie lädt mit PV-Überschuss und versorgt das Haus automatisch (Normalbetrieb).",
      "ru": "Батарея заряжается от излишков PV и автоматически питает дом (обычный режим).",
      "pt": "A bateria carrega com o excedente PV e abastece a casa automaticamente (funcionamento normal).",
      "nl": "Accu laadt met PV-overschot en voedt het huis automatisch (normaal bedrijf).",
@@ -1208,7 +1208,7 @@
     },
     "2": {
      "en": "Battery follows the command 13051 (charge/discharge/stop) with the power 13052.",
-     "de": "Akku folgt dem Befehl 13051 (Laden/Entladen/Stopp) mit der Leistung 13052.",
+     "de": "Batterie folgt dem Befehl 13051 (Laden/Entladen/Stopp) mit der Leistung 13052.",
      "ru": "Батарея выполняет команду 13051 (заряд/разряд/стоп) с мощностью 13052.",
      "pt": "A bateria segue o comando 13051 (carregar/descarregar/parar) com a potência 13052.",
      "nl": "Accu volgt opdracht 13051 (laden/ontladen/stop) met vermogen 13052.",
@@ -1340,7 +1340,7 @@
    "statesHelp": {
     "170": {
      "en": "Charge the battery with the power 13052 (only in forced mode).",
-     "de": "Akku mit der Leistung 13052 laden (nur im Zwangsmodus).",
+     "de": "Batterie mit der Leistung 13052 laden (nur im Zwangsmodus).",
      "ru": "Заряжать батарею мощностью 13052 (только в принудительном режиме).",
      "pt": "Carregar a bateria com a potência 13052 (só em modo forçado).",
      "nl": "Accu laden met vermogen 13052 (alleen in geforceerde modus).",
@@ -1353,7 +1353,7 @@
     },
     "187": {
      "en": "Discharge the battery with the power 13052 (only in forced mode).",
-     "de": "Akku mit der Leistung 13052 entladen (nur im Zwangsmodus).",
+     "de": "Batterie mit der Leistung 13052 entladen (nur im Zwangsmodus).",
      "ru": "Разряжать батарею мощностью 13052 (только в принудительном режиме).",
      "pt": "Descarregar a bateria com a potência 13052 (só em modo forçado).",
      "nl": "Accu ontladen met vermogen 13052 (alleen in geforceerde modus).",
@@ -1366,7 +1366,7 @@
     },
     "204": {
      "en": "Battery neither charges nor discharges.",
-     "de": "Akku lädt und entlädt nicht.",
+     "de": "Batterie lädt und entlädt nicht.",
      "ru": "Батарея не заряжается и не разряжается.",
      "pt": "A bateria não carrega nem descarrega.",
      "nl": "Accu laadt noch ontlaadt.",
