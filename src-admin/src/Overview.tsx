@@ -43,7 +43,6 @@ import {
     aliasOf,
     clone,
     fmt,
-    groupColor,
     isActive,
     num,
     rowLabel,
@@ -466,31 +465,32 @@ export function OverviewView(props: ConfigGenericProps & { onData: (d: Native) =
     const lastTs = typeof lastVal?.val === 'number' ? lastVal.val : undefined;
     const minInterval = Math.min(...groups.map(g => num(g.interval, 60)), 3600);
     const lastAge = lastTs ? (now - lastTs) / 1000 : Infinity;
+    // the state of a value is derived from its age compared with its interval - no interval is shown
+    const stateText = (level: Level | 'off', hasData: boolean): string =>
+        !hasData ? t('stateWaiting') : level === 'ok' ? t('stateCurrent') : level === 'warn' ? t('stateDelayed') : t('stateError');
+    const lastLevel: Level = lastAge < minInterval * 3 ? 'ok' : lastAge < minInterval * 10 ? 'warn' : 'over';
     cards.push({
         title: t('stLastValues'),
-        level: !props.alive ? 'off' : lastAge < minInterval * 3 ? 'ok' : lastAge < minInterval * 10 ? 'warn' : 'over',
-        text: lastTs ? ago(lastTs) : '–',
+        level: !props.alive ? 'off' : lastLevel,
+        text: props.alive ? stateText(lastLevel, !!lastTs) : '–',
     });
     for (const g of groups) {
         const lr = states[`${gk(g.name)}.lastRound`];
         const to = Number(states[`${gk(g.name)}.timeoutsToday`]?.val || 0);
         const er = Number(states[`${gk(g.name)}.errorsToday`]?.val || 0);
         const sk = Number(states[`${gk(g.name)}.skippedToday`]?.val || 0);
-        const dur = states[`${gk(g.name)}.roundDuration`]?.val;
         if (!lr) {
             continue; // group without registers has no diagnostics
         }
         const ts = typeof lr.val === 'number' ? lr.val : 0;
         const age = ts ? (now - ts) / 1000 : Infinity;
         const iv = num(g.interval, 60);
-        let level: Level = age < iv * 2.5 + 5 ? 'ok' : age < iv * 6 + 10 ? 'warn' : 'over';
-        if (level === 'ok' && (to || er || sk)) {
-            level = 'warn';
-        }
+        const level: Level = age < iv * 2.5 + 5 ? 'ok' : age < iv * 6 + 10 ? 'warn' : 'over';
+        const shown: Level = level === 'ok' && (to || er) ? 'warn' : level;
         cards.push({
-            title: t('stGroup', g.name, iv),
-            level: props.alive ? level : 'off',
-            text: ts ? `${ago(ts)}${typeof dur === 'number' ? ` · ${dur} ms` : ''}` : '–',
+            title: t('stGroupName', g.name),
+            level: props.alive ? shown : 'off',
+            text: props.alive ? stateText(level, !!ts) : '–',
             sub: to || er || sk ? t('groupProblems', to, er, sk) : t('groupFine'),
         });
     }
@@ -633,16 +633,6 @@ export function OverviewView(props: ConfigGenericProps & { onData: (d: Native) =
             >
                 {t('tilesHint')}
             </Typography>
-            <Box sx={{ mt: 3, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                {groups.map((g, i) => (
-                    <Chip
-                        key={g.name}
-                        size="small"
-                        label={`${g.name} · ${t('everyN', num(g.interval, 60))}`}
-                        sx={{ bgcolor: groupColor(g.name, i), color: '#fff' }}
-                    />
-                ))}
-            </Box>
         </Box>
     );
 }
