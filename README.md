@@ -173,13 +173,17 @@ data points of `sungrow-local.0` – no scripts, no other adapters. Import instr
 - `35016` is the current of MPPT 3. Its ID stays `35016_MPPT_2_Current` for compatibility with existing
   installations; only the object name was corrected.
 - `43001` (running state) is a bit field and `43030` (grid state) is not clearly documented – both are shown as
-  numbers without plain text.
+  numbers without plain text (`43030` unscaled, factor 1).
 - The upper limit 20000 W of `53052` (charge/discharge power) is an assumption for an SH20T; adjust it for other
   models.
-- Comparison with other projects (kept unchanged for compatibility, you can change type/factor in the table):
-  `43008` (load power) and the phase currents `43031`–`43033` are signed values in other projects (`int32sw` /
-  `int16be`); `43022` (battery power) is an amount without sign – the template row `35214` *Battery power
-  signed* (register 5214, newer firmware) carries the direction.
+- `43008` (load power) is read as `int32sw` and the phase currents `43031`–`43033` as `int16be` (signed, as in
+  the Sungrow protocol); up to 0.3.0 they were unsigned, and `43030` had factor 0.1. Existing instances are
+  corrected once on the first start, unless the row was changed by hand. The IDs stay the same.
+- `43022` (battery power) is an amount without sign – the sign of `43021` (battery current) or the template row
+  `35214` *Battery power signed* (register 5214, newer firmware) carries the direction.
+- `43023` (battery level) is the usable level between min. and max. SoC; the battery's own level is `40744`
+  (unit 2). Both agree as `40744 ≈ min SoC + 43023 × (max SoC − min SoC) / 100` as long as the level is inside the
+  window.
 
 ## Tests
 
@@ -212,6 +216,9 @@ requests, late answers, total failure and connection loss.
 - Fix: the round duration after a reconnect no longer contains the time without connection (was 26 640 904 ms
   after a night without gateway).
 - Fix: no more warning "setTimeout called, but adapter is shutting down" when the instance stops.
+- Fix: `43008` load power is signed (`int32sw`), phase currents `43031`–`43033` are signed (`int16be`), `43030`
+  grid state is unscaled (factor 1). Existing instances get the correction once (template version 2) unless
+  the row was edited.
 
 ### 0.2.1 (2026-10-23)
 

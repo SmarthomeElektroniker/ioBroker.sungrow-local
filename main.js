@@ -578,6 +578,9 @@ class SungrowLocal extends utils.Adapter {
         this.log.info(
             `Register template version ${merged.native.templateVersion}: ${merged.added} known registers added to the tables (not ticked - nothing is read until you tick them)`,
         );
+        if (merged.fixed.length) {
+            this.log.info(`Corrected data types/factors of default registers: ${merged.fixed.join(', ')}`);
+        }
         await this.setForeignObjectAsync(id, obj);
         this.config = /** @type {any} */ (merged.native);
         // js-controller restarts the instance because its configuration changed: wait idle for that instead

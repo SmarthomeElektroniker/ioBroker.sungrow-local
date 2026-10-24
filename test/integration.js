@@ -3,6 +3,7 @@ const assert = require('node:assert');
 const { tests } = require('@iobroker/testing');
 const { createFakeWinet } = require('./fakeWinet');
 const io = require('../io-package.json');
+const { CATALOG } = require('../lib/catalog');
 
 // Starts a temporary js-controller, installs the adapter and runs it against a simulated WiNet-S2.
 // Locally: IOB_CONTROLLER=latest npm run test:integration
@@ -196,12 +197,12 @@ tests.integration(path.join(__dirname, '..'), {
                 let inst;
                 for (;;) {
                     inst = await harness.objects.getObjectAsync(`system.adapter.${ns}`);
-                    if (inst.native.templateVersion === 1 || Date.now() > end) {
+                    if (inst.native.templateVersion === CATALOG.version || Date.now() > end) {
                         break;
                     }
                     await new Promise(r => setTimeout(r, 300));
                 }
-                assert.strictEqual(inst.native.templateVersion, 1);
+                assert.strictEqual(inst.native.templateVersion, CATALOG.version);
                 assert.strictEqual(inst.native.inputRegs.length, 68 + 74);
                 assert.strictEqual(inst.native.inputRegs.filter(r => r.enabled).length, 68);
                 assert.ok(inst.native.groups.some(g => g.name === 'info'));

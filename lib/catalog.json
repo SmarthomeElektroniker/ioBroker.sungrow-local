@@ -1,5 +1,5 @@
 {
- "version": 1,
+ "version": 2,
  "groups": [
   {
    "enabled": true,
@@ -1890,6 +1890,53 @@
    "min": 0,
    "max": 100,
    "poll": true
+  }
+ ],
+ "fixes": [
+  {
+   "regType": "inputRegs",
+   "deviceId": 1,
+   "_address": 43008,
+   "field": "type",
+   "from": "uint32sw",
+   "to": "int32sw",
+   "reason": "load power is S32 (M: int32, L: int32sw)"
+  },
+  {
+   "regType": "inputRegs",
+   "deviceId": 1,
+   "_address": 43030,
+   "field": "factor",
+   "from": "0.1",
+   "to": "1",
+   "reason": "grid state is a state code, no scaling (L: factor 1)"
+  },
+  {
+   "regType": "inputRegs",
+   "deviceId": 1,
+   "_address": 43031,
+   "field": "type",
+   "from": "uint16be",
+   "to": "int16be",
+   "reason": "phase A current is S16 (M + L)"
+  },
+  {
+   "regType": "inputRegs",
+   "deviceId": 1,
+   "_address": 43032,
+   "field": "type",
+   "from": "uint16be",
+   "to": "int16be",
+   "reason": "phase B current is S16 (M + L)"
+  },
+  {
+   "regType": "inputRegs",
+   "deviceId": 1,
+   "_address": 43033,
+   "field": "type",
+   "from": "uint16be",
+   "to": "int16be",
+   "reason": "phase C current is S16 (M + L)"
   }
  ]
 }

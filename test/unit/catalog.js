@@ -164,6 +164,54 @@ describe('catalog: migration of an existing instance (0.2.x -> 0.3.0)', () => {
         assert.ok(!native.inputRegs.some(r => r._address === 35214));
     });
 
+    it('corrects the known wrong defaults of 0.2.x (43008 int32sw, 43030 factor 1, 43031-43033 int16be)', () => {
+        const n = oldNative();
+        const row = a => n.inputRegs.find(r => r._address === a);
+        // values as shipped up to 0.3.0 (taken from modbus.3)
+        row(43008).type = 'uint32sw';
+        row(43030).factor = '0.1';
+        for (const a of [43031, 43032, 43033]) {
+            row(a).type = 'uint16be';
+        }
+        const { native, fixed } = mergeCatalog(n);
+        const out = a => native.inputRegs.find(r => r._address === a);
+        assert.strictEqual(out(43008).type, 'int32sw');
+        assert.strictEqual(out(43030).factor, '1');
+        for (const a of [43031, 43032, 43033]) {
+            assert.strictEqual(out(a).type, 'int16be');
+        }
+        assert.strictEqual(fixed.length, 5);
+        assert.deepStrictEqual(activeIds(native), fixtureIds, 'IDs do not change');
+        assert.strictEqual(row(43008).type, 'uint32sw', 'the input is not modified');
+    });
+
+    it('keeps a value the user changed and fixes nothing that is already right', () => {
+        const n = oldNative();
+        n.inputRegs.find(r => r._address === 43030).factor = '10';
+        n.inputRegs.find(r => r._address === 43031).type = 'uint16be';
+        const { native, fixed } = mergeCatalog(n);
+        assert.strictEqual(native.inputRegs.find(r => r._address === 43030).factor, '10');
+        assert.deepStrictEqual(fixed, ['43031 type uint16be -> int16be']);
+    });
+
+    it('an instance with template version 1 (0.3.0 pre-release) gets the fixes once, nothing added twice', () => {
+        const v1 = mergeCatalog(oldNative(), { ...CATALOG, version: 1, fixes: [] }).native;
+        v1.inputRegs.find(r => r._address === 43008).type = 'uint32sw';
+        const { changed, native, added, fixed } = mergeCatalog(v1);
+        assert.ok(changed);
+        assert.strictEqual(added, 0);
+        assert.deepStrictEqual(fixed, ['43008 type uint32sw -> int32sw']);
+        assert.strictEqual(native.inputRegs.length, v1.inputRegs.length);
+        assert.strictEqual(mergeCatalog(native).changed, false);
+    });
+
+    it('io-package defaults already contain the corrected values', () => {
+        const d = a => ioPackage.native.inputRegs.find(r => r._address === a);
+        assert.strictEqual(d(43008).type, 'int32sw');
+        assert.strictEqual(parseFloat(d(43030).factor), 1);
+        assert.ok([43031, 43032, 43033].every(a => d(a).type === 'int16be'));
+    });
+
     it('a ticked template row is read in the block of its group (bundled, no extra request)', () => {
         const { native } = mergeCatalog(oldNative());
         const groupBlocks = rows => {
