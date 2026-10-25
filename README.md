@@ -237,8 +237,7 @@ requests, late answers, total failure and connection loss.
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
-
-### **WORK IN PROGRESS**
+### 0.4.2 (2026-10-25)
 
 - When stopping, the connection is closed without waiting (no plain timer during shutdown).
 - Admin: sizes for large screens in the tab *Tools*; Dutch text completed.
