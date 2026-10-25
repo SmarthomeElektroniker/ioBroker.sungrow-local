@@ -71,7 +71,8 @@ optional (there is a button for every action).
 1. **Overview** – traffic lights for instance, connection, last values and every poll group (last round, round
    duration, timeouts/errors/skipped rounds today) and live tiles: PV power, battery power with direction
    (sign of the battery current `43021`), battery level, grid (`35601`, + import / − feed-in), house consumption
-   (calculated: PV + battery discharge + grid) and any other register. Tiles can be added, removed and ordered.
+   (calculated: AC output `43034` + grid; not clamped – an unmeasured generator in the house grid shows as
+   "not balanceable") and any other register. Tiles can be added, removed and ordered.
    On a new instance (no address yet) the **setup wizard** opens here: gateway address, connection test (device
    type code → model, serial number, battery at the inverter, SBH battery at unit 2) and a profile
    *Basic / Battery / Extended* with a preview of the bus load.
@@ -241,6 +242,7 @@ requests, late answers, total failure and connection loss.
 
 - When stopping, the connection is closed without waiting (no plain timer during shutdown).
 - Admin: sizes for large screens in the tab *Tools*; Dutch text completed.
+- README: formula of the house consumption tile (AC output 43034 + grid).
 
 ### 0.4.1 (2026-10-25)
 
