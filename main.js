@@ -434,6 +434,19 @@ class SungrowLocal extends utils.Adapter {
         for (const [id, unit] of unitFolders) {
             await this.extendObjectAsync(id, { type: 'device', common: { name: `Unit ${unit}` }, native: {} });
         }
+        // objects of up to 0.4.0 carry def 0/'' - remove it (IDs, custom settings and states stay)
+        const withDef = new Set();
+        for (const regName of Object.values(REG_NAMES)) {
+            const view = await this.getObjectViewAsync('system', 'state', {
+                startkey: `${this.namespace}.${regName}.`,
+                endkey: `${this.namespace}.${regName}.香`,
+            });
+            for (const row of view.rows) {
+                if (row.value && row.value.common && 'def' in row.value.common) {
+                    withDef.add(row.id);
+                }
+            }
+        }
         for (const r of regs) {
             /** @type {Record<string, any>} */
             const common = {
@@ -442,7 +455,8 @@ class SungrowLocal extends utils.Adapter {
                 type: ['string', 'stringle'].includes(r.type) ? 'string' : 'number',
                 read: r.regType === 'inputRegs' ? true : r.poll,
                 write: r.write,
-                def: ['string', 'stringle'].includes(r.type) ? '' : 0,
+                // no def: js-controller would create the state 0/ack=true before the first read
+                // (scripts would react on e.g. SoC 0 % at adapter start)
                 unit: r.unit,
             };
             // texts of known values and plausible limits (only when configured - display and write check)
@@ -469,6 +483,13 @@ class SungrowLocal extends utils.Adapter {
                 native.poll = r.poll;
             }
             await this.extendObjectAsync(r.id, { type: 'state', common, native });
+            if (withDef.has(`${this.namespace}.${r.id}`)) {
+                const obj = await this.getObjectAsync(r.id);
+                if (obj && obj.common && 'def' in obj.common) {
+                    delete obj.common.def;
+                    await this.setObjectAsync(r.id, obj);
+                }
+            }
             if (r.room) {
                 await this.addToRoom(`${this.namespace}.${r.id}`, r.room);
             }

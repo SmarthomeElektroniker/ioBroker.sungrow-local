@@ -470,5 +470,54 @@ tests.integration(path.join(__dirname, '..'), {
                 assert.strictEqual(fake.state.units[1].holding.get(13049), 2);
             });
         });
+
+        suite('Register objects without default value (0.4.1)', getHarness => {
+            it('new objects have no def and no state before the first read; def of old objects is removed, custom settings and value stay', async function () {
+                this.timeout(60000);
+                const harness = getHarness();
+                const ns = 'sungrow-local.0';
+                const oldId = `${ns}.inputRegisters.1.43034_Total_active_power_output_WR`;
+                // object as created by 0.4.0 (def 0) with a history setting and a value
+                await harness.objects.setObjectAsync(oldId, {
+                    type: 'state',
+                    common: {
+                        name: 'old',
+                        role: 'value.power',
+                        type: 'number',
+                        read: true,
+                        write: false,
+                        def: 0,
+                        unit: 'W',
+                        custom: { 'history.0': { enabled: true } },
+                    },
+                    native: {},
+                });
+                await harness.states.setStateAsync(oldId, { val: 1234, ack: true });
+                // no active poll group: nothing is read, only the objects are created
+                const instObj = await harness.objects.getObjectAsync('system.adapter.sungrow-local.0');
+                instObj.native = { ...io.native, host: '127.0.0.1', port: 1, groups: [] };
+                await harness.objects.setObjectAsync('system.adapter.sungrow-local.0', instObj);
+                await harness.startAdapterAndWait();
+                const newId = `${ns}.holdingRegisters.1.53050_EMS_mode_selection`;
+                let obj;
+                let old;
+                const end = Date.now() + 20000;
+                while (Date.now() < end) {
+                    obj = await harness.objects.getObjectAsync(newId);
+                    old = await harness.objects.getObjectAsync(oldId);
+                    if (obj && old && !('def' in old.common)) {
+                        break;
+                    }
+                    await new Promise(r => setTimeout(r, 300));
+                }
+                assert.ok(obj, 'new object created');
+                assert.ok(!('def' in obj.common), 'new object without def');
+                assert.strictEqual(await harness.states.getStateAsync(newId), null, 'no state before the first read');
+                assert.ok(!('def' in old.common), 'def removed from the old object');
+                assert.deepStrictEqual(old.common.custom, { 'history.0': { enabled: true } }, 'custom settings stay');
+                const val = await harness.states.getStateAsync(oldId);
+                assert.strictEqual(val && val.val, 1234, 'value stays');
+            });
+        });
     },
 });
