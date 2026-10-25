@@ -237,7 +237,7 @@ requests, late answers, total failure and connection loss.
 	### **WORK IN PROGRESS**
 -->
 
-### 0.4.0 (2026-10-24)
+### 0.4.0 (2026-10-25)
 
 - New configuration page with React components (admin >= 8.2): overview with traffic lights and live tiles,
   register catalog by topic with search, drag & drop into poll groups and a live bus load per group and in
