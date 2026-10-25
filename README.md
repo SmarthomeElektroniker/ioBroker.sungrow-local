@@ -236,8 +236,7 @@ requests, late answers, total failure and connection loss.
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
-
-### **WORK IN PROGRESS**
+### 0.4.1 (2026-10-25)
 
 - Register objects are created without a default value: before the first read there is no state
   (previously 0 with ack=true, so scripts could react on e.g. SoC 0 % at adapter start). The default value
