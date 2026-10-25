@@ -237,6 +237,14 @@ requests, late answers, total failure and connection loss.
 	### **WORK IN PROGRESS**
 -->
 
+### **WORK IN PROGRESS**
+
+- Register objects are created without a default value: before the first read there is no state
+  (previously 0 with ack=true, so scripts could react on e.g. SoC 0 % at adapter start). The default value
+  is removed from existing objects; IDs, custom settings and values stay.
+- Debug log line for every incoming command.
+- Tests: the EMS command test waits until the adapter is ready (was flaky on slow Windows CI runners).
+
 ### 0.4.0 (2026-10-25)
 
 - New configuration page with React components (admin >= 8.2): overview with traffic lights and live tiles,
