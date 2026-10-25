@@ -85,7 +85,7 @@ tests.integration(path.join(__dirname, '..'), {
                     ['%', 'value.battery', false, 10743, 2],
                 );
                 const charge = await harness.objects.getObjectAsync(
-                    `${ns}.holdingRegisters.1.53051_Charge/discharge_command`,
+                    `${ns}.holdingRegisters.1.53051_Charge_discharge_command`,
                 );
                 assert.strictEqual(charge.common.write, true);
                 // 0.2.0: plain text for status/control registers, limits for set points, MPPT 3 display name
@@ -517,6 +517,74 @@ tests.integration(path.join(__dirname, '..'), {
                 assert.deepStrictEqual(old.common.custom, { 'history.0': { enabled: true } }, 'custom settings stay');
                 const val = await harness.states.getStateAsync(oldId);
                 assert.strictEqual(val && val.val, 1234, 'value stays');
+            });
+        });
+
+        suite('State IDs without special characters (0.4.3)', getHarness => {
+            it('moves custom settings (history with aliasId), value and rooms from the old "/" ID and deletes it; role level.mode becomes level', async function () {
+                this.timeout(60000);
+                const harness = getHarness();
+                const ns = 'sungrow-local.0';
+                const oldId = `${ns}.holdingRegisters.1.53051_Charge/discharge_command`;
+                const newId = `${ns}.holdingRegisters.1.53051_Charge_discharge_command`;
+                await harness.objects.setObjectAsync(oldId, {
+                    type: 'state',
+                    common: {
+                        name: 'old',
+                        role: 'level.mode',
+                        type: 'number',
+                        read: true,
+                        write: true,
+                        custom: { 'history.0': { enabled: true, changesOnly: true } },
+                    },
+                    native: {},
+                });
+                await harness.states.setStateAsync(oldId, { val: 204, ack: true });
+                await harness.objects.setObjectAsync('enum.rooms.test', {
+                    type: 'enum',
+                    common: { name: 'Test', members: [oldId, `${ns}.info.connection`] },
+                    native: {},
+                });
+                // configuration of 0.1/0.2 with the invalid role, no active poll group
+                const instObj = await harness.objects.getObjectAsync('system.adapter.sungrow-local.0');
+                instObj.native = {
+                    ...io.native,
+                    holdingRegs: io.native.holdingRegs.map(r =>
+                        r._address === 53051 ? { ...r, role: 'level.mode' } : r,
+                    ),
+                    host: '127.0.0.1',
+                    port: 1,
+                    groups: [],
+                    templateVersion: 99,
+                };
+                await harness.objects.setObjectAsync('system.adapter.sungrow-local.0', instObj);
+                await harness.startAdapterAndWait();
+                let obj;
+                let old = true;
+                const end = Date.now() + 20000;
+                while (Date.now() < end) {
+                    obj = await harness.objects.getObjectAsync(newId);
+                    old = await harness.objects.getObjectAsync(oldId);
+                    if (obj && !old && obj.common.custom) {
+                        break;
+                    }
+                    await new Promise(r => setTimeout(r, 300));
+                }
+                assert.ok(obj, 'new object created');
+                assert.ok(!old, 'old object deleted');
+                assert.strictEqual(obj.common.role, 'level');
+                assert.deepStrictEqual(obj.common.custom, {
+                    'history.0': { enabled: true, changesOnly: true, aliasId: oldId },
+                });
+                const val = await harness.states.getStateAsync(newId);
+                assert.deepStrictEqual([val && val.val, val && val.ack], [204, true]);
+                assert.strictEqual(await harness.states.getStateAsync(oldId), null, 'old state deleted');
+                const room = await harness.objects.getObjectAsync('enum.rooms.test');
+                assert.deepStrictEqual(room.common.members, [newId, `${ns}.info.connection`]);
+                // no ID of the adapter contains characters outside [A-Za-z0-9_,-]
+                const all = await harness.objects.getObjectListAsync({ startkey: `${ns}.`, endkey: `${ns}.\u9999` });
+                const bad = all.rows.map(r => r.id).filter(id => !/^[A-Za-z0-9_,.-]+$/.test(id));
+                assert.deepStrictEqual(bad, []);
             });
         });
     },

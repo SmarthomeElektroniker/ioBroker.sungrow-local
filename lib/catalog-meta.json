@@ -1,5 +1,5 @@
 {
- "version": 5,
+ "version": 6,
  "registers": {
   "holdingRegs:1:45000": {
    "doc": 5000,

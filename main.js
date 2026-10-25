@@ -494,6 +494,8 @@ class SungrowLocal extends utils.Adapter {
                 await this.addToRoom(`${this.namespace}.${r.id}`, r.room);
             }
         }
+        // IDs of up to 0.4.2 with characters outside [A-Za-z0-9_,-] (e.g. "/"): move settings, value and rooms
+        await this.migrateLegacyIds(regs);
         // remove states of registers that are no longer configured
         const wanted = new Set(regs.map(r => `${this.namespace}.${r.id}`));
         for (const regName of Object.values(REG_NAMES)) {
@@ -507,6 +509,78 @@ class SungrowLocal extends utils.Adapter {
                     await this.delForeignObjectAsync(row.id);
                 }
             }
+        }
+    }
+
+    /**
+     * Versions up to 0.4.2 kept characters such as "/" in the state IDs ("53051_Charge/discharge_command").
+     * For every register whose ID changed and whose old object still exists: the custom settings (history,
+     * sql, influxdb ...) go to the new object - history adapters with "aliasId" = old ID, so the recorded data
+     * goes on under the old name -, the last value is copied, room/function enums are switched to the new ID,
+     * then the old object is deleted. Scripts and visualisations must be switched by hand (log message).
+     *
+     * @param {import('./lib/registers').Reg[]} regs Registers (new objects already created)
+     */
+    async migrateLegacyIds(regs) {
+        const moved = [];
+        /** @type {Record<string, ioBroker.Object> | null} */
+        let enums = null;
+        for (const r of regs) {
+            if (!r.legacyId || r.legacyId === r.id) {
+                continue;
+            }
+            const oldId = `${this.namespace}.${r.legacyId}`;
+            const newId = `${this.namespace}.${r.id}`;
+            const old = await this.getForeignObjectAsync(oldId);
+            if (!old) {
+                continue;
+            }
+            const custom = old.common && old.common.custom;
+            const now = await this.getForeignObjectAsync(newId);
+            const nowCustom = now && now.common && now.common.custom;
+            if (custom && Object.keys(custom).length && !(nowCustom && Object.keys(nowCustom).length)) {
+                /** @type {Record<string, any>} */
+                const out = {};
+                for (const [inst, c] of Object.entries(custom)) {
+                    if (!c || typeof c !== 'object') {
+                        continue;
+                    }
+                    const cc = { ...c };
+                    if (/^(history|sql|influxdb)\.\d+$/.test(inst) && !cc.aliasId) {
+                        cc.aliasId = oldId;
+                    }
+                    out[inst] = cc;
+                }
+                await this.extendForeignObjectAsync(newId, { common: { custom: out } });
+            }
+            const oldState = await this.getForeignStateAsync(oldId);
+            const newState = await this.getForeignStateAsync(newId);
+            if (oldState && oldState.val !== null && oldState.val !== undefined && !newState) {
+                await this.setForeignStateAsync(newId, {
+                    val: oldState.val,
+                    ack: true,
+                    ts: oldState.ts,
+                    lc: oldState.lc,
+                    q: oldState.q || 0,
+                });
+            }
+            if (!enums) {
+                enums = (await this.getForeignObjectsAsync('enum.*', 'enum')) || {};
+            }
+            for (const e of Object.values(enums)) {
+                const members = e && e.common && Array.isArray(e.common.members) ? e.common.members : null;
+                if (members && members.includes(oldId)) {
+                    e.common.members = [...new Set(members.map(m => (m === oldId ? newId : m)))];
+                    await this.setForeignObjectAsync(e._id, e);
+                }
+            }
+            await this.delForeignObjectAsync(oldId);
+            moved.push(`${oldId} -> ${newId}`);
+        }
+        if (moved.length) {
+            this.log.warn(
+                `State IDs without special characters (ioBroker recommendation): ${moved.join(', ')}. Settings (history ...), value and rooms were moved - please switch scripts and visualisations to the new IDs.`,
+            );
         }
     }
 

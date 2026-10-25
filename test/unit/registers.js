@@ -19,15 +19,45 @@ describe('registers: compatibility with ioBroker.modbus', () => {
         assert.strictEqual(holding.regs.length, 9);
     });
 
-    it('builds exactly the state IDs of an ioBroker.modbus instance (same IDs => migration by text replacement)', () => {
-        const expected = fs
-            .readFileSync(path.join(fixtures, 'modbus-state-ids.txt'), 'utf8')
-            .split('\n')
-            .map(s => s.trim())
-            .filter(Boolean)
-            .sort();
+    const modbusIds = fs
+        .readFileSync(path.join(fixtures, 'modbus-state-ids.txt'), 'utf8')
+        .split('\n')
+        .map(s => s.trim())
+        .filter(Boolean)
+        .sort();
+
+    it('keeps the old IDs (= ioBroker.modbus, up to 0.4.2) as legacyId for the migration', () => {
+        const ours = [...input.regs, ...holding.regs].map(r => r.legacyId).sort();
+        assert.deepStrictEqual(ours, modbusIds);
+    });
+
+    it('builds the ioBroker.modbus IDs, only characters outside [A-Za-z0-9_,-] replaced by _ (0.4.3)', () => {
         const ours = [...input.regs, ...holding.regs].map(r => r.id).sort();
-        assert.deepStrictEqual(ours, expected);
+        assert.deepStrictEqual(ours, modbusIds.map(id => id.replace(/[^A-Za-z0-9_,.-]/g, '_')).sort());
+        for (const id of ours) {
+            assert.match(id, /^[A-Za-z0-9_,.-]+$/);
+        }
+        const changed = [...input.regs, ...holding.regs].filter(r => r.id !== r.legacyId).map(r => r.id);
+        assert.deepStrictEqual(changed.sort(), [
+            'holdingRegisters.1.53051_Charge_discharge_command',
+            'holdingRegisters.1.53052_Charge_discharge_power',
+            'holdingRegisters.1.70230_Manual_Scanning_-_ON_OFF',
+            'holdingRegisters.1.72535_Zustand_Netzanschluss_-_ON_OFF',
+        ]);
+    });
+
+    it('transliterates umlauts and replaces other special characters in IDs', () => {
+        assert.strictEqual(R.idName('Lüfter Größe (%)'), 'Luefter_Groesse____');
+        assert.strictEqual(R.idName('Charge/discharge command'), 'Charge_discharge_command');
+        assert.strictEqual(R.idName('a.b c,d-e'), 'a_b_c,d-e');
+    });
+
+    it('replaces roles that are not in the ioBroker role list (level.mode -> level)', () => {
+        assert.strictEqual(R.fixRole('level.mode'), 'level');
+        assert.strictEqual(R.fixRole(''), 'value');
+        assert.strictEqual(R.fixRole('value.power'), 'value.power');
+        const regs = R.normalise('holdingRegs', [{ _address: 53050, name: 'EMS', role: 'level.mode' }]).regs;
+        assert.strictEqual(regs[0].role, 'level');
     });
 
     it('computes the protocol addresses that ioBroker.modbus stored (_address minus 30001/40001)', () => {
@@ -87,7 +117,15 @@ describe('registers: compatibility with ioBroker.modbus', () => {
         const soc = input.regs.find(r => r.alias === 40744);
         assert.deepStrictEqual(
             [soc.id, soc.description, soc.unit, soc.factor, soc.type, soc.role, soc.deviceId],
-            ['inputRegisters.2.40744_Battery_level', 'State of charge (SoC, from BMS)', '%', 0.1, 'uint16be', 'value.battery', 2],
+            [
+                'inputRegisters.2.40744_Battery_level',
+                'State of charge (SoC, from BMS)',
+                '%',
+                0.1,
+                'uint16be',
+                'value.battery',
+                2,
+            ],
         );
         const total = input.regs.find(r => r.alias === 35004);
         assert.deepStrictEqual([total.type, total.len, total.factor], ['uint32sw', 2, 0.1]);

@@ -17,6 +17,8 @@ const fixtureIds = fs
     .split('\n')
     .map(l => l.trim())
     .filter(Boolean)
+    // 0.4.3: characters outside [A-Za-z0-9_,-] ("/") are replaced by "_"
+    .map(id => id.replace(/[^A-Za-z0-9_,.-]/g, '_'))
     .sort();
 
 /**
@@ -203,6 +205,16 @@ describe('catalog: migration of an existing instance (0.2.x -> 0.3.0)', () => {
         assert.deepStrictEqual(fixed, ['43008 type uint32sw -> int32sw']);
         assert.strictEqual(native.inputRegs.length, v1.inputRegs.length);
         assert.strictEqual(mergeCatalog(native).changed, false);
+    });
+
+    it('template v6: the invalid role level.mode of old configurations becomes level, other roles stay', () => {
+        const n = oldNative();
+        n.holdingRegs = n.holdingRegs.map(r => (r._address === 53050 ? { ...r, role: 'level.mode' } : r));
+        n.holdingRegs[1] = { ...n.holdingRegs[1], role: 'switch' };
+        const out = mergeCatalog(n).native;
+        assert.strictEqual(out.holdingRegs.find(r => r._address === 53050).role, 'level');
+        assert.strictEqual(out.holdingRegs[1].role, 'switch');
+        assert.ok(![...out.inputRegs, ...out.holdingRegs].some(r => r.role === 'level.mode'));
     });
 
     it('io-package defaults already contain the corrected values', () => {
