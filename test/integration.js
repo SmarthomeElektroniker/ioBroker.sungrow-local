@@ -432,7 +432,18 @@ tests.integration(path.join(__dirname, '..'), {
                     writes,
                     'nothing written',
                 );
-                const log = JSON.parse((await harness.states.getStateAsync(`${ns}.info.write.log`)).val);
+                // the write log can lag behind on slow CI runners (Windows): poll for the entry
+                let log = [];
+                const endLog = Date.now() + 10000;
+                while (Date.now() < endLog) {
+                    const ls = await harness.states.getStateAsync(`${ns}.info.write.log`);
+                    log = ls && ls.val ? JSON.parse(ls.val) : [];
+                    if (log[0] && log[0].result) {
+                        break;
+                    }
+                    await new Promise(r => setTimeout(r, 300));
+                }
+                assert.ok(log[0], 'write log has an entry');
                 assert.strictEqual(log[0].result, 'rejected');
                 assert.match(log[0].detail, /not an allowed value/);
                 // 2 (forced mode) is allowed and written (simulated gateway only)
