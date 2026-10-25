@@ -181,6 +181,10 @@ This holds for instances with *aliases* switched on. Most Sungrow guides for ioB
 **off** and enter protocol addresses (IDs like `13022_Battery_level`): add 30001 (input) / 40001 (holding) to
 those addresses – the IDs then change (`13022_…` → `43023_…`), scripts and history must be adapted.
 
+One exception since 0.4.3: characters outside `[A-Za-z0-9_,-]` in the name column are replaced by `_` (umlauts
+are transliterated), as ioBroker recommends for object IDs. ioBroker.modbus keeps e.g. the `/` of
+`53051_Charge/discharge_command`; here the ID is `53051_Charge_discharge_command`. Replace these IDs as well.
+
 Suggested order: back up; switch scripts/watchdogs to the new instance; disable the old Modbus instance (the
 WiNet should only see one client); enter the host and enable this adapter (read-only first); compare the values;
 then allow writes. History data of the old states can be continued with the `aliasId` setting of the history
@@ -237,6 +241,21 @@ requests, late answers, total failure and connection loss.
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
+### 0.4.3 (2026-10-25)
+
+- State IDs only contain the characters recommended by ioBroker (`[A-Za-z0-9_,-]`): other characters of the
+  name column (e.g. `/`) become `_`, umlauts are transliterated. Affected defaults:
+  `holdingRegisters.1.53051_Charge_discharge_command`, `53052_Charge_discharge_power`,
+  `70230_Manual_Scanning_-_ON_OFF`, `72535_Zustand_Netzanschluss_-_ON_OFF`. Existing objects are migrated on the
+  first start: custom settings (history/sql/influxdb with `aliasId` = old ID, so the recorded data goes on), the
+  last value and the rooms/functions move to the new ID, the old object is deleted. **Switch scripts and
+  visualisations to the new IDs** (the log lists them).
+- The role `level.mode` of older configurations (not in the ioBroker role list) becomes `level` (template v6).
+- vis template *Akku*: register 53051 is labelled "Zwangsbefehl (nur im Zwangsmodus)" - it only acts in the EMS
+  forced mode.
+- Poller: no variable named `wait` (repository checker W5051); the pause between requests stays on the adapter
+  timers, because stopping must end it immediately.
+
 ### 0.4.2 (2026-10-25)
 
 - When stopping, the connection is closed without waiting (no plain timer during shutdown).

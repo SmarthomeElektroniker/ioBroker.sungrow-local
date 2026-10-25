@@ -29,6 +29,9 @@ iSolarCloud. Er ersetzt eine generische `ioBroker.modbus`-Instanz und behält de
   Geräte (SBH: 5 s) kommen hinzu. Grün < 80 %, gelb bis 100 %, rot darüber.
 - **Umstieg von ioBroker.modbus:** gleiche IDs, Namen, Einheiten, Faktoren, Typen und Rollen – Textersatz
   `modbus.N.` → `sungrow-local.0.`. Die alte Modbus-Instanz vorher abschalten: das WiNet soll nur einen Client sehen.
+  Ausnahme seit 0.4.3: Zeichen außerhalb `[A-Za-z0-9_,-]` in der Namensspalte werden zu `_` (Umlaute
+  umschrieben), wie ioBroker es für Objekt-IDs empfiehlt – z. B. `53051_Charge/discharge_command` →
+  `53051_Charge_discharge_command`. Diese IDs beim Textersatz mit ändern.
 - **Falle Weißliste:** Das WiNet-S2 hat eine IP-Weißliste für Modbus TCP. Nicht eingetragene Absender bekommen
   sofort `ECONNRESET` – die IP des ioBroker-Rechners (nach NAT) im WiNet eintragen.
 - Die Vorgabetabellen sind englisch beschriftet; Namen, Klartexte, Einheiten und Grenzen lassen sich in den
