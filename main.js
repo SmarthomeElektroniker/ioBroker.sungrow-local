@@ -619,6 +619,7 @@ class SungrowLocal extends utils.Adapter {
             return;
         }
         const reg = this.regsById.get(id);
+        this.log.debug(`command ${id} = ${state.val}${reg ? '' : ' (unknown register)'}`);
         if (!reg) {
             return;
         }

@@ -413,18 +413,38 @@ tests.integration(path.join(__dirname, '..'), {
                 assert.deepStrictEqual(Object.keys(ems.common.states), ['0', '2', '3', '4', '8']);
                 assert.ok(/self-consumption/i.test(ems.common.states['0']), ems.common.states['0']);
                 const id = `${ns}.holdingRegisters.1.53050_EMS_mode_selection`;
-                const end = Date.now() + 15000;
+                // Wait until the adapter is really ready: the object's def value (0, ack) exists as soon
+                // as the object is created - long before the adapter subscribes to its states. A command
+                // sent in that gap is lost (seen on the slow Windows runner). info.connection only turns
+                // true after the subscription, and the device value must be read after that.
+                let connTs = 0;
+                const end = Date.now() + 20000;
                 for (;;) {
+                    if (!connTs) {
+                        const c = await harness.states.getStateAsync(`${ns}.info.connection`);
+                        connTs = c && c.val === true ? c.ts : 0;
+                    }
                     const st = await harness.states.getStateAsync(id);
-                    if ((st && st.ack && st.val === 0) || Date.now() > end) {
+                    if ((connTs && st && st.ack && st.val === 0 && st.ts >= connTs) || Date.now() > end) {
                         break;
                     }
                     await new Promise(r => setTimeout(r, 200));
                 }
+                assert.ok(connTs, 'adapter connected');
                 const writes = fake.count(r => r.fc === 6 && r.addr === 13049);
                 // 5 is not in the value table: rejected, nothing written, device value restored, logged
                 await harness.states.setStateAsync(id, { val: 5, ack: false });
-                await new Promise(r => setTimeout(r, 2000));
+                let log = [];
+                const endLog = Date.now() + 5000;
+                while (Date.now() < endLog) {
+                    await new Promise(r => setTimeout(r, 300));
+                    const ls = await harness.states.getStateAsync(`${ns}.info.write.log`);
+                    log = ls && ls.val ? JSON.parse(ls.val) : [];
+                    if (log[0] && log[0].result) {
+                        break;
+                    }
+                }
+                await new Promise(r => setTimeout(r, 1000));
                 const after = await harness.states.getStateAsync(id);
                 assert.deepStrictEqual([after.val, after.ack], [0, true]);
                 assert.strictEqual(
@@ -432,17 +452,6 @@ tests.integration(path.join(__dirname, '..'), {
                     writes,
                     'nothing written',
                 );
-                // the write log can lag behind on slow CI runners (Windows): poll for the entry
-                let log = [];
-                const endLog = Date.now() + 10000;
-                while (Date.now() < endLog) {
-                    const ls = await harness.states.getStateAsync(`${ns}.info.write.log`);
-                    log = ls && ls.val ? JSON.parse(ls.val) : [];
-                    if (log[0] && log[0].result) {
-                        break;
-                    }
-                    await new Promise(r => setTimeout(r, 300));
-                }
                 assert.ok(log[0], 'write log has an entry');
                 assert.strictEqual(log[0].result, 'rejected');
                 assert.match(log[0].detail, /not an allowed value/);
