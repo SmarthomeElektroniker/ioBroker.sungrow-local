@@ -130,7 +130,7 @@
     "type_uint32sb": "U32 – bytes verwisseld in elk woord (uint32sb)",
     "type_uint32sw": "U32 – 32 bit, laag woord eerst – Sungrow (uint32sw)",
     "type_uint64be": "U64 – 64-bits (uint64be)",
-    "type_uint64le": "U64 – 64 bit little endian (uint64le)",
+    "type_uint64le": "U64 – 64-bits, little-endian bytevolgorde (uint64le)",
     "type_uint8be": "U8 – lage byte (uint8be)",
     "type_uint8le": "U8 – hoge byte (uint8le)",
     "warnIntervalTooShort": "Korter dan als stabiel gemeten (live >= 5 s, akku >= 120 s) – opslaan kan, maar verwacht overgeslagen rondes/time-outs",

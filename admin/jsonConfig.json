@@ -348,22 +348,26 @@
                         }
                     ],
                     "help": "helpHAddrMode",
-                    "doNotSave": true
+                    "doNotSave": true,
+                    "lg": 5,
+                    "xl": 5
                 },
                 "hAddress": {
                     "type": "number",
                     "label": "labelHAddress",
-                    "xs": 6,
+                    "xs": 12,
                     "sm": 3,
                     "md": 2,
                     "min": 0,
                     "default": 13023,
-                    "doNotSave": true
+                    "doNotSave": true,
+                    "lg": 2,
+                    "xl": 2
                 },
                 "hRegType": {
                     "type": "select",
                     "label": "labelHRegType",
-                    "xs": 6,
+                    "xs": 12,
                     "sm": 3,
                     "md": 3,
                     "default": "inputRegs",
@@ -377,19 +381,23 @@
                             "value": "holdingRegs"
                         }
                     ],
-                    "doNotSave": true
+                    "doNotSave": true,
+                    "lg": 3,
+                    "xl": 3
                 },
                 "hUnit": {
                     "type": "number",
                     "label": "labelHUnit",
-                    "xs": 6,
+                    "xs": 12,
                     "sm": 3,
                     "md": 2,
                     "min": 0,
                     "max": 247,
                     "default": 1,
                     "help": "helpHUnit",
-                    "doNotSave": true
+                    "doNotSave": true,
+                    "lg": 2,
+                    "xl": 2
                 },
                 "hType": {
                     "type": "select",
@@ -513,24 +521,28 @@
                             "value": "stringle"
                         }
                     ],
-                    "doNotSave": true
+                    "doNotSave": true,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "hLen": {
                     "type": "number",
                     "label": "labelHLen",
-                    "xs": 6,
+                    "xs": 12,
                     "sm": 2,
                     "md": 1,
                     "min": 1,
                     "max": 32,
                     "default": 1,
                     "hidden": "!data.hType || !data.hType.startsWith('string')",
-                    "doNotSave": true
+                    "doNotSave": true,
+                    "lg": 1,
+                    "xl": 1
                 },
                 "hFactor": {
                     "type": "autocomplete",
                     "label": "labelHFactor",
-                    "xs": 6,
+                    "xs": 12,
                     "sm": 4,
                     "md": 3,
                     "freeSolo": true,
@@ -561,26 +573,32 @@
                         }
                     ],
                     "default": "0.1",
-                    "doNotSave": true
+                    "doNotSave": true,
+                    "lg": 3,
+                    "xl": 3
                 },
                 "hOffset": {
                     "type": "text",
                     "label": "labelHOffset",
-                    "xs": 6,
+                    "xs": 12,
                     "sm": 2,
                     "md": 2,
                     "default": "0",
-                    "doNotSave": true
+                    "doNotSave": true,
+                    "lg": 2,
+                    "xl": 2
                 },
                 "hUnitText": {
                     "type": "text",
                     "label": "labelHUnitText",
-                    "xs": 6,
+                    "xs": 12,
                     "sm": 2,
                     "md": 2,
                     "default": "%",
                     "help": "helpHUnitText",
-                    "doNotSave": true
+                    "doNotSave": true,
+                    "lg": 2,
+                    "xl": 2
                 },
                 "hName": {
                     "type": "text",
@@ -590,7 +608,9 @@
                     "sm": 6,
                     "md": 4,
                     "default": "Battery level",
-                    "doNotSave": true
+                    "doNotSave": true,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "hWords": {
                     "type": "text",
@@ -600,7 +620,9 @@
                     "md": 5,
                     "default": "950",
                     "help": "helpHWords",
-                    "doNotSave": true
+                    "doNotSave": true,
+                    "lg": 5,
+                    "xl": 5
                 },
                 "hLive": {
                     "type": "checkbox",
@@ -610,7 +632,9 @@
                     "md": 3,
                     "default": false,
                     "help": "helpHLive",
-                    "doNotSave": true
+                    "doNotSave": true,
+                    "lg": 3,
+                    "xl": 3
                 },
                 "hResult": {
                     "type": "textSendTo",

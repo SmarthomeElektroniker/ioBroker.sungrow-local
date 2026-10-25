@@ -1,7 +1,9 @@
 version: 2
 updates:
   - package-ecosystem: npm
-    directory: "/"
+    directories:
+      - "/"
+      - "/src-admin"
     schedule:
       interval: cron
       cronjob: "22 6 8 * *"

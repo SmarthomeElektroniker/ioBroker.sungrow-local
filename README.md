@@ -119,7 +119,7 @@ The register tables contain every register this adapter knows, **ticked** ones a
   you configured yourself always win – a template row that overlaps one of your registers is not added.
 - Column *source / note* tells where a row comes from:
   - **HA mkaiser (MIT)** – [Sungrow-SHx-Inverter-Modbus-Home-Assistant](https://github.com/mkaiser/Sungrow-SHx-Inverter-Modbus-Home-Assistant)
-    by Martin Kaiser, MIT License, Copyright (c) 2025 Martin Kaiser. Register addresses, data types, scaling and
+    by Martin Kaiser, MIT License, © 2025 Martin Kaiser. Register addresses, data types, scaling and
     the value tables (device type codes, on/off codes, EMS and load adjustment modes) were taken from
     `modbus_sungrow.yaml`.
   - **reference list** – register list of the reference installation (SH20T + SBH400 via WiNet-S2), checked on
@@ -236,6 +236,12 @@ requests, late answers, total failure and connection loss.
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
+
+### **WORK IN PROGRESS**
+
+- When stopping, the connection is closed without waiting (no plain timer during shutdown).
+- Admin: sizes for large screens in the tab *Tools*; Dutch text completed.
+
 ### 0.4.1 (2026-10-25)
 
 - Register objects are created without a default value: before the first read there is no state
