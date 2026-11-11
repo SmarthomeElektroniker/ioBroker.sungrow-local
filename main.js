@@ -801,6 +801,10 @@ class SungrowLocal extends utils.Adapter {
         if (!obj || !obj.command) {
             return;
         }
+        if (obj.command.startsWith('dm:')) {
+            // device manager: answered by lib/deviceManager.js (@iobroker/dm-utils)
+            return;
+        }
         if (obj.command === 'probe' || obj.command === 'wizardTest' || obj.command === 'analyse') {
             let res;
             try {

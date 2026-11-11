@@ -108,6 +108,10 @@
         "tier": 2,
         "mode": "daemon",
         "messagebox": true,
+        "supportedMessages": {
+            "custom": true,
+            "deviceManager": true
+        },
         "type": "energy",
         "compact": true,
         "connectionType": "local",
