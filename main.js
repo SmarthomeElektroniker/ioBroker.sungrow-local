@@ -25,6 +25,7 @@ const { mergeCatalog } = require('./lib/catalog');
 const { explain, resolve, implausible } = require('./lib/convert');
 const { Poller } = require('./lib/poller');
 const { analyse } = require('./lib/load');
+const { SungrowDeviceManagement } = require('./lib/deviceManager');
 const {
     T,
     DIAG,
@@ -79,6 +80,8 @@ class SungrowLocal extends utils.Adapter {
         this.writeLog = [];
         /** connection test of the setup wizard running */
         this.wizardRunning = false;
+        /** device manager: read-only cards for inverter, battery and grid meter (dm:* messages) */
+        this.deviceManagement = new SungrowDeviceManagement(this);
     }
 
     async onReady() {
