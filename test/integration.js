@@ -186,6 +186,26 @@ tests.integration(path.join(__dirname, '..'), {
                 );
                 assert.deepStrictEqual([probe.words, probe.value], [[955], 95.5]);
 
+                // device manager: read-only cards, no instance actions
+                const info = await new Promise(resolve =>
+                    harness.sendTo('sungrow-local.0', 'dm:instanceInfo', {}, resolve),
+                );
+                assert.strictEqual(info.apiVersion, 'v3');
+                assert.ok(!info.actions || info.actions.length === 0);
+                const loaded = await new Promise(resolve =>
+                    harness.sendTo('sungrow-local.0', 'dm:loadDevices', {}, resolve),
+                );
+                assert.deepStrictEqual(
+                    loaded.add.map(d => d.id),
+                    ['inverter', 'battery', 'meter'],
+                );
+                const dmSoc = loaded.add[1].controls.find(c => c.id === 'soc');
+                assert.ok(/^95[.,]5 %$/.test(dmSoc.state.val), JSON.stringify(dmSoc.state));
+                for (const d of loaded.add) {
+                    assert.ok(!d.actions || d.actions.length === 0);
+                    assert.ok(d.controls.every(c => c.type === 'info'));
+                }
+
                 // input registers are read-only: a foreign write is reset
                 await harness.states.setStateAsync(`${ns}.inputRegisters.1.35017_Total_DC_Power`, {
                     val: 1,
