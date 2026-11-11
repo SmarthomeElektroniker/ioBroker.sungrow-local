@@ -241,6 +241,16 @@ requests, late answers, total failure and connection loss.
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+
+- Device manager support (`@iobroker/dm-utils`): read-only cards for the running operation. *Inverter*:
+  connection, operating state, PV power, AC output, house consumption, inside temperature, PV yield today,
+  time of the last values and a fault indicator (43052). *Battery* (if a battery register is configured): state
+  of charge, power with direction, health, temperature, and - only shown - backup reserve, min./max. SoC and EMS
+  mode if these holding registers are polled. *Grid meter* (if 35601 is configured): power with import/feed-in,
+  import and feed-in today. No actions, no configuration and no writing from the cards; states, objects and
+  settings are unchanged.
+
 ### 0.4.3 (2026-10-25)
 
 - State IDs only contain the characters recommended by ioBroker (`[A-Za-z0-9_,-]`): other characters of the
