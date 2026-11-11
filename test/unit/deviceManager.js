@@ -192,6 +192,7 @@ describe('device manager: messages with a fake adapter', () => {
         for (const d of devices) {
             assert.ok(!d.actions || d.actions.length === 0, `${d.id}: no actions`);
             assert.strictEqual(d.status.connection.stateId, `${NS}.info.connection`);
+            assert.match(d.icon, /^data:image\/svg\+xml;base64,/, `${d.id}: header icon`);
             for (const c of d.controls) {
                 assert.strictEqual(c.type, 'info', `${d.id}.${c.id} is read only`);
                 assert.ok(!c.handler, `${d.id}.${c.id} has no write handler`);
