@@ -264,8 +264,8 @@ requests, late answers, total failure and connection loss.
   template register has a comma in its name; objects of an own register with a comma move to the new ID like in
   0.4.3.
 - Device manager support (`@iobroker/dm-utils`): read-only cards for the running operation. Directly on the card:
-  *Inverter* PV power and operating state, *Battery* (if a battery register is configured) state of charge and
-  power, *Grid meter* (if 35601 is configured) grid power, each with a live direction indicator (battery: sign of
+  *Inverter* PV power and operating state, *Battery* (if a battery register is configured) state of charge (card
+  status) and power, *Grid meter* (if 35601 is configured) grid power, each with a live direction indicator (battery: sign of
   43021 / 35214, + discharging, − charging; grid: 35601, + import, − feed-in) and the fault indicator (43052) on the
   inverter. The control dialog of a card shows more: AC output, house consumption, inside temperature, PV yield
   today, time of the last values; health, temperature, and - only shown - backup reserve, min./max. SoC and EMS

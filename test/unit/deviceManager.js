@@ -225,15 +225,16 @@ describe('device manager: messages with a fake adapter', () => {
 });
 
 describe('device manager: main values on the card (customInfo, 0.5.0)', () => {
-    it('inverter: PV power and operating state; battery: SoC and power; meter: grid power - read-only state items', () => {
+    it('inverter: PV power and operating state; battery: power (SoC in the status); meter: grid power - read-only state items', () => {
         const regs = templateRegs();
         const cards = Object.fromEntries(buildCards(regs, NS).map(c => [c.id, c]));
         const items = id => cardInfo(cards[id]).schema.items;
         assert.deepStrictEqual(Object.keys(items('inverter')), ['_pv', '_state']);
         assert.strictEqual(items('inverter')._pv.oid, idOf(regs, 35017));
         assert.strictEqual(items('inverter')._state.oid, idOf(regs, 43000));
-        assert.deepStrictEqual(Object.keys(items('battery')), ['_soc', '_battPower']);
-        assert.strictEqual(items('battery')._soc.oid, idOf(regs, 43023));
+        // SoC: battery status of the card (icon with value), not a second row
+        assert.deepStrictEqual(Object.keys(items('battery')), ['_battPower']);
+        assert.strictEqual(cards.battery.socId, idOf(regs, 43023));
         // template: 35214 (signed) is not ticked -> amount 43022, direction from the current 43021
         assert.strictEqual(items('battery')._battPower.oid, idOf(regs, 43022));
         assert.deepStrictEqual(items('battery')._battPower.label, TXT.battPower);
