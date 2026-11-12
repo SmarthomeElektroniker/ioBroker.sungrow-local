@@ -10,6 +10,10 @@
 Connects a **Sungrow hybrid inverter** (developed with an SH20T) and its **battery** (SBH series, e.g. SBH400)
 to ioBroker through the **WiNet-S2** communication module via **Modbus TCP** – locally, without iSolarCloud.
 
+Manufacturer: [Sungrow Power Supply Co., Ltd.](https://www.sungrowpower.com/en) – hybrid inverters of the SH
+series (e.g. SH-RT), batteries and the WiNet-S2 communication module: [product overview](https://en.sungrowpower.com/products).
+This adapter is an independent project (see [Trademark](#trademark)).
+
 The adapter was written as a replacement for a generic `ioBroker.modbus` instance that read the same registers.
 It keeps the state IDs of such an instance, so existing scripts, visualisations and history settings can be
 moved over by a simple text replacement (see [Migration](#migration-from-iobrokermodbus)).

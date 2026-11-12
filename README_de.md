@@ -8,6 +8,10 @@ Der Adapter bindet einen **Sungrow-Hybridwechselrichter** (entwickelt mit einem 
 (SBH-Serie, z. B. SBH400) über das Kommunikationsmodul **WiNet-S2** per **Modbus TCP** ein – lokal, ohne
 iSolarCloud. Er ersetzt eine generische `ioBroker.modbus`-Instanz und behält deren Datenpunkt-IDs bei.
 
+Hersteller: [Sungrow Power Supply Co., Ltd.](https://www.sungrowpower.com/en) – Hybridwechselrichter der SH-Serie
+(z. B. SH-RT), Batterien und das Kommunikationsmodul WiNet-S2: [Produktübersicht](https://en.sungrowpower.com/products).
+Der Adapter ist ein unabhängiges Projekt und steht in keiner Verbindung zu Sungrow.
+
 - **Genau eine TCP-Verbindung** zum WiNet, alle Anfragen streng nacheinander, mit Mindestpause.
 - **Abfragegruppen** mit eigenem Takt, Timeout und optionaler Pause nach jeder Anfrage (Vorgabe, an einer
   Referenzanlage gemessen: `live` 5 s, `energie` 60 s, `steuerung` 60 s, `akku` 120 s mit Timeout 15000 ms und
