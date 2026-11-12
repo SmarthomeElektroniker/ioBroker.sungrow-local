@@ -269,7 +269,7 @@ requests, late answers, total failure and connection loss.
   version 40721 of unit 2 + capacity 43039, e.g. Sungrow SBH400; nothing is guessed for other batteries);
   *Grid meter* (if 35601 is configured) grid power, import and feed-in today and total. Live direction indicators
   (battery: sign of 43021 / 35214, + discharging, − charging; grid: 35601, + import, − feed-in) and the fault
-  indicator (43052) on the inverter. A value whose register is not ticked is left out. The control dialog of a
+  indicator (43052) on the inverter with the tooltip "No fault" / "Fault: …". A value whose register is not ticked is left out. The control dialog of a
   card shows more (AC output, house consumption, temperatures, health, backup reserve, min./max. SoC, EMS mode if
   polled). No actions, no configuration and no writing from the cards.
 - README: link to the manufacturer and its product overview.
