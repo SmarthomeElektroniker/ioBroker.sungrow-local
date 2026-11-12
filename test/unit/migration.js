@@ -95,12 +95,13 @@ describe('registers: write release', () => {
 describe('migration to template v4: value tables (states) of writable registers', () => {
     const { META } = require('../../lib/catalog');
 
-    it('every holding register with a value table has it translated into all 11 languages', () => {
+    it('every register with a value table has it translated into all 11 languages', () => {
         const langs = ['en', 'de', 'ru', 'pt', 'nl', 'fr', 'it', 'es', 'pl', 'uk', 'zh-cn'];
         const withStates = Object.entries(META.registers).filter(([, m]) => m.states);
         assert.ok(withStates.length >= 20, String(withStates.length));
         for (const [key, m] of withStates) {
-            assert.ok(key.startsWith('holdingRegs:'), key);
+            // 0.5.1: also the operating state 43000 and the output type 35002 (input registers)
+            assert.ok(key.startsWith('holdingRegs:') || ['inputRegs:1:43000', 'inputRegs:1:35002'].includes(key), key);
             assert.deepStrictEqual(Object.keys(m.states), Object.keys(R.parseStates(m.statesDefault)), key);
             for (const texts of Object.values(m.states)) {
                 for (const l of langs) {

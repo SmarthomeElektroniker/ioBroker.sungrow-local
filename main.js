@@ -21,7 +21,7 @@ const {
     checkWriteValue,
     extract,
 } = require('./lib/registers');
-const { mergeCatalog, GROUP_RENAMES } = require('./lib/catalog');
+const { mergeCatalog, GROUP_RENAMES, templateStates, statesIn } = require('./lib/catalog');
 const { explain, resolve, implausible } = require('./lib/convert');
 const { Poller } = require('./lib/poller');
 const { analyse } = require('./lib/load');
@@ -648,19 +648,8 @@ class SungrowLocal extends utils.Adapter {
      * @returns {Record<string, string>|undefined} common.states or undefined (keep the configured texts)
      */
     localStates(r) {
-        const m = META.registers && META.registers[`${r.regType}:${r.deviceId}:${r.alias}`];
-        if (!m || !m.states || !m.statesDefault) {
-            return undefined;
-        }
-        if (r.statesRaw && r.statesRaw !== m.statesDefault) {
-            return undefined;
-        }
-        /** @type {Record<string, string>} */
-        const out = {};
-        for (const [k, t] of Object.entries(m.states)) {
-            out[k] = t[this.lang] || t.en;
-        }
-        return out;
+        const multi = templateStates(r.regType, r.deviceId, r.alias, r.statesRaw);
+        return multi ? statesIn(multi, this.lang) : undefined;
     }
 
     /**

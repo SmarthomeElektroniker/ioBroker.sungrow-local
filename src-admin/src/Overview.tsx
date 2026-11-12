@@ -47,6 +47,7 @@ import {
     num,
     rowLabel,
     rowStateId,
+    stateTexts,
     t,
     unitOf,
     useStates,
@@ -442,11 +443,18 @@ export function OverviewView(props: ConfigGenericProps & { onData: (d: Native) =
                     return { title: sid, value: '–', sub: t('tileGone') };
                 }
                 const unit = ref.row.unit ? ` ${String(ref.row.unit)}` : '';
+                // value table (translated template texts or own texts): the text instead of the raw code
+                const text =
+                    st && st.val !== null && st.val !== undefined
+                        ? stateTexts(ref.regType, ref.row)?.[String(st.val)]
+                        : undefined;
                 return {
                     title: rowLabel(ref.regType, ref.row),
-                    value: st
-                        ? `${typeof st.val === 'number' ? fmt(st.val, Number.isInteger(st.val) ? 0 : 1) : String(st.val)}${unit}`
-                        : '–',
+                    value: text
+                        ? text
+                        : st
+                          ? `${typeof st.val === 'number' ? fmt(st.val, Number.isInteger(st.val) ? 0 : 1) : String(st.val)}${unit}`
+                          : '–',
                     sub: st ? ago(st.ts) : '',
                     missing: isActive(ref) ? undefined : [{ regType: ref.regType, row: ref.row, index: ref.index }],
                 };
