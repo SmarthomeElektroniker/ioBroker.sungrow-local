@@ -14,6 +14,7 @@ const {
     formatRow,
     cardInfo,
     directionIndicator,
+    batteryModel,
     TXT,
     LANGS,
 } = require('../../lib/deviceManager');
@@ -76,10 +77,20 @@ describe('device manager: cards', () => {
             ['inverter', 'battery', 'meter'],
         );
         const rows = Object.fromEntries(cards.map(c => [c.id, c.rows.map(r => r.id)]));
-        assert.deepStrictEqual(rows.inverter, ['state', 'pv', 'ac', 'house', 'temp', 'pvToday', 'lastValues']);
+        assert.deepStrictEqual(rows.inverter, [
+            'pv',
+            'backup',
+            'ac',
+            'house',
+            'temp',
+            'pvToday',
+            'pvTotal',
+            'lastValues',
+        ]);
         assert.deepStrictEqual(rows.battery, [
             'soc',
             'battPower',
+            'battVoltage',
             'soh',
             'battTemp',
             'reserve',
@@ -87,7 +98,7 @@ describe('device manager: cards', () => {
             'maxSoc',
             'emsMode',
         ]);
-        assert.deepStrictEqual(rows.meter, ['grid', 'importToday', 'exportToday']);
+        assert.deepStrictEqual(rows.meter, ['grid', 'importToday', 'importTotal', 'exportToday', 'exportTotal']);
         assert.ok(cards[0].faultId && cards[0].faultId.includes('43052'));
         assert.ok(cards[1].socId && cards[1].socId.includes('43023'));
     });
@@ -207,7 +218,7 @@ describe('device manager: messages with a fake adapter', () => {
             }
         }
         const val = (dev, ctl) => devices.find(d => d.id === dev).controls.find(c => c.id === ctl).state.val;
-        assert.strictEqual(val('inverter', 'state'), 'Run');
+        assert.ok(!devices[0].controls.some(c => c.id === 'state'), 'no operating state (user decision)');
         assert.strictEqual(val('inverter', 'pv'), '5,10 kW');
         assert.strictEqual(val('inverter', 'house'), '1,97 kW');
         assert.strictEqual(val('battery', 'soc'), '87 %');
@@ -225,21 +236,28 @@ describe('device manager: messages with a fake adapter', () => {
 });
 
 describe('device manager: main values on the card (customInfo, 0.5.0)', () => {
-    it('inverter: PV power and operating state; battery: power (SoC in the status); meter: grid power - read-only state items', () => {
+    it('inverter: PV power, yield today/total, backup; battery: power and voltage (SoC in the status); meter: grid, import/feed-in today/total', () => {
         const regs = templateRegs();
         const cards = Object.fromEntries(buildCards(regs, NS).map(c => [c.id, c]));
         const items = id => cardInfo(cards[id]).schema.items;
-        assert.deepStrictEqual(Object.keys(items('inverter')), ['_pv', '_state']);
-        assert.strictEqual(items('inverter')._pv.oid, idOf(regs, 35017));
-        assert.strictEqual(items('inverter')._state.oid, idOf(regs, 43000));
+        const oids = id => Object.fromEntries(Object.entries(items(id)).map(([k, v]) => [k, v.oid]));
+        assert.deepStrictEqual(oids('inverter'), {
+            _pv: idOf(regs, 35017),
+            _pvToday: idOf(regs, 43002),
+            _pvTotal: idOf(regs, 43003),
+            _backup: idOf(regs, 35726),
+        });
         // SoC: battery status of the card (icon with value), not a second row
-        assert.deepStrictEqual(Object.keys(items('battery')), ['_battPower']);
+        assert.deepStrictEqual(oids('battery'), { _battPower: idOf(regs, 43022), _battVoltage: idOf(regs, 43020) });
         assert.strictEqual(cards.battery.socId, idOf(regs, 43023));
-        // template: 35214 (signed) is not ticked -> amount 43022, direction from the current 43021
-        assert.strictEqual(items('battery')._battPower.oid, idOf(regs, 43022));
         assert.deepStrictEqual(items('battery')._battPower.label, TXT.battPower);
-        assert.deepStrictEqual(Object.keys(items('meter')), ['_grid']);
-        assert.strictEqual(items('meter')._grid.oid, idOf(regs, 35601));
+        assert.deepStrictEqual(oids('meter'), {
+            _grid: idOf(regs, 35601),
+            _importToday: idOf(regs, 43036),
+            _importTotal: idOf(regs, 43037),
+            _exportToday: idOf(regs, 43045),
+            _exportTotal: idOf(regs, 43046),
+        });
         assert.strictEqual(items('meter')._grid.label.de, 'Netz (+ Bezug / − Einspeisung)');
         for (const id of ['inverter', 'battery', 'meter']) {
             assert.strictEqual(cardInfo(cards[id]).schema.type, 'panel');
@@ -250,6 +268,39 @@ describe('device manager: main values on the card (customInfo, 0.5.0)', () => {
                 assert.strictEqual(it.foreign, true);
             }
         }
+    });
+
+    it('a value whose register is not ticked is left out (no empty row)', () => {
+        const regs = templateRegs().filter(r => ![43003, 35726, 43037, 43046].includes(r.alias));
+        const cards = Object.fromEntries(buildCards(regs, NS).map(c => [c.id, c]));
+        assert.deepStrictEqual(Object.keys(cardInfo(cards.inverter).schema.items), ['_pv', '_pvToday']);
+        assert.deepStrictEqual(Object.keys(cardInfo(cards.meter).schema.items), [
+            '_grid',
+            '_importToday',
+            '_exportToday',
+        ]);
+        // battery voltage falls back to the BMS of unit 2
+        const noInv = templateRegs().filter(r => r.alias !== 43020);
+        const bat = buildCards(noInv, NS).find(c => c.id === 'battery');
+        assert.strictEqual(cardInfo(bat).schema.items._battVoltage.oid, idOf(noInv, 40741, 2));
+    });
+
+    it('battery manufacturer and model from the BMS software version and the capacity', () => {
+        assert.deepStrictEqual(batteryModel('SBHBCU-S_22011.04.02', 40.5), {
+            manufacturer: 'Sungrow',
+            model: 'SBH400',
+        });
+        assert.deepStrictEqual(batteryModel('SBHBCU-S_22011.04.02', 15.2), {
+            manufacturer: 'Sungrow',
+            model: 'SBH150',
+        });
+        assert.deepStrictEqual(batteryModel('SBR_BCU 1.0', 9.6), { manufacturer: 'Sungrow', model: 'SBR096' });
+        assert.deepStrictEqual(batteryModel('SBHBCU-S_22011.04.02', undefined), {
+            manufacturer: 'Sungrow',
+            model: 'SBH',
+        });
+        assert.deepStrictEqual(batteryModel('BYD HVS', 10.2), {});
+        assert.deepStrictEqual(batteryModel(undefined, 40), {});
     });
 
     it('battery direction: + = discharging, - = charging (43021); with 35214 the signed power is shown', () => {
@@ -310,6 +361,25 @@ describe('device manager: main values on the card (customInfo, 0.5.0)', () => {
             by.inverter.indicators.map(i => i.id),
             ['fault'],
         );
+        assert.ok(!by.inverter.manufacturer && !by.meter.manufacturer, 'no manufacturer on inverter and meter');
+        assert.ok(!by.battery.manufacturer, 'no BMS software version configured -> no guessed manufacturer');
         assert.deepStrictEqual(a.writes, []);
+    });
+
+    it('battery card: manufacturer and model when the BMS software version is read', async () => {
+        const regs = [
+            ...templateRegs(),
+            ...normalise('inputRegs', [
+                { _address: 40721, deviceId: 2, name: 'Bat Software version', type: 'string', len: 10 },
+            ]).regs,
+        ];
+        const a = fakeAdapter(regs, { [idOf(regs, 40721, 2)]: 'SBHBCU-S_22011.04.02', [idOf(regs, 43039)]: 40.5 });
+        const dm = new SungrowDeviceManagement(a);
+        /** @type {any[]} */
+        const devices = [];
+        await dm.loadDevices({ addDevice: d => devices.push(d), setTotalDevices: () => {} });
+        const bat = devices.find(d => d.id === 'battery');
+        assert.strictEqual(bat.manufacturer, 'Sungrow');
+        assert.strictEqual(bat.model, 'SBH400');
     });
 });

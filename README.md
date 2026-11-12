@@ -264,13 +264,15 @@ requests, late answers, total failure and connection loss.
   template register has a comma in its name; objects of an own register with a comma move to the new ID like in
   0.4.3.
 - Device manager support (`@iobroker/dm-utils`): read-only cards for the running operation. Directly on the card:
-  *Inverter* PV power and operating state, *Battery* (if a battery register is configured) state of charge (card
-  status) and power, *Grid meter* (if 35601 is configured) grid power, each with a live direction indicator (battery: sign of
-  43021 / 35214, + discharging, − charging; grid: 35601, + import, − feed-in) and the fault indicator (43052) on the
-  inverter. The control dialog of a card shows more: AC output, house consumption, inside temperature, PV yield
-  today, time of the last values; health, temperature, and - only shown - backup reserve, min./max. SoC and EMS
-  mode if these holding registers are polled; import and feed-in today. No actions, no configuration and no
-  writing from the cards.
+  *Inverter* PV power, PV yield today and total, backup output power; *Battery* (if a battery register is
+  configured) state of charge (card status), power and voltage, manufacturer and model from the BMS (software
+  version 40721 of unit 2 + capacity 43039, e.g. Sungrow SBH400; nothing is guessed for other batteries);
+  *Grid meter* (if 35601 is configured) grid power, import and feed-in today and total. Live direction indicators
+  (battery: sign of 43021 / 35214, + discharging, − charging; grid: 35601, + import, − feed-in) and the fault
+  indicator (43052) on the inverter. A value whose register is not ticked is left out. The control dialog of a
+  card shows more (AC output, house consumption, temperatures, health, backup reserve, min./max. SoC, EMS mode if
+  polled). No actions, no configuration and no writing from the cards.
+- Template: battery serial number and software version (unit 2) are in the group `info` (hourly).
 - README: link to the manufacturer and its product overview.
 
 ### 0.4.3 (2026-10-25)
