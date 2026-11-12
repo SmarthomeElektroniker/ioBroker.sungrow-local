@@ -15,6 +15,7 @@ const {
     cardInfo,
     directionIndicator,
     batteryModel,
+    faultIndicator,
     TXT,
     LANGS,
 } = require('../../lib/deviceManager');
@@ -258,7 +259,7 @@ describe('device manager: main values on the card (customInfo, 0.5.0)', () => {
             _exportToday: idOf(regs, 43045),
             _exportTotal: idOf(regs, 43046),
         });
-        assert.strictEqual(items('meter')._grid.label.de, 'Netz (+ Bezug / − Einspeisung)');
+        assert.strictEqual(items('meter')._grid.label.de, 'Netz');
         for (const id of ['inverter', 'battery', 'meter']) {
             assert.strictEqual(cardInfo(cards[id]).schema.type, 'panel');
             for (const it of Object.values(items(id))) {
@@ -381,5 +382,28 @@ describe('device manager: main values on the card (customInfo, 0.5.0)', () => {
         const bat = devices.find(d => d.id === 'battery');
         assert.strictEqual(bat.manufacturer, 'Sungrow');
         assert.strictEqual(bat.model, 'SBH400');
+    });
+});
+
+describe('device manager: fault indicator (tooltip)', () => {
+    const tip = (ind, v, l = 'de') => {
+        const lv = ind.levels.find(x => x.value === undefined || x.value === v);
+        return lv.tooltip[l];
+    };
+    it('0 = "Kein Fehler", otherwise "Fehler: ..." with the general text', () => {
+        const ind = faultIndicator('x.43052');
+        assert.strictEqual(tip(ind, 0), 'Kein Fehler');
+        assert.strictEqual(tip(ind, 0, 'en'), 'No fault');
+        assert.strictEqual(tip(ind, 17), 'Fehler: netzseitiger Fehlercode ≠ 0');
+        assert.strictEqual(ind.levels[0].color, 'ok');
+        assert.strictEqual(ind.levels.at(-1).color, 'error');
+    });
+    it('texts of a value table (common.states) of the user are named', () => {
+        const ind = faultIndicator('x.43052', { 0: 'ok', 2: 'Grid overvoltage', 7: { en: 'Island', de: 'Inselnetz' } });
+        assert.strictEqual(tip(ind, 0), 'Kein Fehler');
+        assert.strictEqual(tip(ind, 2), 'Fehler: Grid overvoltage');
+        assert.strictEqual(tip(ind, 7), 'Fehler: Inselnetz');
+        assert.strictEqual(tip(ind, 7, 'en'), 'Fault: Island');
+        assert.strictEqual(tip(ind, 99), 'Fehler: netzseitiger Fehlercode ≠ 0');
     });
 });
