@@ -771,7 +771,7 @@
                             "width": "12%",
                             "min": 1,
                             "default": 60,
-                            "validator": "!(data.name === 'live' && data.interval < 5) && !(data.name === 'akku' && data.interval < 120)",
+                            "validator": "!(data.name === 'live' && data.interval < 5) && !(data.name === 'battery' && data.interval < 120)",
                             "validatorErrorText": "warnIntervalTooShort",
                             "tooltip": "tipInterval"
                         },
@@ -782,7 +782,7 @@
                             "width": "12%",
                             "min": 6000,
                             "default": 10000,
-                            "validator": "!(data.name === 'akku' && data.timeout <= data.pauseAfter + 5000)",
+                            "validator": "!(data.name === 'battery' && data.timeout <= data.pauseAfter + 5000)",
                             "validatorErrorText": "warnTimeoutAkku",
                             "tooltip": "tipTimeout"
                         },
@@ -793,7 +793,7 @@
                             "width": "12%",
                             "min": 0,
                             "default": 0,
-                            "validator": "!(data.name === 'akku' && data.pauseAfter < 5000)",
+                            "validator": "!(data.name === 'battery' && data.pauseAfter < 5000)",
                             "validatorErrorText": "warnPauseAkku",
                             "tooltip": "tipPauseAfter"
                         },
@@ -1132,18 +1132,18 @@
                                     "noTranslation": true
                                 },
                                 {
-                                    "label": "energie",
-                                    "value": "energie",
+                                    "label": "energy",
+                                    "value": "energy",
                                     "noTranslation": true
                                 },
                                 {
-                                    "label": "steuerung",
-                                    "value": "steuerung",
+                                    "label": "control",
+                                    "value": "control",
                                     "noTranslation": true
                                 },
                                 {
-                                    "label": "akku",
-                                    "value": "akku",
+                                    "label": "battery",
+                                    "value": "battery",
                                     "noTranslation": true
                                 },
                                 {
@@ -1506,18 +1506,18 @@
                                     "noTranslation": true
                                 },
                                 {
-                                    "label": "energie",
-                                    "value": "energie",
+                                    "label": "energy",
+                                    "value": "energy",
                                     "noTranslation": true
                                 },
                                 {
-                                    "label": "steuerung",
-                                    "value": "steuerung",
+                                    "label": "control",
+                                    "value": "control",
                                     "noTranslation": true
                                 },
                                 {
-                                    "label": "akku",
-                                    "value": "akku",
+                                    "label": "battery",
+                                    "value": "battery",
                                     "noTranslation": true
                                 },
                                 {
@@ -1526,7 +1526,7 @@
                                     "noTranslation": true
                                 }
                             ],
-                            "default": "steuerung",
+                            "default": "control",
                             "filter": true,
                             "sort": true,
                             "width": "6%"

@@ -33,7 +33,7 @@ during which the bus is blocked. With a generic Modbus instance this leads to:
 - **Exactly one TCP connection** to the WiNet-S2. All requests are queued and sent strictly one after another,
   with a configurable minimum pause between them.
 - **Poll groups** with their own interval, request timeout and optional pause after each request. Defaults
-  (measured on a reference installation): `live` 5 s, `energie` 60 s, `steuerung` 60 s, `akku` 120 s with
+  (measured on a reference installation): `live` 5 s, `energy` 60 s, `control` 60 s, `battery` 120 s with
   timeout 15000 ms and a pause of 5000 ms. Shorter values are marked red in the admin UI (warning only).
   Blocks are built like in ioBroker.modbus (max. block size / max. gap), but per group.
 - **A timeout only fails its own block.** The connection is re-established only after N failures in a row
@@ -99,8 +99,8 @@ optional (there is a button for every action).
 ### Bus load model
 
 The gateway handles about **1.25 requests per second** over a longer time (measured on the reference installation
-SH20T + SBH400 behind a WiNet-S2): `live` 5 s + `energie` 60 s + `steuerung` 60 s + `akku` 120 s (1.14 requests/s)
-ran stable, `live` 3 s (1.81/s) skipped rounds and `akku` 60 s produced timeouts. A request to a slow bus device
+SH20T + SBH400 behind a WiNet-S2): `live` 5 s + `energy` 60 s + `control` 60 s + `battery` 120 s (1.14 requests/s)
+ran stable, `live` 3 s (1.81/s) skipped rounds and `battery` 60 s produced timeouts. A request to a slow bus device
 blocks the bus for its pause on top (SBH battery: 5 s). Load = requests per second / capacity + pause share; green
 below 80 %, yellow up to 100 % (fully used), red above. A group whose interval is shorter than the pause of another
 group will skip rounds. The capacity can be changed under *Connection → Advanced*.
@@ -169,7 +169,7 @@ data types in different ways. The tab **Conversion helper** puts one register in
 | `inputRegisters.<unit>.<address>_<name>` | input registers (read-only) |
 | `holdingRegisters.<unit>.<address>_<name>` | holding registers (writable unless read-only mode is on) |
 | `info.connection`, `info.reconnects`, `info.lastReconnect`, `info.queueLength`, `info.lastValueUpdate` | connection |
-| `info.groups.<group>.*` | diagnostics and heartbeat per poll group |
+| `info.groups.<group>.*` | diagnostics and heartbeat per poll group (defaults: `live`, `energy`, `control`, `battery`, `info`) |
 | `info.write.*` | diagnostics of writes |
 
 `<address>` is the *Address* column in the ioBroker.modbus alias notation: input register = 30001 + protocol
@@ -185,7 +185,7 @@ This holds for instances with *aliases* switched on. Most Sungrow guides for ioB
 **off** and enter protocol addresses (IDs like `13022_Battery_level`): add 30001 (input) / 40001 (holding) to
 those addresses – the IDs then change (`13022_…` → `43023_…`), scripts and history must be adapted.
 
-One exception since 0.4.3: characters outside `[A-Za-z0-9_,-]` in the name column are replaced by `_` (umlauts
+One exception since 0.4.3: characters outside `[A-Za-z0-9_-]` (since 0.5.0 also the comma) in the name column are replaced by `_` (umlauts
 are transliterated), as ioBroker recommends for object IDs. ioBroker.modbus keeps e.g. the `/` of
 `53051_Charge/discharge_command`; here the ID is `53051_Charge_discharge_command`. Replace these IDs as well.
 

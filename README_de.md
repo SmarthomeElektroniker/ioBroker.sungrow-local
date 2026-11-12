@@ -14,7 +14,7 @@ Der Adapter ist ein unabhängiges Projekt und steht in keiner Verbindung zu Sung
 
 - **Genau eine TCP-Verbindung** zum WiNet, alle Anfragen streng nacheinander, mit Mindestpause.
 - **Abfragegruppen** mit eigenem Takt, Timeout und optionaler Pause nach jeder Anfrage (Vorgabe, an einer
-  Referenzanlage gemessen: `live` 5 s, `energie` 60 s, `steuerung` 60 s, `akku` 120 s mit Timeout 15000 ms und
+  Referenzanlage gemessen: `live` 5 s, `energy` 60 s, `control` 60 s, `battery` 120 s mit Timeout 15000 ms und
   5000 ms Pause). Kürzere Werte markiert die Admin-Seite rot (nur Warnung).
 - **Ein Timeout betrifft nur seinen Block**; neu verbunden wird erst nach N Fehlern in Folge (Vorgabe 3) oder
   wenn das Gateway die Verbindung schließt.
@@ -28,12 +28,12 @@ Der Adapter ist ein unabhängiges Projekt und steht in keiner Verbindung zu Sung
   zusätzlichen Anfrage, eigene Register in jeder Adressschreibweise mit Testlesen), *Steuerung* (Schreiben je
   Register freigeben, Wertebereich, Protokoll der letzten Schreibbefehle), *Verbindung* (mit aufklappbarem
   „Erweitert“), *Werkzeuge* (Umrechnungshilfe, Diagnose) und *Experte* (die bisherigen Tabellen).
-- **Busauslastung:** etwa 1,25 Anfragen/s schafft der WiNet-S2 dauerhaft (gemessen: live 5 s + energie 60 s +
-  steuerung 60 s + akku 120 s stabil, live 3 s ließ Runden aus, akku 60 s erzeugte Timeouts); Pausen langsamer
+- **Busauslastung:** etwa 1,25 Anfragen/s schafft der WiNet-S2 dauerhaft (gemessen: live 5 s + energy 60 s +
+  control 60 s + battery 120 s stabil, live 3 s ließ Runden aus, battery 60 s erzeugte Timeouts); Pausen langsamer
   Geräte (SBH: 5 s) kommen hinzu. Grün < 80 %, gelb bis 100 %, rot darüber.
 - **Umstieg von ioBroker.modbus:** gleiche IDs, Namen, Einheiten, Faktoren, Typen und Rollen – Textersatz
   `modbus.N.` → `sungrow-local.0.`. Die alte Modbus-Instanz vorher abschalten: das WiNet soll nur einen Client sehen.
-  Ausnahme seit 0.4.3: Zeichen außerhalb `[A-Za-z0-9_,-]` in der Namensspalte werden zu `_` (Umlaute
+  Ausnahme seit 0.4.3: Zeichen außerhalb `[A-Za-z0-9_-]` (seit 0.5.0 auch das Komma) in der Namensspalte werden zu `_` (Umlaute
   umschrieben), wie ioBroker es für Objekt-IDs empfiehlt – z. B. `53051_Charge/discharge_command` →
   `53051_Charge_discharge_command`. Diese IDs beim Textersatz mit ändern.
 - **Falle Weißliste:** Das WiNet-S2 hat eine IP-Weißliste für Modbus TCP. Nicht eingetragene Absender bekommen

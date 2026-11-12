@@ -41,10 +41,10 @@ describe('diagnostics: names and heartbeat states', () => {
 
 describe('diagnostics: timing of the battery group', () => {
     it('the proven battery timing (timeout 15000, pause 5000) gives no warning', () => {
-        assert.deepStrictEqual(D.timingWarnings({ name: 'akku', timeout: 15000, pauseAfter: 5000 }, true), []);
+        assert.deepStrictEqual(D.timingWarnings({ name: 'battery', timeout: 15000, pauseAfter: 5000 }, true), []);
     });
     it('warns about a too short pause and a too short timeout', () => {
-        const w = D.timingWarnings({ name: 'akku', timeout: 8000, pauseAfter: 3000 }, true);
+        const w = D.timingWarnings({ name: 'battery', timeout: 8000, pauseAfter: 3000 }, true);
         assert.strictEqual(w.length, 2);
         assert.match(w[0], /shorter than the instruction interval/);
         assert.match(w[1], /should be longer/);
@@ -67,17 +67,17 @@ describe('admin: interval warnings of the group table', () => {
             { name: 'live', interval: 5, timeout: 10000, pauseAfter: 0 },
             { name: 'energie', interval: 60, timeout: 10000, pauseAfter: 0 },
             { name: 'steuerung', interval: 60, timeout: 10000, pauseAfter: 0 },
-            { name: 'akku', interval: 120, timeout: 15000, pauseAfter: 5000 },
+            { name: 'battery', interval: 120, timeout: 15000, pauseAfter: 5000 },
         ];
         for (const row of [...proven, ...io.native.groups]) {
             assert.deepStrictEqual(failing(row), [], row.name);
         }
     });
 
-    it('marks the measured failures (live 3 s, akku 60 s, short battery pause/timeout) - warning only', () => {
+    it('marks the measured failures (live 3 s, battery 60 s, short battery pause/timeout) - warning only', () => {
         assert.deepStrictEqual(failing({ name: 'live', interval: 3, timeout: 10000, pauseAfter: 0 }), ['interval']);
-        assert.deepStrictEqual(failing({ name: 'akku', interval: 60, timeout: 15000, pauseAfter: 5000 }), ['interval']);
-        assert.deepStrictEqual(failing({ name: 'akku', interval: 120, timeout: 9000, pauseAfter: 4000 }), [
+        assert.deepStrictEqual(failing({ name: 'battery', interval: 60, timeout: 15000, pauseAfter: 5000 }), ['interval']);
+        assert.deepStrictEqual(failing({ name: 'battery', interval: 120, timeout: 9000, pauseAfter: 4000 }), [
             'timeout',
             'pauseAfter',
         ]);

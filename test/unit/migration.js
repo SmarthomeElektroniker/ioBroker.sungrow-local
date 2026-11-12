@@ -176,3 +176,109 @@ describe('migration to template v5: nearly constant values into the group info',
         assert.strictEqual(native.inputRegs.find(r => r._address === 43024).group, 'live');
     });
 });
+
+describe('migration to template v7 (0.5.0): English names of the default poll groups', () => {
+    const { renameDefaultGroups, GROUP_RENAMES, DEFAULT_GROUP_DESC, OLD_GROUP_DESC } = require('../../lib/catalog');
+    const back = Object.fromEntries(Object.entries(GROUP_RENAMES).map(([o, n]) => [n, o]));
+
+    /** @returns {Record<string, any>} Configuration of a 0.4.3 instance (old group names, German descriptions) */
+    function v6Native() {
+        const n = JSON.parse(JSON.stringify(ioPackage.native));
+        n.templateVersion = 6;
+        for (const t of ['inputRegs', 'holdingRegs']) {
+            n[t] = n[t].map(r => ({ ...r, group: back[r.group] || r.group }));
+        }
+        n.groups = n.groups.map(g => ({
+            ...g,
+            name: back[g.name] || g.name,
+            description: OLD_GROUP_DESC[back[g.name] || g.name] || g.description,
+        }));
+        return n;
+    }
+
+    it('the defaults of io-package use the English names and descriptions; no version key as default', () => {
+        const names = ioPackage.native.groups.map(g => g.name);
+        assert.deepStrictEqual(names, ['live', 'energy', 'control', 'battery', 'info']);
+        for (const g of ioPackage.native.groups) {
+            assert.strictEqual(g.description, DEFAULT_GROUP_DESC[g.name], g.name);
+        }
+        for (const t of ['inputRegs', 'holdingRegs']) {
+            for (const r of [...ioPackage.native[t], ...CATALOG[t]]) {
+                assert.ok(names.includes(r.group), `${t} ${r._address} ${r.group}`);
+            }
+        }
+        // "iobroker upload" copies new default keys into existing instances - the migration would never run
+        assert.ok(!('templateVersion' in ioPackage.native));
+        assert.ok(CATALOG.version >= 7);
+    });
+
+    it('renames the groups and their rows, replaces only unchanged German descriptions', () => {
+        const before = v6Native();
+        before.groups.find(g => g.name === 'steuerung').description = 'Meine Steuerung';
+        const { native, renamedGroups } = mergeCatalog(before);
+        assert.deepStrictEqual(renamedGroups, [
+            ['energie', 'energy'],
+            ['steuerung', 'control'],
+            ['akku', 'battery'],
+        ]);
+        const g = Object.fromEntries(native.groups.map(x => [x.name, x]));
+        assert.deepStrictEqual(Object.keys(g), ['live', 'energy', 'control', 'battery', 'info']);
+        assert.strictEqual(g.live.description, DEFAULT_GROUP_DESC.live);
+        assert.strictEqual(g.energy.description, DEFAULT_GROUP_DESC.energy);
+        assert.strictEqual(g.battery.description, DEFAULT_GROUP_DESC.battery);
+        assert.strictEqual(g.control.description, 'Meine Steuerung');
+        // interval/timeout/pause stay
+        assert.strictEqual(g.battery.interval, 120);
+        assert.strictEqual(g.battery.pauseAfter, 5000);
+        for (const t of ['inputRegs', 'holdingRegs']) {
+            for (const r of native[t]) {
+                assert.ok(!Object.keys(GROUP_RENAMES).includes(r.group), `${t} ${r._address} ${r.group}`);
+            }
+        }
+        // the state IDs do not change (the group is not part of a register ID)
+        const ids = n => R.normalise('inputRegs', n.inputRegs).regs.map(r => r.id);
+        assert.deepStrictEqual(ids(native), ids(before));
+        assert.ok(!before.groups.some(x => x.name === 'battery'), 'input not modified');
+    });
+
+    it('own groups are not touched; no rename when a group with the new name exists already', () => {
+        const before = v6Native();
+        before.groups.push({ enabled: true, name: 'battery', interval: 30, timeout: 10000, pauseAfter: 0 });
+        before.groups.push({ enabled: true, name: 'Akku2', interval: 30, timeout: 10000, pauseAfter: 0 });
+        before.inputRegs.find(r => r._address === 35017).group = 'Akku2';
+        const { native, skippedGroups } = mergeCatalog(before);
+        const names = native.groups.map(x => x.name);
+        assert.ok(names.includes('akku') && names.includes('battery') && names.includes('Akku2'));
+        assert.deepStrictEqual(skippedGroups, ['akku (a group "battery" exists already)']);
+        assert.strictEqual(native.inputRegs.find(r => r._address === 40744 && r.deviceId === 2).group, 'akku');
+        assert.strictEqual(native.inputRegs.find(r => r._address === 35017).group, 'Akku2');
+        assert.ok(names.includes('energy') && names.includes('control'));
+    });
+
+    it('the template v5 move to info still works for 0.3.0 instances (fixes run before the rename)', () => {
+        const before = v6Native();
+        before.templateVersion = 4;
+        before.inputRegs.find(r => r._address === 43024).group = 'energie';
+        const { native } = mergeCatalog(before);
+        assert.strictEqual(native.inputRegs.find(r => r._address === 43024).group, 'info');
+    });
+
+    it('runs once: a group the user names "akku" later is not renamed again', () => {
+        const once = mergeCatalog(v6Native()).native;
+        once.groups.push({ enabled: true, name: 'akku', interval: 30 });
+        assert.strictEqual(mergeCatalog(once).changed, false);
+    });
+
+    it('renameDefaultGroups alone: description of a group without a German default stays', () => {
+        const res = renameDefaultGroups(
+            [
+                { name: 'live', description: 'own' },
+                { name: 'info', description: '' },
+            ],
+            {},
+        );
+        assert.deepStrictEqual(res.renamed, []);
+        assert.deepStrictEqual(res.described, []);
+        assert.strictEqual(res.groups[0].description, 'own');
+    });
+});

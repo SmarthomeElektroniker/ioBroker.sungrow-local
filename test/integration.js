@@ -46,9 +46,9 @@ tests.integration(path.join(__dirname, '..'), {
                         writeTimeout: 1500,
                         groups: [
                             { enabled: true, name: 'live', interval: 1, timeout: 800, pauseAfter: 0 },
-                            { enabled: true, name: 'energie', interval: 3, timeout: 800, pauseAfter: 0 },
-                            { enabled: true, name: 'steuerung', interval: 3, timeout: 800, pauseAfter: 0 },
-                            { enabled: true, name: 'akku', interval: 2, timeout: 1000, pauseAfter: 300 },
+                            { enabled: true, name: 'energy', interval: 3, timeout: 800, pauseAfter: 0 },
+                            { enabled: true, name: 'control', interval: 3, timeout: 800, pauseAfter: 0 },
+                            { enabled: true, name: 'battery', interval: 2, timeout: 1000, pauseAfter: 300 },
                         ],
                     },
                 });
@@ -129,7 +129,7 @@ tests.integration(path.join(__dirname, '..'), {
 
                 // unit 2 stops answering: only the battery group fails, unit 1 goes on, no reconnect
                 fake.drop(2, 3);
-                await waitFor('info.groups.akku.timeoutsToday', v => v >= 3, 30000);
+                await waitFor('info.groups.battery.timeoutsToday', v => v >= 3, 30000);
                 const live = await harness.states.getStateAsync(`${ns}.info.groups.live.lastSuccess`);
                 assert.ok(Date.now() - live.val < 3000, 'live group still answers');
                 assert.strictEqual((await harness.states.getStateAsync(`${ns}.info.groups.live.timeoutsToday`)).val, 0);
@@ -138,7 +138,7 @@ tests.integration(path.join(__dirname, '..'), {
                 assert.ok(!rc || !rc.val, 'no reconnect');
                 assert.strictEqual(fake.state.connections, 1, 'one connection only');
                 assert.ok(
-                    (await harness.states.getStateAsync(`${ns}.info.groups.akku.lastError`)).val.includes('10740'),
+                    (await harness.states.getStateAsync(`${ns}.info.groups.battery.lastError`)).val.includes('10740'),
                 );
 
                 // write with confirmation: ack only after the read-back
@@ -359,7 +359,7 @@ tests.integration(path.join(__dirname, '..'), {
                         port: fake.port,
                         readOnly: true,
                         requestGap: 20,
-                        groups: [{ enabled: true, name: 'steuerung', interval: 1, timeout: 800, pauseAfter: 0 }],
+                        groups: [{ enabled: true, name: 'control', interval: 1, timeout: 800, pauseAfter: 0 }],
                     },
                 });
                 await harness.startAdapterAndWait();
@@ -416,7 +416,7 @@ tests.integration(path.join(__dirname, '..'), {
                     requestGap: 20,
                     writeTimeout: 1500,
                     templateVersion: 99,
-                    groups: [{ enabled: true, name: 'steuerung', interval: 1, timeout: 800, pauseAfter: 0 }],
+                    groups: [{ enabled: true, name: 'control', interval: 1, timeout: 800, pauseAfter: 0 }],
                 };
                 await harness.objects.setObjectAsync('system.adapter.sungrow-local.0', instObj);
                 await harness.startAdapterAndWait();
@@ -540,6 +540,175 @@ tests.integration(path.join(__dirname, '..'), {
             });
         });
 
+        suite('English default group names (0.5.0)', getHarness => {
+            let fake;
+            before(async () => {
+                fake = await createFakeWinet({
+                    units: { 1: { latency: 5, busTimeout: 300 }, 2: { latency: 20, busGap: 100, busTimeout: 500 } },
+                });
+                fake.set(2, 'input', 10743, [970]); // 40744 Battery level 97 %
+            });
+            after(async () => {
+                await fake.close();
+            });
+
+            it('renames akku/energie/steuerung, moves info.groups.* (values, history with aliasId, rooms), keeps own groups', async function () {
+                this.timeout(90000);
+                const harness = getHarness();
+                const ns = 'sungrow-local.0';
+                const R = { akku: 'battery', energie: 'energy', steuerung: 'control' };
+                const back = Object.fromEntries(Object.entries(R).map(([o, n]) => [n, o]));
+                // configuration of 0.4.3: old group names, German default descriptions, template v6
+                const old = JSON.parse(JSON.stringify(io.native));
+                for (const t of ['inputRegs', 'holdingRegs']) {
+                    old[t] = old[t].map(r => ({ ...r, group: back[r.group] || r.group }));
+                }
+                // an own group of the user with an own description: stays as it is
+                old.inputRegs = old.inputRegs.map(r => (r._address === 35017 ? { ...r, group: 'mine' } : r));
+                const instObj = await harness.objects.getObjectAsync(`system.adapter.${ns}`);
+                instObj.native = {
+                    ...old,
+                    host: fake.host,
+                    port: fake.port,
+                    requestGap: 10,
+                    templateVersion: 6,
+                    groups: [
+                        {
+                            enabled: true,
+                            name: 'live',
+                            interval: 2,
+                            timeout: 800,
+                            pauseAfter: 0,
+                            description: 'Leistungen, Spannungen, Status (Wechselrichter)',
+                        },
+                        {
+                            enabled: true,
+                            name: 'energie',
+                            interval: 3,
+                            timeout: 800,
+                            pauseAfter: 0,
+                            description: 'Zähler und Tageswerte (Wechselrichter)',
+                        },
+                        {
+                            enabled: true,
+                            name: 'steuerung',
+                            interval: 3,
+                            timeout: 800,
+                            pauseAfter: 0,
+                            description: 'Meine Steuerung',
+                        },
+                        {
+                            enabled: true,
+                            name: 'akku',
+                            interval: 2,
+                            timeout: 1000,
+                            pauseAfter: 100,
+                            description: 'SBH400 (unit 2) – 5 s Anweisungsintervall im WiNet',
+                        },
+                        {
+                            enabled: true,
+                            name: 'mine',
+                            interval: 2,
+                            timeout: 800,
+                            pauseAfter: 0,
+                            description: 'Eigene Gruppe',
+                        },
+                    ],
+                };
+                await harness.objects.setObjectAsync(`system.adapter.${ns}`, instObj);
+                // diagnostic objects of 0.4.3 under the old name
+                const oldCh = `${ns}.info.groups.akku`;
+                await harness.objects.setObjectAsync(oldCh, {
+                    type: 'channel',
+                    common: { name: 'Poll group akku' },
+                    native: {},
+                });
+                await harness.objects.setObjectAsync(`${oldCh}.timeoutsTotal`, {
+                    type: 'state',
+                    common: {
+                        name: 'timeouts total',
+                        type: 'number',
+                        role: 'value',
+                        read: true,
+                        write: false,
+                        custom: { 'history.0': { enabled: true, changesOnly: true } },
+                    },
+                    native: {},
+                });
+                await harness.states.setStateAsync(`${oldCh}.timeoutsTotal`, { val: 42, ack: true });
+                await harness.objects.setObjectAsync('enum.functions.testgroups', {
+                    type: 'enum',
+                    common: { name: 'Test', members: [`${oldCh}.timeoutsTotal`] },
+                    native: {},
+                });
+                await harness.startAdapterAndWait();
+
+                const until = async (fn, ms = 40000) => {
+                    const stop = Date.now() + ms;
+                    for (;;) {
+                        const v = await fn();
+                        if (v || Date.now() > stop) {
+                            return v;
+                        }
+                        await new Promise(r => setTimeout(r, 300));
+                    }
+                };
+                const inst = await until(async () => {
+                    const o = await harness.objects.getObjectAsync(`system.adapter.${ns}`);
+                    return o.native.templateVersion === CATALOG.version ? o : null;
+                });
+                assert.ok(inst, 'configuration migrated');
+                const g = Object.fromEntries(inst.native.groups.map(x => [x.name, x]));
+                assert.deepStrictEqual(Object.keys(g).sort(), ['battery', 'control', 'energy', 'info', 'live', 'mine']);
+                assert.strictEqual(g.live.description, 'Powers, voltages, state (inverter)');
+                assert.strictEqual(g.energy.description, 'Counters and daily values (inverter)');
+                assert.strictEqual(
+                    g.battery.description,
+                    'SBH400 battery (unit 2) - 5 s instruction interval in the WiNet',
+                );
+                assert.strictEqual(g.control.description, 'Meine Steuerung', 'own description stays');
+                assert.strictEqual(g.mine.description, 'Eigene Gruppe');
+                assert.strictEqual(g.battery.pauseAfter, 100, 'settings of the group stay');
+                const groupsUsed = new Set([...inst.native.inputRegs, ...inst.native.holdingRegs].map(r => r.group));
+                for (const o of Object.keys(R)) {
+                    assert.ok(!groupsUsed.has(o), `no row in group ${o}`);
+                }
+                assert.strictEqual(inst.native.inputRegs.find(r => r._address === 35017).group, 'mine');
+                assert.strictEqual(
+                    inst.native.inputRegs.find(r => r._address === 40744 && r.deviceId === 2).group,
+                    'battery',
+                );
+
+                // objects: moved to the new name with value, history (aliasId) and function enum
+                const newSt = `${ns}.info.groups.battery.timeoutsTotal`;
+                const obj = await until(async () => {
+                    const o = await harness.objects.getObjectAsync(newSt);
+                    const gone = !(await harness.objects.getObjectAsync(oldCh));
+                    return o && gone && o.common.custom ? o : null;
+                });
+                assert.ok(obj, 'new diagnostic object with custom settings, old channel deleted');
+                assert.deepStrictEqual(obj.common.custom, {
+                    'history.0': { enabled: true, changesOnly: true, aliasId: `${oldCh}.timeoutsTotal` },
+                });
+                const st = await harness.states.getStateAsync(newSt);
+                assert.ok(st && st.val >= 42, `counter goes on (${st && st.val})`);
+                assert.strictEqual(await harness.objects.getObjectAsync(`${oldCh}.timeoutsTotal`), null);
+                const fn = await harness.objects.getObjectAsync('enum.functions.testgroups');
+                assert.deepStrictEqual(fn.common.members, [newSt]);
+                const lr = await until(async () => {
+                    const s1 = await harness.states.getStateAsync(`${ns}.info.groups.battery.lastRound`);
+                    return s1 && s1.val > 0 ? s1 : null;
+                });
+                assert.ok(lr, 'the renamed group polls');
+                assert.ok(await harness.objects.getObjectAsync(`${ns}.info.groups.mine`), 'own group channel');
+                const ch = await harness.objects.getObjectAsync(`${ns}.info.groups.live`);
+                assert.strictEqual(ch.common.name.en, 'Poll group live – Powers, voltages, state (inverter)');
+                for (const o of Object.keys(R)) {
+                    assert.strictEqual(await harness.objects.getObjectAsync(`${ns}.info.groups.${o}`), null, o);
+                }
+            });
+        });
+
         suite('State IDs without special characters (0.4.3)', getHarness => {
             it('moves custom settings (history with aliasId), value and rooms from the old "/" ID and deletes it; role level.mode becomes level', async function () {
                 this.timeout(60000);
@@ -601,9 +770,9 @@ tests.integration(path.join(__dirname, '..'), {
                 assert.strictEqual(await harness.states.getStateAsync(oldId), null, 'old state deleted');
                 const room = await harness.objects.getObjectAsync('enum.rooms.test');
                 assert.deepStrictEqual(room.common.members, [newId, `${ns}.info.connection`]);
-                // no ID of the adapter contains characters outside [A-Za-z0-9_,-]
+                // no ID of the adapter contains characters outside [A-Za-z0-9_-] (no comma since 0.5.0)
                 const all = await harness.objects.getObjectListAsync({ startkey: `${ns}.`, endkey: `${ns}.\u9999` });
-                const bad = all.rows.map(r => r.id).filter(id => !/^[A-Za-z0-9_,.-]+$/.test(id));
+                const bad = all.rows.map(r => r.id).filter(id => !/^[A-Za-z0-9_.-]+$/.test(id));
                 assert.deepStrictEqual(bad, []);
             });
         });

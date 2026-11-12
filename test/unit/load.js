@@ -2,8 +2,8 @@
 
 /*
  * Bus load: request count from the real block building, rates, traffic light and the reasons per request.
- * Calibration points of the reference installation (23.10.2026): live 5 s / energie 60 s / steuerung 60 s /
- * akku 120 s = fully used but stable; live 3 s skipped rounds; akku 60 s produced timeouts.
+ * Calibration points of the reference installation (23.10.2026): live 5 s / energy 60 s / control 60 s /
+ * battery 120 s = fully used but stable; live 3 s skipped rounds; battery 60 s produced timeouts.
  */
 
 const assert = require('node:assert');
@@ -25,29 +25,29 @@ function group(n, name) {
 }
 
 describe('load: bus load of a configuration', () => {
-    it('counts the requests exactly like the adapter (live 5, energie 2, steuerung 6, akku 1)', () => {
+    it('counts the requests exactly like the adapter (live 5, energy 2, control 6, battery 1)', () => {
         const a = analyse(defaults());
         const req = Object.fromEntries(a.groups.map(g => [g.name, g.requests]));
         assert.strictEqual(req.live, 5);
-        assert.strictEqual(req.energie, 2);
-        assert.strictEqual(req.steuerung, 6);
-        assert.strictEqual(req.akku, 1);
+        assert.strictEqual(req.energy, 2);
+        assert.strictEqual(req.control, 6);
+        assert.strictEqual(req.battery, 1);
         assert.strictEqual(a.capacity, DEFAULT_CAPACITY);
     });
 
-    it('measured end state (live 5 s, akku 120 s) is yellow: fully used, below 100 %', () => {
+    it('measured end state (live 5 s, battery 120 s) is yellow: fully used, below 100 %', () => {
         const a = analyse(defaults());
         assert.ok(a.total.load > 0.8 && a.total.load <= 1, String(a.total.load));
         assert.strictEqual(a.total.level, 'warn');
         assert.ok(Math.abs(a.total.perSecond - 1.1417) < 0.01, String(a.total.perSecond));
     });
 
-    it('live 3 s (skipped rounds measured) and akku 60 s (timeouts measured) are red', () => {
+    it('live 3 s (skipped rounds measured) and battery 60 s (timeouts measured) are red', () => {
         const n3 = defaults();
         group(n3, 'live').interval = 3;
         assert.strictEqual(analyse(n3).total.level, 'over');
         const n60 = defaults();
-        group(n60, 'akku').interval = 60;
+        group(n60, 'battery').interval = 60;
         assert.strictEqual(analyse(n60).total.level, 'over');
     });
 
@@ -55,7 +55,7 @@ describe('load: bus load of a configuration', () => {
         const n = defaults();
         group(n, 'live').interval = 4;
         const live = analyse(n).groups.find(g => g.name === 'live');
-        assert.ok(live.warnings.some(w => w.kind === 'skipSure' && w.other === 'akku'));
+        assert.ok(live.warnings.some(w => w.kind === 'skipSure' && w.other === 'battery'));
         assert.strictEqual(live.level, 'over');
     });
 
@@ -88,7 +88,7 @@ describe('load: bus load of a configuration', () => {
     it('a block larger than maxBlock is split with reason "size"', () => {
         const n = defaults();
         n.maxBlock = 20;
-        const energie = analyse(n).groups.find(g => g.name === 'energie');
+        const energie = analyse(n).groups.find(g => g.name === 'energy');
         assert.ok(energie.blocks.some(b => b.reason.kind === 'size'));
     });
 
@@ -130,8 +130,8 @@ describe('load: bus load of a configuration', () => {
     });
 
     it('a measured round longer than the interval is a warning', () => {
-        const a = analyse(defaults(), { measured: { energie: 70000 } });
-        const e = a.groups.find(g => g.name === 'energie');
+        const a = analyse(defaults(), { measured: { energy: 70000 } });
+        const e = a.groups.find(g => g.name === 'energy');
         assert.ok(e.warnings.some(w => w.kind === 'roundTooLong'));
     });
 });

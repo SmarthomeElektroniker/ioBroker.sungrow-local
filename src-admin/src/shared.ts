@@ -85,9 +85,9 @@ export type Theme = (typeof THEMES)[number];
 
 export const GROUP_COLORS: Record<string, string> = {
     live: '#2e7dd7',
-    energie: '#7b5cd6',
-    steuerung: '#d9822b',
-    akku: '#2a9d8f',
+    energy: '#7b5cd6',
+    control: '#d9822b',
+    battery: '#2a9d8f',
     info: '#7a8796',
 };
 const EXTRA_COLORS = ['#c2185b', '#5d8a00', '#00838f', '#8d6e63', '#3949ab'];
@@ -367,9 +367,9 @@ export function analyseNative(data: Native, measured?: Record<string, number>): 
 /** English descriptions of the default groups (io-package) - shown translated as long as they are unchanged */
 const DEFAULT_GROUP_DESC: Record<string, string> = {
     live: 'Powers, voltages, state (inverter)',
-    energie: 'Counters and daily values (inverter)',
-    steuerung: 'Holding registers (control)',
-    akku: 'SBH400 battery (unit 2) - 5 s instruction interval in the WiNet',
+    energy: 'Counters and daily values (inverter)',
+    control: 'Holding registers (control)',
+    battery: 'SBH400 battery (unit 2) - 5 s instruction interval in the WiNet',
     info: 'Device information and rarely changing settings',
 };
 

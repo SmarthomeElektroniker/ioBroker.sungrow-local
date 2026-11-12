@@ -49,7 +49,33 @@ describe('registers: compatibility with ioBroker.modbus', () => {
     it('transliterates umlauts and replaces other special characters in IDs', () => {
         assert.strictEqual(R.idName('Lüfter Größe (%)'), 'Luefter_Groesse____');
         assert.strictEqual(R.idName('Charge/discharge command'), 'Charge_discharge_command');
-        assert.strictEqual(R.idName('a.b c,d-e'), 'a_b_c,d-e');
+        // the comma is in FORBIDDEN_CHARS of the js-controller (0.5.0; 0.4.3 still kept it)
+        assert.strictEqual(R.idName('a.b c,d-e'), 'a_b_c_d-e');
+        assert.strictEqual(R.idName('a.b c,d-e', true), 'a_b_c,d-e');
+    });
+
+    it('no default and no template row produces a comma in its ID (no existing ID changes in 0.5.0)', () => {
+        const { CATALOG } = require('../../lib/catalog');
+        for (const t of ['inputRegs', 'holdingRegs']) {
+            for (const row of [...io.native[t], ...CATALOG[t]]) {
+                assert.ok(!String(row.name).includes(','), `${t} ${row._address}`);
+                const reg = R.normalise(t, [{ ...row, enabled: true }]).regs[0];
+                assert.ok(/^[A-Za-z0-9_.-]+$/.test(reg.id), reg.id);
+            }
+        }
+        const ids = fs.readFileSync(path.join(fixtures, 'modbus-state-ids.txt'), 'utf8');
+        assert.ok(!ids.includes(','));
+    });
+
+    it('a name with a comma: IDs of 0.4.2 and 0.4.3 are both migration sources', () => {
+        const reg = R.normalise('inputRegs', [{ _address: 35000, name: 'Power A/B, total' }]).regs[0];
+        assert.strictEqual(reg.id, 'inputRegisters.1.35000_Power_A_B__total');
+        assert.deepStrictEqual(reg.legacyIds, [
+            'inputRegisters.1.35000_Power_A/B,_total',
+            'inputRegisters.1.35000_Power_A_B,_total',
+        ]);
+        const plain = R.normalise('inputRegs', [{ _address: 35000, name: 'Power total' }]).regs[0];
+        assert.deepStrictEqual(plain.legacyIds, []);
     });
 
     it('replaces roles that are not in the ioBroker role list (level.mode -> level)', () => {
@@ -96,21 +122,21 @@ describe('registers: compatibility with ioBroker.modbus', () => {
 
     it('splits blocks per group: battery group is exactly the unit-2 block, live and energy are separate', () => {
         const byGroup = g => input.regs.filter(r => r.group === g);
-        assert.ok(byGroup('akku').every(r => r.deviceId === 2));
-        const akku = R.buildBlocks(byGroup('akku'), 100, 10);
+        assert.ok(byGroup('battery').every(r => r.deviceId === 2));
+        const akku = R.buildBlocks(byGroup('battery'), 100, 10);
         assert.deepStrictEqual(
             akku.map(b => [b.deviceId, b.start, b.count]),
             [[2, 10740, 9]],
         );
         const live = R.buildBlocks(byGroup('live'), 100, 10);
-        const energie = R.buildBlocks(byGroup('energie'), 100, 10);
+        const energie = R.buildBlocks(byGroup('energy'), 100, 10);
         assert.ok(live.length >= 1 && energie.length >= 1);
         for (const b of [...live, ...energie]) {
             assert.ok(b.count <= 100);
             assert.ok(b.regs.every(r => r.address >= b.start && r.address + r.len <= b.start + b.count));
         }
         // new installations: writing is released per register (tab "Control"), nothing by default
-        assert.ok(holding.regs.every(r => r.group === 'steuerung' && r.poll && !r.write));
+        assert.ok(holding.regs.every(r => r.group === 'control' && r.poll && !r.write));
     });
 
     it('copies name, unit, factor, type and role', () => {

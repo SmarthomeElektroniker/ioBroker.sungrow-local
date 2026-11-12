@@ -905,7 +905,7 @@ export function CatalogView(props: ConfigGenericProps & { onData: (data: Native)
                                     onDeactivate={deactivate}
                                     onActivate={activate}
                                     onRemoveGroup={
-                                        ['live', 'energie', 'steuerung', 'akku', 'info'].includes(g.name)
+                                        ['live', 'energy', 'control', 'battery', 'info'].includes(g.name)
                                             ? undefined
                                             : removeGroup
                                     }

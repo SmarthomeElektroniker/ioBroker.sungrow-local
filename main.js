@@ -21,7 +21,7 @@ const {
     checkWriteValue,
     extract,
 } = require('./lib/registers');
-const { mergeCatalog } = require('./lib/catalog');
+const { mergeCatalog, GROUP_RENAMES } = require('./lib/catalog');
 const { explain, resolve, implausible } = require('./lib/convert');
 const { Poller } = require('./lib/poller');
 const { analyse } = require('./lib/load');
@@ -497,7 +497,7 @@ class SungrowLocal extends utils.Adapter {
                 await this.addToRoom(`${this.namespace}.${r.id}`, r.room);
             }
         }
-        // IDs of up to 0.4.2 with characters outside [A-Za-z0-9_,-] (e.g. "/"): move settings, value and rooms
+        // IDs of up to 0.4.3 with characters outside [A-Za-z0-9_-] (e.g. "/" or ","): move settings, value and rooms
         await this.migrateLegacyIds(regs);
         // remove states of registers that are no longer configured
         const wanted = new Set(regs.map(r => `${this.namespace}.${r.id}`));
@@ -516,7 +516,8 @@ class SungrowLocal extends utils.Adapter {
     }
 
     /**
-     * Versions up to 0.4.2 kept characters such as "/" in the state IDs ("53051_Charge/discharge_command").
+     * Versions up to 0.4.2 kept characters such as "/" in the state IDs ("53051_Charge/discharge_command"),
+     * 0.4.3 still kept the comma.
      * For every register whose ID changed and whose old object still exists: the custom settings (history,
      * sql, influxdb ...) go to the new object - history adapters with "aliasId" = old ID, so the recorded data
      * goes on under the old name -, the last value is copied, room/function enums are switched to the new ID,
@@ -526,36 +527,70 @@ class SungrowLocal extends utils.Adapter {
      */
     async migrateLegacyIds(regs) {
         const moved = [];
-        /** @type {Record<string, ioBroker.Object> | null} */
-        let enums = null;
+        const pairs = [];
         for (const r of regs) {
-            if (!r.legacyId || r.legacyId === r.id) {
-                continue;
-            }
-            const oldId = `${this.namespace}.${r.legacyId}`;
-            const newId = `${this.namespace}.${r.id}`;
-            const old = await this.getForeignObjectAsync(oldId);
-            if (!old) {
-                continue;
-            }
-            const custom = old.common && old.common.custom;
-            const now = await this.getForeignObjectAsync(newId);
-            const nowCustom = now && now.common && now.common.custom;
-            if (custom && Object.keys(custom).length && !(nowCustom && Object.keys(nowCustom).length)) {
-                /** @type {Record<string, any>} */
-                const out = {};
-                for (const [inst, c] of Object.entries(custom)) {
-                    if (!c || typeof c !== 'object') {
-                        continue;
-                    }
-                    const cc = { ...c };
-                    if (/^(history|sql|influxdb)\.\d+$/.test(inst) && !cc.aliasId) {
-                        cc.aliasId = oldId;
-                    }
-                    out[inst] = cc;
+            const olds = Array.isArray(r.legacyIds) ? r.legacyIds : r.legacyId ? [r.legacyId] : [];
+            for (const legacy of olds) {
+                if (legacy && legacy !== r.id) {
+                    pairs.push({ oldId: `${this.namespace}.${legacy}`, newId: `${this.namespace}.${r.id}` });
                 }
-                await this.extendForeignObjectAsync(newId, { common: { custom: out } });
             }
+        }
+        /** @type {{enums: Record<string, ioBroker.Object> | null}} */
+        const cache = { enums: null };
+        for (const { oldId, newId } of pairs) {
+            if (await this.moveStateObject(oldId, newId, cache)) {
+                moved.push(`${oldId} -> ${newId}`);
+            }
+        }
+        if (moved.length) {
+            this.log.warn(
+                `State IDs without special characters (ioBroker recommendation): ${moved.join(', ')}. Settings (history ...), value and rooms were moved - please switch scripts and visualisations to the new IDs.`,
+            );
+        }
+    }
+
+    /**
+     * Moves one state object to a new ID: custom settings (history/sql/influxdb with "aliasId" = old ID, so the
+     * recorded data goes on under the old name; only when the new object has no custom settings yet), the last
+     * value (only when the new state has none), room/function enums; then the old object is deleted.
+     * When the new object does not exist yet, it is created as a copy of the old one.
+     *
+     * @param {string} oldId Full old ID
+     * @param {string} newId Full new ID
+     * @param {{enums: Record<string, ioBroker.Object> | null}} cache Enum cache shared between calls
+     * @returns {Promise<boolean>} true when the old object existed and was moved
+     */
+    async moveStateObject(oldId, newId, cache) {
+        const old = await this.getForeignObjectAsync(oldId);
+        if (!old) {
+            return false;
+        }
+        let now = await this.getForeignObjectAsync(newId);
+        if (!now) {
+            const copy = /** @type {any} */ ({ ...old, _id: newId, common: { ...old.common } });
+            delete copy.common.custom;
+            await this.setForeignObjectAsync(newId, copy);
+            now = await this.getForeignObjectAsync(newId);
+        }
+        const custom = old.common && old.common.custom;
+        const nowCustom = now && now.common && now.common.custom;
+        if (custom && Object.keys(custom).length && !(nowCustom && Object.keys(nowCustom).length)) {
+            /** @type {Record<string, any>} */
+            const out = {};
+            for (const [inst, c] of Object.entries(custom)) {
+                if (!c || typeof c !== 'object') {
+                    continue;
+                }
+                const cc = { ...c };
+                if (/^(history|sql|influxdb)\.\d+$/.test(inst) && !cc.aliasId) {
+                    cc.aliasId = oldId;
+                }
+                out[inst] = cc;
+            }
+            await this.extendForeignObjectAsync(newId, { common: { custom: out } });
+        }
+        if (old.type === 'state') {
             const oldState = await this.getForeignStateAsync(oldId);
             const newState = await this.getForeignStateAsync(newId);
             if (oldState && oldState.val !== null && oldState.val !== undefined && !newState) {
@@ -567,24 +602,19 @@ class SungrowLocal extends utils.Adapter {
                     q: oldState.q || 0,
                 });
             }
-            if (!enums) {
-                enums = (await this.getForeignObjectsAsync('enum.*', 'enum')) || {};
-            }
-            for (const e of Object.values(enums)) {
-                const members = e && e.common && Array.isArray(e.common.members) ? e.common.members : null;
-                if (members && members.includes(oldId)) {
-                    e.common.members = [...new Set(members.map(m => (m === oldId ? newId : m)))];
-                    await this.setForeignObjectAsync(e._id, e);
-                }
-            }
-            await this.delForeignObjectAsync(oldId);
-            moved.push(`${oldId} -> ${newId}`);
         }
-        if (moved.length) {
-            this.log.warn(
-                `State IDs without special characters (ioBroker recommendation): ${moved.join(', ')}. Settings (history ...), value and rooms were moved - please switch scripts and visualisations to the new IDs.`,
-            );
+        if (!cache.enums) {
+            cache.enums = (await this.getForeignObjectsAsync('enum.*', 'enum')) || {};
         }
+        for (const e of Object.values(cache.enums)) {
+            const members = e && e.common && Array.isArray(e.common.members) ? e.common.members : null;
+            if (members && members.includes(oldId)) {
+                e.common.members = [...new Set(members.map(m => (m === oldId ? newId : m)))];
+                await this.setForeignObjectAsync(e._id, e);
+            }
+        }
+        await this.delForeignObjectAsync(oldId);
+        return true;
     }
 
     /**
@@ -657,6 +687,8 @@ class SungrowLocal extends utils.Adapter {
      */
     async createDiagnostics(groups) {
         const today = dayKey(new Date());
+        // 0.5.0: diagnostics of the renamed default groups (info.groups.akku -> info.groups.battery ...)
+        await this.migrateGroupObjects(groups.map(g => g.name));
         await this.extendObjectAsync('info.lastValueUpdate', {
             type: 'state',
             common: { read: true, write: false, ...LAST_VALUE_UPDATE },
@@ -705,6 +737,60 @@ class SungrowLocal extends utils.Adapter {
             if (!this.diag.has(key)) {
                 await this.delObjectAsync(row.id.substring(this.namespace.length + 1), { recursive: true });
             }
+        }
+    }
+
+    /**
+     * 0.5.0 renamed the default poll groups (akku -> battery, energie -> energy, steuerung -> control). The
+     * diagnostic objects info.groups.<old>.* move to the new name: custom settings (history with aliasId = old
+     * ID), values (counters go on), rooms/functions; the old objects are deleted. Runs only while the old
+     * channel exists, the new group is active and no group with the old name is configured any more.
+     *
+     * @param {string[]} active Names of the active groups
+     */
+    async migrateGroupObjects(active) {
+        /** @type {{enums: Record<string, ioBroker.Object> | null}} */
+        const cache = { enums: null };
+        const moved = [];
+        for (const [oldName, newName] of Object.entries(GROUP_RENAMES)) {
+            if (!active.includes(newName) || active.includes(oldName)) {
+                continue;
+            }
+            const oldBase = `${this.namespace}.info.${groupKey(oldName)}`;
+            const newBase = `${this.namespace}.info.${groupKey(newName)}`;
+            const channel = await this.getForeignObjectAsync(oldBase);
+            if (!channel) {
+                continue;
+            }
+            // the channel first (the states are created below it), then the states
+            await this.moveChannelObject(oldBase, newBase);
+            const states = (await this.getForeignObjectsAsync(`${oldBase}.*`, 'state')) || {};
+            for (const id of Object.keys(states)) {
+                await this.moveStateObject(id, newBase + id.substring(oldBase.length), cache);
+            }
+            // enums that name the channel itself
+            await this.moveStateObject(oldBase, newBase, cache);
+            moved.push(`info.${groupKey(oldName)} -> info.${groupKey(newName)}`);
+        }
+        if (moved.length) {
+            this.log.warn(
+                `Default poll groups have English names now: ${moved.join(', ')}. Values, history settings (aliasId = old ID) and rooms were moved - please switch scripts and visualisations that use the old diagnostic IDs.`,
+            );
+        }
+    }
+
+    /**
+     * Creates the channel object under the new ID as a copy of the old one (if missing).
+     *
+     * @param {string} oldId Full old channel ID
+     * @param {string} newId Full new channel ID
+     */
+    async moveChannelObject(oldId, newId) {
+        const old = await this.getForeignObjectAsync(oldId);
+        if (old && !(await this.getForeignObjectAsync(newId))) {
+            const copy = /** @type {any} */ ({ ...old, _id: newId, common: { ...old.common } });
+            delete copy.common.custom;
+            await this.setForeignObjectAsync(newId, copy);
         }
     }
 
@@ -785,7 +871,10 @@ class SungrowLocal extends utils.Adapter {
             `Register template version ${merged.native.templateVersion}: ${merged.added} known registers added to the tables (not ticked - nothing is read until you tick them)`,
         );
         if (merged.fixed.length) {
-            this.log.info(`Corrected data types/factors of default registers: ${merged.fixed.join(', ')}`);
+            this.log.info(`Corrected defaults of earlier versions: ${merged.fixed.join(', ')}`);
+        }
+        for (const s of merged.skippedGroups || []) {
+            this.log.warn(`Default poll group not renamed: ${s}`);
         }
         await this.setForeignObjectAsync(id, obj);
         this.config = /** @type {any} */ (merged.native);

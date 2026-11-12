@@ -63,7 +63,7 @@ describe('catalog: register template', () => {
             for (const r of CATALOG[t]) {
                 assert.strictEqual(r.enabled, false, `${r._address} must be unticked`);
                 assert.ok(r.source && r.note.startsWith(r.source), `${r._address} has a source`);
-                assert.ok(['live', 'energie', 'steuerung', 'akku', 'info'].includes(r.group), r.group);
+                assert.ok(['live', 'energy', 'control', 'battery', 'info'].includes(r.group), r.group);
             }
         }
     });
@@ -228,7 +228,7 @@ describe('catalog: migration of an existing instance (0.2.x -> 0.3.0)', () => {
         const { native } = mergeCatalog(oldNative());
         const groupBlocks = rows => {
             const { regs } = R.normalise('inputRegs', rows);
-            return R.buildBlocks(regs.filter(r => r.group === 'akku' && r.deviceId === 2));
+            return R.buildBlocks(regs.filter(r => r.group === 'battery' && r.deviceId === 2));
         };
         const before = groupBlocks(native.inputRegs);
         const ticked = native.inputRegs.map(r =>

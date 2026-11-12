@@ -30,7 +30,7 @@ function simulated(id: string): ioBroker.State | null {
     if (id.endsWith('info.lastValueUpdate')) return st(now - 1500);
     if (id.endsWith('info.reconnects')) return st(0);
     if (id.endsWith('.lastRound')) return st(now - 3000);
-    if (id.endsWith('.roundDuration')) return st(id.includes('akku') ? 5040 : id.includes('live') ? 620 : 260);
+    if (id.endsWith('.roundDuration')) return st(id.includes('battery') ? 5040 : id.includes('live') ? 620 : 260);
     if (id.endsWith('.lastResponseTime')) return st(9);
     if (id.endsWith('Today')) return st(id.includes('requests') ? 8231 : 0);
     if (id.endsWith('Total')) return st(id.includes('ok') ? 42 : 0);
