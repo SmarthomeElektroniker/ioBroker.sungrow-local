@@ -272,7 +272,6 @@ requests, late answers, total failure and connection loss.
   indicator (43052) on the inverter. A value whose register is not ticked is left out. The control dialog of a
   card shows more (AC output, house consumption, temperatures, health, backup reserve, min./max. SoC, EMS mode if
   polled). No actions, no configuration and no writing from the cards.
-- Template: battery serial number and software version (unit 2) are in the group `info` (hourly).
 - README: link to the manufacturer and its product overview.
 
 ### 0.4.3 (2026-10-25)

@@ -3170,7 +3170,7 @@
                 "role": "info.serial",
                 "states": "",
                 "room": "",
-                "group": "info",
+                "group": "battery",
                 "source": "reference list",
                 "note": "reference list - length 6 measured (L); mkaiser (commented out) reads 10 registers"
             },
@@ -3188,7 +3188,7 @@
                 "role": "info.firmware",
                 "states": "",
                 "room": "",
-                "group": "info",
+                "group": "battery",
                 "source": "reference list",
                 "note": "reference list"
             },
