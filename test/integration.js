@@ -629,6 +629,7 @@ tests.integration(path.join(__dirname, '..'), {
                         name: 'timeouts total',
                         type: 'number',
                         role: 'value',
+                        def: 0,
                         read: true,
                         write: false,
                         custom: { 'history.0': { enabled: true, changesOnly: true } },
@@ -636,6 +637,12 @@ tests.integration(path.join(__dirname, '..'), {
                     native: {},
                 });
                 await harness.states.setStateAsync(`${oldCh}.timeoutsTotal`, { val: 42, ack: true });
+                await harness.objects.setObjectAsync(`${oldCh}.requestsToday`, {
+                    type: 'state',
+                    common: { name: 'requests today', type: 'number', role: 'value', read: true, write: false, def: 0 },
+                    native: {},
+                });
+                await harness.states.setStateAsync(`${oldCh}.requestsToday`, { val: 7, ack: true });
                 await harness.objects.setObjectAsync('enum.functions.testgroups', {
                     type: 'enum',
                     common: { name: 'Test', members: [`${oldCh}.timeoutsTotal`] },
@@ -692,6 +699,8 @@ tests.integration(path.join(__dirname, '..'), {
                 });
                 const st = await harness.states.getStateAsync(newSt);
                 assert.ok(st && st.val >= 42, `counter goes on (${st && st.val})`);
+                const req = await harness.states.getStateAsync(`${ns}.info.groups.battery.requestsToday`);
+                assert.ok(req && req.val >= 7, `today counter goes on (${req && req.val})`);
                 assert.strictEqual(await harness.objects.getObjectAsync(`${oldCh}.timeoutsTotal`), null);
                 const fn = await harness.objects.getObjectAsync('enum.functions.testgroups');
                 assert.deepStrictEqual(fn.common.members, [newSt]);

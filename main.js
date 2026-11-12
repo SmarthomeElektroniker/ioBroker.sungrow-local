@@ -567,11 +567,16 @@ class SungrowLocal extends utils.Adapter {
             return false;
         }
         let now = await this.getForeignObjectAsync(newId);
+        let created = false;
         if (!now) {
             const copy = /** @type {any} */ ({ ...old, _id: newId, common: { ...old.common } });
             delete copy.common.custom;
+            // no def: js-controller would create the state with the default value and the old value would
+            // not be taken over (the definitions are set again right after the move)
+            delete copy.common.def;
             await this.setForeignObjectAsync(newId, copy);
             now = await this.getForeignObjectAsync(newId);
+            created = true;
         }
         const custom = old.common && old.common.custom;
         const nowCustom = now && now.common && now.common.custom;
@@ -593,7 +598,7 @@ class SungrowLocal extends utils.Adapter {
         if (old.type === 'state') {
             const oldState = await this.getForeignStateAsync(oldId);
             const newState = await this.getForeignStateAsync(newId);
-            if (oldState && oldState.val !== null && oldState.val !== undefined && !newState) {
+            if (oldState && oldState.val !== null && oldState.val !== undefined && (created || !newState)) {
                 await this.setForeignStateAsync(newId, {
                     val: oldState.val,
                     ack: true,
