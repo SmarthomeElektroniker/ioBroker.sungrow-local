@@ -8,7 +8,15 @@
 const assert = require('node:assert');
 const { EventEmitter } = require('node:events');
 const { normalise } = require('../../lib/registers');
-const { SungrowDeviceManagement, buildCards, formatRow, TXT, LANGS } = require('../../lib/deviceManager');
+const {
+    SungrowDeviceManagement,
+    buildCards,
+    formatRow,
+    cardInfo,
+    directionIndicator,
+    TXT,
+    LANGS,
+} = require('../../lib/deviceManager');
 const ioPackage = require('../../io-package.json');
 
 const NS = 'sungrow-local.0';
@@ -213,5 +221,94 @@ describe('device manager: messages with a fake adapter', () => {
         assert.strictEqual(st.val, '640 W');
         assert.deepStrictEqual(a.writes, []);
         assert.strictEqual(devices[0].indicators[0].value.stateId, idOf(regs, 43052));
+    });
+});
+
+describe('device manager: main values on the card (customInfo, 0.5.0)', () => {
+    it('inverter: PV power and operating state; battery: SoC and power; meter: grid power - read-only state items', () => {
+        const regs = templateRegs();
+        const cards = Object.fromEntries(buildCards(regs, NS).map(c => [c.id, c]));
+        const items = id => cardInfo(cards[id]).schema.items;
+        assert.deepStrictEqual(Object.keys(items('inverter')), ['_pv', '_state']);
+        assert.strictEqual(items('inverter')._pv.oid, idOf(regs, 35017));
+        assert.strictEqual(items('inverter')._state.oid, idOf(regs, 43000));
+        assert.deepStrictEqual(Object.keys(items('battery')), ['_soc', '_battPower']);
+        assert.strictEqual(items('battery')._soc.oid, idOf(regs, 43023));
+        // template: 35214 (signed) is not ticked -> amount 43022, direction from the current 43021
+        assert.strictEqual(items('battery')._battPower.oid, idOf(regs, 43022));
+        assert.deepStrictEqual(items('battery')._battPower.label, TXT.battPower);
+        assert.deepStrictEqual(Object.keys(items('meter')), ['_grid']);
+        assert.strictEqual(items('meter')._grid.oid, idOf(regs, 35601));
+        assert.strictEqual(items('meter')._grid.label.de, 'Netz (+ Bezug / − Einspeisung)');
+        for (const id of ['inverter', 'battery', 'meter']) {
+            assert.strictEqual(cardInfo(cards[id]).schema.type, 'panel');
+            for (const it of Object.values(items(id))) {
+                assert.strictEqual(it.type, 'state');
+                assert.strictEqual(it.readOnly, true, `${id} ${it.oid} read only`);
+                assert.strictEqual(it.control, 'text', `${id} ${it.oid} shown as text`);
+                assert.strictEqual(it.foreign, true);
+            }
+        }
+    });
+
+    it('battery direction: + = discharging, - = charging (43021); with 35214 the signed power is shown', () => {
+        const regs = templateRegs();
+        let bat = buildCards(regs, NS).find(c => c.id === 'battery');
+        assert.deepStrictEqual(bat.direction, { kind: 'battery', stateId: idOf(regs, 43021), threshold: 0.1 });
+        const ind = directionIndicator(bat.direction);
+        const level = v =>
+            ind.levels.find(l => (l.min === undefined || v >= l.min) && (l.max === undefined || v <= l.max)).text.en;
+        assert.strictEqual(level(2.5), 'discharging');
+        assert.strictEqual(level(-1.2), 'charging');
+        assert.strictEqual(level(0), 'idle');
+        assert.strictEqual(ind.value.stateId, idOf(regs, 43021));
+
+        const signed = templateRegs();
+        const all = normalise('inputRegs', [
+            { _address: 35214, deviceId: 1, name: 'Battery power signed', type: 'int32sw' },
+        ]).regs;
+        signed.push(...all);
+        bat = buildCards(signed, NS).find(c => c.id === 'battery');
+        const items = cardInfo(bat).schema.items;
+        assert.strictEqual(items._battPower.oid, `${NS}.${all[0].id}`);
+        assert.strictEqual(items._battPower.label.de, 'Leistung (+ Entladen / − Laden)');
+        assert.deepStrictEqual(bat.direction, { kind: 'battery', stateId: `${NS}.${all[0].id}`, threshold: 10 });
+    });
+
+    it('grid direction: + = import, - = feed-in (35601)', () => {
+        const regs = templateRegs();
+        const met = buildCards(regs, NS).find(c => c.id === 'meter');
+        const ind = directionIndicator(met.direction);
+        const level = v =>
+            ind.levels.find(l => (l.min === undefined || v >= l.min) && (l.max === undefined || v <= l.max)).text.de;
+        assert.strictEqual(level(1200), 'Bezug');
+        assert.strictEqual(level(-3810), 'Einspeisung');
+        assert.strictEqual(level(3), 'Ruhe');
+    });
+
+    it('loadDevices: customInfo and the direction indicator on the cards, no controls that write', async () => {
+        const regs = templateRegs();
+        const a = fakeAdapter(regs, {});
+        const dm = new SungrowDeviceManagement(a);
+        /** @type {any[]} */
+        const devices = [];
+        await dm.loadDevices({ addDevice: d => devices.push(d), setTotalDevices: () => {} });
+        const by = Object.fromEntries(devices.map(d => [d.id, d]));
+        for (const d of devices) {
+            assert.ok(d.customInfo && d.customInfo.id === d.id, `${d.id} customInfo`);
+        }
+        assert.deepStrictEqual(
+            by.battery.indicators.map(i => i.id),
+            ['direction'],
+        );
+        assert.deepStrictEqual(
+            by.meter.indicators.map(i => i.id),
+            ['direction'],
+        );
+        assert.deepStrictEqual(
+            by.inverter.indicators.map(i => i.id),
+            ['fault'],
+        );
+        assert.deepStrictEqual(a.writes, []);
     });
 });
