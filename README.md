@@ -56,6 +56,8 @@ during which the bus is blocked. With a generic Modbus instance this leads to:
   Own registers can still be added.
 - **Conversion helper** tab: addresses in all notations, data type, sign, word order and factor explained, raw
   values decoded in every common way, plausibility warnings and an optional single test read of the register.
+- **Device manager cards** (admin → *Devices*): inverter, battery and grid meter with the main values, live
+  direction (charging/discharging, import/feed-in) and fault indicator – read only, the cards never write.
 
 ## Requirements
 
@@ -245,15 +247,31 @@ requests, late answers, total failure and connection loss.
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 0.5.0 (2026-11-12)
 
-- Device manager support (`@iobroker/dm-utils`): read-only cards for the running operation. *Inverter*:
-  connection, operating state, PV power, AC output, house consumption, inside temperature, PV yield today,
-  time of the last values and a fault indicator (43052). *Battery* (if a battery register is configured): state
-  of charge, power with direction, health, temperature, and - only shown - backup reserve, min./max. SoC and EMS
-  mode if these holding registers are polled. *Grid meter* (if 35601 is configured): power with import/feed-in,
-  import and feed-in today. No actions, no configuration and no writing from the cards; states, objects and
-  settings are unchanged.
+- **English names of the default poll groups:** `akku` → `battery`, `energie` → `energy`, `steuerung` → `control`
+  (`live` and `info` stay). The group name is part of the diagnostic IDs (`info.groups.<group>.*`). Existing
+  instances are migrated once on the first start (template version 7): the groups and the register rows of these
+  groups are renamed, the objects `info.groups.akku/energie/steuerung.*` move to the new names with their values
+  (counters go on), custom settings (history/sql/influxdb with `aliasId` = old ID) and rooms/functions; the old
+  objects are deleted. Groups you named yourself are not touched; if a group with the new name exists already, the
+  old group keeps its name (warning in the log). **Switch scripts and visualisations that use
+  `info.groups.akku`, `info.groups.energie` or `info.groups.steuerung`** (the log lists them). Register IDs do not
+  change. The vis templates use the new IDs.
+- English default descriptions of the poll groups (they are part of the channel names). Existing descriptions are
+  only replaced while they are still the German default text of earlier versions.
+- State IDs no longer contain commas (`,` is in the forbidden characters of the js-controller). No default or
+  template register has a comma in its name; objects of an own register with a comma move to the new ID like in
+  0.4.3.
+- Device manager support (`@iobroker/dm-utils`): read-only cards for the running operation. Directly on the card:
+  *Inverter* PV power and operating state, *Battery* (if a battery register is configured) state of charge and
+  power, *Grid meter* (if 35601 is configured) grid power, each with a live direction indicator (battery: sign of
+  43021 / 35214, + discharging, − charging; grid: 35601, + import, − feed-in) and the fault indicator (43052) on the
+  inverter. The control dialog of a card shows more: AC output, house consumption, inside temperature, PV yield
+  today, time of the last values; health, temperature, and - only shown - backup reserve, min./max. SoC and EMS
+  mode if these holding registers are polled; import and feed-in today. No actions, no configuration and no
+  writing from the cards.
+- README: link to the manufacturer and its product overview.
 
 ### 0.4.3 (2026-10-25)
 
