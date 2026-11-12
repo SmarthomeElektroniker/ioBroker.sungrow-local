@@ -247,6 +247,15 @@ requests, late answers, total failure and connection loss.
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
+### 0.5.1 (2026-11-12)
+
+- **Value tables in all 11 languages:** the operating state (43000) and the output type (35002) of the template
+  are translated like the control registers (type codes and model names stay as they are). `common.states` only
+  takes plain texts, so the translation goes by the raw value: the objects carry the system language, the cards
+  of the device manager and the overview tiles show the texts (e.g. EMS mode, operating state) in the language.
+  Own texts in the `states` column are never replaced.
+- Wording of some card texts (de: battery state of health, pl: feed-in to the grid, uk/ru: idle).
+
 ### 0.5.0 (2026-11-12)
 
 - **English names of the default poll groups:** `akku` → `battery`, `energie` → `energy`, `steuerung` → `control`
