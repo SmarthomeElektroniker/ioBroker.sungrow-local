@@ -148,11 +148,14 @@ tests.integration(path.join(__dirname, '..'), {
                 const w = fake.state.requests.filter(r => r.fc === 6 && r.addr === 33030);
                 assert.strictEqual(w.length, 1);
 
-                // same value again: must still end with ack=true
+                // same value again: must still end with ack=true - since 0.6.0 without a second write on the bus
+                // (skip unchanged writes, default on); the command is counted per register
                 await harness.states.setStateAsync(`${ns}.holdingRegisters.1.73031_Max_SOC`, { val: 95, ack: false });
                 await waitFor('holdingRegisters.1.73031_Max_SOC', (v, s) => v === 95 && s.ack, 10000);
-                assert.strictEqual(fake.state.requests.filter(r => r.fc === 6 && r.addr === 33030).length, 2);
-                await waitFor('info.write.okTotal', v => v >= 4);
+                assert.strictEqual(fake.state.requests.filter(r => r.fc === 6 && r.addr === 33030).length, 1);
+                await waitFor('info.write.okTotal', v => v >= 2);
+                await waitFor('info.write.registers.holdingRegisters_1_73031_Max_SOC.commandsToday', v => v === 2);
+                await waitFor('info.write.registers.holdingRegisters_1_73031_Max_SOC.writtenToday', v => v === 1);
 
                 // implausible value (above max): the check only warns, the value is still written (0.2.0)
                 await harness.states.setStateAsync(`${ns}.holdingRegisters.1.73031_Max_SOC`, { val: 150, ack: false });
