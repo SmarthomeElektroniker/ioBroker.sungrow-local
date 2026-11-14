@@ -46,6 +46,20 @@ try {
     // no translations - names come from the description column
 }
 
+/**
+ * Instances with custom settings at an object (history, influxdb, sql ...).
+ *
+ * @param {ioBroker.Object | null | undefined} obj Object
+ * @returns {string[]} Instance names, empty when there are none
+ */
+function customInstances(obj) {
+    const c = obj && obj.common && obj.common.custom;
+    if (!c || typeof c !== 'object') {
+        return [];
+    }
+    return Object.keys(c).filter(k => c[k] && typeof c[k] === 'object');
+}
+
 /** Entries kept in info.write.log */
 const WRITE_LOG_MAX = 25;
 
@@ -53,10 +67,14 @@ class SungrowLocal extends utils.Adapter {
     /** @param {Partial<utils.AdapterOptions>} [options] Adapter options */
     constructor(options = {}) {
         super({ ...options, name: 'sungrow-local' });
-        this.on('ready', this.onReady.bind(this));
+        this.on('ready', () => this.onReadySafe());
         this.on('stateChange', this.onStateChange.bind(this));
         this.on('unload', this.onUnload.bind(this));
-        this.on('message', this.onMessage.bind(this));
+        this.on('message', obj => this.background(() => this.onMessage(obj), 'message'));
+        /** set as soon as the adapter stops: errors of background tasks are expected then (DB closed) */
+        this.unloading = false;
+        /** background task -> time of the last error log (at most one error per task and minute) */
+        this.errorLogged = new Map();
         this.poller = null;
         /** full ID -> register */
         this.regsById = new Map();
@@ -82,6 +100,60 @@ class SungrowLocal extends utils.Adapter {
         this.wizardRunning = false;
         /** device manager: read-only cards for inverter, battery and grid meter (dm:* messages) */
         this.deviceManagement = new SungrowDeviceManagement(this);
+    }
+
+    /**
+     * Runs a promise-returning task without awaiting it ("fire and forget") and never lets its rejection go
+     * unhandled: js-controller would treat an unhandled rejection as a crash and restart the instance.
+     * While the adapter stops (setState after the DB connection closed ...), errors are only logged on debug
+     * level; otherwise as error, at most once per task and minute (no log storm when the DB is gone).
+     *
+     * @param {() => unknown} task Task (may return a promise or throw)
+     * @param {string} what Short name of the task for the log
+     */
+    background(task, what) {
+        let p;
+        try {
+            p = Promise.resolve(task());
+        } catch (e) {
+            p = Promise.reject(e);
+        }
+        p.catch(e => this.reportBackgroundError(what, e));
+    }
+
+    /**
+     * @param {string} what Task
+     * @param {unknown} e Error
+     */
+    reportBackgroundError(what, e) {
+        const text = `${what}: ${(e && /** @type {any} */ (e).message) || String(e)}`;
+        if (this.unloading) {
+            this.log.debug(`${text} (adapter is stopping)`);
+            return;
+        }
+        const now = Date.now();
+        const last = this.errorLogged.get(what);
+        if (last !== undefined && now - last < 60000) {
+            this.log.debug(text);
+            return;
+        }
+        this.errorLogged.set(what, now);
+        this.log.error(text);
+    }
+
+    /** Start; a failed start is logged and the instance restarts (instead of an unhandled rejection). */
+    onReadySafe() {
+        this.onReady().catch(e => {
+            const text = `Start failed: ${(e && e.message) || String(e)}`;
+            if (this.unloading) {
+                this.log.debug(`${text} (adapter is stopping)`);
+                return;
+            }
+            this.log.error(`${text} - restarting the instance`);
+            if (typeof this.restart === 'function') {
+                this.restart();
+            }
+        });
     }
 
     async onReady() {
@@ -232,11 +304,11 @@ class SungrowLocal extends utils.Adapter {
      */
     wirePoller(p, alwaysUpdate) {
         p.on('connection', on => {
-            void this.setStateChangedAsync('info.connection', on, true);
+            this.background(() => this.setStateChangedAsync('info.connection', on, true), 'info.connection');
             this.log[on ? 'info' : 'warn'](on ? 'Connected to the gateway' : 'Connection to the gateway lost');
         });
         p.on('connectFailed', ({ error }) => this.log.warn(`Connect failed: ${error}`));
-        p.on('reconnect', ({ reason }) => void this.onReconnect(reason));
+        p.on('reconnect', ({ reason }) => this.background(() => this.onReconnect(reason), 'reconnect counter'));
         p.on('values', ({ values }) => {
             for (const { reg, val } of values) {
                 if (val === null) {
@@ -253,18 +325,20 @@ class SungrowLocal extends utils.Adapter {
                 }
                 if (alwaysUpdate || this.lastVal.get(id) !== val) {
                     this.lastVal.set(id, val);
-                    void this.setState(reg.id, val, true);
+                    this.background(() => this.setState(reg.id, val, true), 'register values');
                 }
             }
         });
-        p.on('request', ev => void this.onRequest(ev));
-        p.on('skipped', ({ group }) => void this.count(groupKey(group), { skippedToday: 1 }));
-        p.on('round', ev => void this.onRound(ev));
+        p.on('request', ev => this.background(() => this.onRequest(ev), 'request diagnostics'));
+        p.on('skipped', ({ group }) =>
+            this.background(() => this.count(groupKey(group), { skippedToday: 1 }), 'skip counter'),
+        );
+        p.on('round', ev => this.background(() => this.onRound(ev), 'round diagnostics'));
         p.on('readback', ({ reg, val, requested, written }) => {
             const id = `${this.namespace}.${reg.id}`;
             this.lastVal.set(id, val);
             // ack=true after the confirmation read - also when the value did not change
-            void this.setState(reg.id, val, true);
+            this.background(() => this.setState(reg.id, val, true), 'confirmed value');
             if (written && requested !== undefined && Number(requested) !== val && String(requested) !== String(val)) {
                 this.log.warn(`${reg.id}: wrote ${requested}, device reports ${val}`);
                 this.logWrite(reg, requested, 'mismatch', String(val));
@@ -280,7 +354,7 @@ class SungrowLocal extends utils.Adapter {
         p.on('writeFailed', ({ reg, requested, error }) => {
             this.log.warn(`${reg.id}: writing ${requested} failed: ${error}`);
             this.logWrite(reg, requested, 'failed', String(error));
-            void this.count(WRITE_DIAG.key, { failedTotal: 1 }, error);
+            this.background(() => this.count(WRITE_DIAG.key, { failedTotal: 1 }, error), 'write counter');
         });
     }
 
@@ -293,7 +367,7 @@ class SungrowLocal extends utils.Adapter {
         const key = ev.group === '_write' ? WRITE_DIAG.key : groupKey(ev.group);
         if (this.poller && this.poller.queueLength !== this.lastQueueLength) {
             this.lastQueueLength = this.poller.queueLength;
-            void this.setState('info.queueLength', this.lastQueueLength, true);
+            await this.setState('info.queueLength', this.lastQueueLength, true);
         }
         if (ev.group === '_write') {
             // a failed attempt only sets lastError; failedTotal counts writes that failed after all attempts
@@ -406,7 +480,7 @@ class SungrowLocal extends utils.Adapter {
             for (const k of Object.keys(d)) {
                 if (k.endsWith('Today')) {
                     d[k] = 0;
-                    void this.setState(`info.${key}.${k}`, 0, true);
+                    this.background(() => this.setState(`info.${key}.${k}`, 0, true), 'day counters');
                 }
             }
         }
@@ -437,7 +511,8 @@ class SungrowLocal extends utils.Adapter {
         for (const [id, unit] of unitFolders) {
             await this.extendObjectAsync(id, { type: 'device', common: { name: `Unit ${unit}` }, native: {} });
         }
-        // objects of up to 0.4.0 carry def 0/'' - remove it (IDs, custom settings and states stay)
+        // objects of up to 0.4.0 carry def 0/'' - remove it (IDs, custom settings and states stay);
+        // registers that are configured again lose their "orphaned" mark
         const withDef = new Set();
         for (const regName of Object.values(REG_NAMES)) {
             const view = await this.getObjectViewAsync('system', 'state', {
@@ -445,7 +520,8 @@ class SungrowLocal extends utils.Adapter {
                 endkey: `${this.namespace}.${regName}.香`,
             });
             for (const row of view.rows) {
-                if (row.value && row.value.common && 'def' in row.value.common) {
+                const o = row.value;
+                if (o && ((o.common && 'def' in o.common) || (o.native && 'orphaned' in o.native))) {
                     withDef.add(row.id);
                 }
             }
@@ -488,8 +564,10 @@ class SungrowLocal extends utils.Adapter {
             await this.extendObjectAsync(r.id, { type: 'state', common, native });
             if (withDef.has(`${this.namespace}.${r.id}`)) {
                 const obj = await this.getObjectAsync(r.id);
-                if (obj && obj.common && 'def' in obj.common) {
+                if (obj && ((obj.common && 'def' in obj.common) || (obj.native && 'orphaned' in obj.native))) {
                     delete obj.common.def;
+                    delete obj.native.orphaned;
+                    delete obj.native.orphanedSince;
                     await this.setObjectAsync(r.id, obj);
                 }
             }
@@ -499,7 +577,8 @@ class SungrowLocal extends utils.Adapter {
         }
         // IDs of up to 0.4.3 with characters outside [A-Za-z0-9_-] (e.g. "/" or ","): move settings, value and rooms
         await this.migrateLegacyIds(regs);
-        // remove states of registers that are no longer configured
+        // remove states of registers that are no longer configured - except those with custom settings
+        // (history, InfluxDB, SQL ...): they stay, marked as orphaned, with a warning
         const wanted = new Set(regs.map(r => `${this.namespace}.${r.id}`));
         for (const regName of Object.values(REG_NAMES)) {
             const existing = await this.getObjectViewAsync('system', 'state', {
@@ -507,11 +586,35 @@ class SungrowLocal extends utils.Adapter {
                 endkey: `${this.namespace}.${regName}.香`,
             });
             for (const row of existing.rows) {
-                if (!wanted.has(row.id)) {
+                if (wanted.has(row.id)) {
+                    continue;
+                }
+                if (customInstances(row.value).length) {
+                    await this.keepOrphan(row.id, row.value, 'the register is no longer configured');
+                } else {
                     this.log.info(`Removing ${row.id} (no longer configured)`);
                     await this.delForeignObjectAsync(row.id);
                 }
             }
+        }
+    }
+
+    /**
+     * An object that would be deleted keeps its custom settings (history, InfluxDB, SQL ...): it stays, gets
+     * native.orphaned = true (and orphanedSince) and a warning in the log on every start.
+     *
+     * @param {string} id Full ID
+     * @param {ioBroker.Object | null | undefined} obj The object (for the custom settings and the mark)
+     * @param {string} reason Why it would be deleted
+     */
+    async keepOrphan(id, obj, reason) {
+        this.log.warn(
+            `${id} is kept although ${reason}: it has custom settings of ${customInstances(obj).join(', ')} (history/database). The object is marked as orphaned (native.orphaned) and receives no more values - remove the custom settings or delete the object by hand when the recorded data is no longer needed.`,
+        );
+        if (!(obj && obj.native && obj.native.orphaned)) {
+            await this.extendForeignObjectAsync(id, {
+                native: { orphaned: true, orphanedSince: new Date().toISOString() },
+            });
         }
     }
 
@@ -563,7 +666,8 @@ class SungrowLocal extends utils.Adapter {
      */
     async moveStateObject(oldId, newId, cache) {
         const old = await this.getForeignObjectAsync(oldId);
-        if (!old) {
+        if (!old || (old.native && old.native.orphaned)) {
+            // missing, or kept as orphaned earlier (custom settings that could not move)
             return false;
         }
         let now = await this.getForeignObjectAsync(newId);
@@ -579,12 +683,18 @@ class SungrowLocal extends utils.Adapter {
             created = true;
         }
         const custom = old.common && old.common.custom;
-        const nowCustom = now && now.common && now.common.custom;
-        if (custom && Object.keys(custom).length && !(nowCustom && Object.keys(nowCustom).length)) {
+        const nowCustom = (now && now.common && now.common.custom) || {};
+        /** settings of instances the new object has already (own settings there): cannot move */
+        const conflicts = [];
+        if (custom && typeof custom === 'object') {
             /** @type {Record<string, any>} */
             const out = {};
             for (const [inst, c] of Object.entries(custom)) {
                 if (!c || typeof c !== 'object') {
+                    continue;
+                }
+                if (nowCustom[inst]) {
+                    conflicts.push(inst);
                     continue;
                 }
                 const cc = { ...c };
@@ -593,7 +703,9 @@ class SungrowLocal extends utils.Adapter {
                 }
                 out[inst] = cc;
             }
-            await this.extendForeignObjectAsync(newId, { common: { custom: out } });
+            if (Object.keys(out).length) {
+                await this.extendForeignObjectAsync(newId, { common: { custom: out } });
+            }
         }
         if (old.type === 'state') {
             const oldState = await this.getForeignStateAsync(oldId);
@@ -617,6 +729,12 @@ class SungrowLocal extends utils.Adapter {
                 e.common.members = [...new Set(members.map(m => (m === oldId ? newId : m)))];
                 await this.setForeignObjectAsync(e._id, e);
             }
+        }
+        if (conflicts.length) {
+            // both objects have settings of the same instance: deleting the old one would lose its settings.
+            // It stays; the clean-up of no longer configured objects warns and marks it as orphaned.
+            this.log.debug(`${oldId} not deleted: ${newId} has own settings of ${conflicts.join(', ')}`);
+            return true;
         }
         await this.delForeignObjectAsync(oldId);
         return true;
@@ -689,6 +807,12 @@ class SungrowLocal extends utils.Adapter {
             native: {},
         });
         /** @type {{key: string, name: any, defs: Record<string, any>}[]} */
+        // diagnostic states kept as orphaned earlier (custom settings) lose the mark when used again
+        const orphans = new Set(
+            Object.entries((await this.getForeignObjectsAsync(`${this.namespace}.info.*`, 'state')) || {})
+                .filter(([, o]) => o && o.native && o.native.orphaned)
+                .map(([id]) => id),
+        );
         const channels = [
             ...groups.map(g => ({ key: groupKey(g.name), name: groupChannelName(g.name, g.description), defs: DIAG })),
             { key: WRITE_DIAG.key, name: T.channelWrite, defs: WRITE_DIAG.states },
@@ -702,6 +826,14 @@ class SungrowLocal extends utils.Adapter {
                     common: { read: true, write: false, ...def },
                     native: {},
                 });
+                if (orphans.has(`${this.namespace}.info.${ch.key}.${k}`)) {
+                    const o = await this.getObjectAsync(`info.${ch.key}.${k}`);
+                    if (o && o.native) {
+                        delete o.native.orphaned;
+                        delete o.native.orphanedSince;
+                        await this.setObjectAsync(`info.${ch.key}.${k}`, o);
+                    }
+                }
                 if (def.type === 'number' && (k.endsWith('Total') || k.endsWith('Today'))) {
                     const s = await this.getStateAsync(`info.${ch.key}.${k}`);
                     const valid =
@@ -729,7 +861,30 @@ class SungrowLocal extends utils.Adapter {
         for (const row of existing.rows) {
             const key = row.id.substring(this.namespace.length + 'info.'.length + 1);
             if (!this.diag.has(key)) {
-                await this.delObjectAsync(row.id.substring(this.namespace.length + 1), { recursive: true });
+                await this.removeChannel(row.id, 'its poll group is not active');
+            }
+        }
+    }
+
+    /**
+     * Deletes a diagnostics channel with its states - states with custom settings (history ...) and the
+     * channel above them stay (marked as orphaned, warning).
+     *
+     * @param {string} channelId Full channel ID
+     * @param {string} reason Why it is removed
+     */
+    async removeChannel(channelId, reason) {
+        const states = (await this.getForeignObjectsAsync(`${channelId}.*`, 'state')) || {};
+        const keep = Object.entries(states).filter(([, o]) => customInstances(o).length);
+        if (!keep.length) {
+            await this.delForeignObjectAsync(channelId, { recursive: true });
+            return;
+        }
+        for (const [id, o] of Object.entries(states)) {
+            if (customInstances(o).length) {
+                await this.keepOrphan(id, o, reason);
+            } else {
+                await this.delForeignObjectAsync(id);
             }
         }
     }
@@ -809,7 +964,7 @@ class SungrowLocal extends utils.Adapter {
             }
             // restore the device value
             if (this.lastVal.has(id)) {
-                void this.setState(id, this.lastVal.get(id), true);
+                this.restoreValue(id);
             }
             return;
         }
@@ -818,7 +973,7 @@ class SungrowLocal extends utils.Adapter {
             this.log.warn(`${id}: read-only mode - write of ${state.val} rejected`);
             this.logWrite(reg, state.val, 'readOnly');
             if (this.lastVal.has(id)) {
-                void this.setState(id, this.lastVal.get(id), true);
+                this.restoreValue(id);
             }
             return;
         }
@@ -832,7 +987,7 @@ class SungrowLocal extends utils.Adapter {
             this.log.warn(`${id}: value rejected - ${problem}`);
             this.logWrite(reg, state.val, 'rejected', problem);
             if (this.lastVal.has(id)) {
-                void this.setState(id, this.lastVal.get(id), true);
+                this.restoreValue(id);
             }
             return;
         }
@@ -1179,11 +1334,22 @@ class SungrowLocal extends utils.Adapter {
             detail: detail || '',
         });
         this.writeLog.length = Math.min(this.writeLog.length, WRITE_LOG_MAX);
-        void this.setState('info.write.log', JSON.stringify(this.writeLog), true);
+        this.background(() => this.setState('info.write.log', JSON.stringify(this.writeLog), true), 'write log');
+    }
+
+    /**
+     * Sets the state back to the last device value (rejected command).
+     *
+     * @param {string} id Full state ID
+     */
+    restoreValue(id) {
+        const val = this.lastVal.get(id);
+        this.background(() => this.setState(id, val, true), 'restore value');
     }
 
     /** @param {() => void} callback Done */
     onUnload(callback) {
+        this.unloading = true;
         const done = () => {
             try {
                 callback();
