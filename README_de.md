@@ -53,6 +53,14 @@ Der Adapter ist ein unabhängiges Projekt und steht in keiner Verbindung zu Sung
   niederwertiges Wort zuerst = `…sw`) und Faktor erklärt; Rohwerte werden auf alle üblichen Arten gelesen, mit
   Warnungen und auf Wunsch einmaliger Test-Lesung vom Gerät (nur lesen).
 
+## Werte in evcc nutzen
+
+evcc bringt eine eigene Sungrow-Vorlage mit, öffnet damit aber einen **zweiten Modbus-Client** am WiNet-S2 – das
+WiNet verträgt zuverlässig nur einen (gemeinsamer RS485-Bus, langsamer Akku). Besser liest evcc die Werte, die
+dieser Adapter ohnehin liest, über ioBroker: per **simple-api** (`http://<iobroker>:8087/getPlainValue/<ID>`) oder
+per **MQTT-Adapter** (`source: mqtt`). Beispielkonfiguration siehe [README](README.md#using-the-values-in-evcc-or-other-software).
+Strompreise liefert der Adapter nicht – das übernehmen evcc, tibberlink, ein Börsenpreis-Adapter oder ein Skript.
+
 ## Visualisierung (vis-Vorlagen)
 
 Im Ordner [`vis-templates/`](vis-templates/) liegen fertige **vis-1**-Ansichten (animierter Energiefluss, Akku,

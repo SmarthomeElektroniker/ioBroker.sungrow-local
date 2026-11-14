@@ -205,6 +205,43 @@ adapter.
   use the iSolarCloud (internet) or the WiNet web socket API. This adapter uses only the documented local
   Modbus TCP interface.
 
+## Using the values in evcc (or other software)
+
+evcc has its own Sungrow template, but it opens a **second Modbus client** at the WiNet-S2. The WiNet handles
+only one client reliably (one shared RS485 bus, slow battery unit) – two clients collide and cause timeouts in
+both. Let evcc read the values this adapter has already read instead, through ioBroker:
+
+- **simple-api adapter** (HTTP, default port 8087): `http://<iobroker>:8087/getPlainValue/<state ID>` returns
+  the plain value.
+- **MQTT adapter**: publishes the states as topics (e.g. `sungrow-local/0/inputRegisters/1/35601_power_total-EnergyMeter`);
+  evcc reads them with `source: mqtt`.
+
+Example with simple-api (evcc custom meters; check the evcc documentation of your version for the exact syntax):
+
+```yaml
+meters:
+  - name: grid
+    type: custom
+    power: # + = import, - = feed-in
+      source: http
+      uri: http://192.168.1.10:8087/getPlainValue/sungrow-local.0.inputRegisters.1.35601_power_total-EnergyMeter
+  - name: pv
+    type: custom
+    power:
+      source: http
+      uri: http://192.168.1.10:8087/getPlainValue/sungrow-local.0.inputRegisters.1.35017_Total_DC_Power
+  - name: battery
+    type: custom
+    power: # + = discharging, - = charging (tick the template row 35214 "Battery power signed")
+      source: http
+      uri: http://192.168.1.10:8087/getPlainValue/sungrow-local.0.inputRegisters.1.35214_Battery_power_signed
+    soc:
+      source: http
+      uri: http://192.168.1.10:8087/getPlainValue/sungrow-local.0.inputRegisters.1.43023_Battery_level
+```
+
+Electricity prices are not part of this adapter: evcc, tibberlink, a spot price adapter or a script provide them.
+
 ## Visualisation (vis templates)
 
 The folder [`vis-templates/`](vis-templates/) contains ready-made **vis 1** views (animated energy flow,
