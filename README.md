@@ -346,6 +346,22 @@ requests, late answers, total failure and connection loss.
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
+### 0.6.0 (2026-11-14)
+
+- **Review fixes (Bluefox, forum thread 85824):** async work that is not awaited (setState from poller events,
+  restoring rejected commands, reconnects) can no longer end in an unhandled promise rejection – js-controller
+  restarted the instance on those, e.g. while the adapter stopped. Errors are logged on debug level while stopping,
+  otherwise as error at most once per task and minute; a failing start is logged and restarts the instance.
+  eslint `no-floating-promises` guards the adapter code.
+- **Review fixes:** unticked registers, legacy IDs and diagnostics of inactive groups are no longer deleted when
+  they have custom settings (history, InfluxDB, SQL): the object stays, marked `native.orphaned`, with a warning.
+- **Skip unchanged writes** (default on) and **write counters per register** with a warning above N commands a day.
+- Value tables of hex codes (0x55/0xAA/0xBB/0xCC/0xA0–0xA3) show the code.
+- README: evcc reads the values through simple-api or MQTT instead of a second Modbus client.
+- **Experimental, off by default:** battery control (`control.battery.*`: normal/hold/charge with time limit and
+  return to normal) and the Sungrow wallbox (template v8: readings via the WiNet forwarding, EMS registers
+  33539–33549 locked behind an own switch; time format of the 32-bit times not clarified).
+
 ### 0.5.1 (2026-11-12)
 
 - **Value tables in all 11 languages:** the operating state (43000) and the output type (35002) of the template
