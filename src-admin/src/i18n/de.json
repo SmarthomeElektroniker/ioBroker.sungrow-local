@@ -49,6 +49,7 @@
     "sgl_colResult": "Ergebnis",
     "sgl_colTime": "Zeit",
     "sgl_colValue": "Aktueller Wert",
+    "sgl_colWritesToday": "Befehle heute",
     "sgl_confirmWrite": "%s wird auf %s gesetzt. Der Adapter schreibt den Wert, liest ihn zurück und protokolliert das Ergebnis.",
     "sgl_confirmWriteTitle": "An den Wechselrichter schreiben?",
     "sgl_connected": "verbunden",
@@ -188,6 +189,7 @@
     "sgl_result_ok": "geschrieben",
     "sgl_result_readOnly": "nur lesen",
     "sgl_result_rejected": "außerhalb des Bereichs",
+    "sgl_result_unchanged": "unverändert (nicht gesendet)",
     "sgl_result_unconfirmed": "nicht bestätigt",
     "sgl_running": "läuft",
     "sgl_save": "Speichern",
@@ -195,6 +197,8 @@
     "sgl_selectionN": "Auswahl aus %s Werten",
     "sgl_showInactive": "auch nicht gelesene",
     "sgl_skipTest": "Ohne Test weiter",
+    "sgl_skipUnchangedWrites": "Gleiche Werte nicht schreiben",
+    "sgl_skipUnchangedWritesHelp": "Ein Befehl mit dem Wert, den das Gerät bereits meldet, geht nicht über den WiNet; der Datenpunkt wird mit dem Gerätewert bestätigt (ack). Nur für abgefragte Register mit aktuellem Wert.",
     "sgl_stConnection": "Verbindung",
     "sgl_stGroup": "Gruppe %s (%s s)",
     "sgl_stGroupName": "Gruppe %s",
@@ -275,5 +279,8 @@
     "sgl_writeCheck_warn": "schreiben und im Log warnen",
     "sgl_writeLogEmpty": "Noch keine Schreibbefehle.",
     "sgl_writeLogTitle": "Letzte Schreibbefehle",
-    "sgl_writeSent": "Befehl gesendet – warte auf Bestätigung"
+    "sgl_writeSent": "Befehl gesendet – warte auf Bestätigung",
+    "sgl_writeWarnPerDay": "Warnen ab … Schreibbefehlen je Register und Tag",
+    "sgl_writeWarnPerDayHelp": "Eine Warnung im Log je Register und Tag; 0 = keine Warnung. Zähler: info.write.registers.*",
+    "sgl_writtenN": "%s geschrieben"
 }

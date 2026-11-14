@@ -49,6 +49,7 @@
     "sgl_colResult": "Résultat",
     "sgl_colTime": "Heure",
     "sgl_colValue": "Valeur actuelle",
+    "sgl_colWritesToday": "Commandes aujourd'hui",
     "sgl_confirmWrite": "%s sera réglé sur %s. L’adaptateur écrit la valeur, la relit et journalise le résultat.",
     "sgl_confirmWriteTitle": "Écrire dans l’onduleur ?",
     "sgl_connected": "connecté",
@@ -188,6 +189,7 @@
     "sgl_result_ok": "écrit",
     "sgl_result_readOnly": "lecture seule",
     "sgl_result_rejected": "hors plage",
+    "sgl_result_unchanged": "inchangé (non envoyé)",
     "sgl_result_unconfirmed": "non confirmé",
     "sgl_running": "en cours",
     "sgl_save": "Enregistrer",
@@ -195,6 +197,8 @@
     "sgl_selectionN": "choix parmi %s valeurs",
     "sgl_showInactive": "aussi les non lus",
     "sgl_skipTest": "Sans test",
+    "sgl_skipUnchangedWrites": "Ne pas écrire les valeurs inchangées",
+    "sgl_skipUnchangedWritesHelp": "Une commande avec la valeur déjà signalée par l'appareil n'est pas envoyée via le WiNet ; l'état est confirmé (ack) avec la valeur de l'appareil. Uniquement pour les registres interrogés dont la valeur est récente.",
     "sgl_stConnection": "Connexion",
     "sgl_stGroup": "Groupe %s (%s s)",
     "sgl_stGroupName": "Groupe %s",
@@ -275,5 +279,8 @@
     "sgl_writeCheck_warn": "écrire et avertir dans le journal",
     "sgl_writeLogEmpty": "Aucune commande d'écriture pour l'instant.",
     "sgl_writeLogTitle": "Dernières commandes d'écriture",
-    "sgl_writeSent": "commande envoyée – attente de confirmation"
+    "sgl_writeSent": "commande envoyée – attente de confirmation",
+    "sgl_writeWarnPerDay": "Avertir au-delà de … commandes d'écriture par registre et par jour",
+    "sgl_writeWarnPerDayHelp": "Un avertissement dans le journal par registre et par jour ; 0 = aucun avertissement. Compteurs : info.write.registers.*",
+    "sgl_writtenN": "%s écrites"
 }

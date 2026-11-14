@@ -49,6 +49,7 @@
     "sgl_colResult": "Результат",
     "sgl_colTime": "Время",
     "sgl_colValue": "Текущее значение",
+    "sgl_colWritesToday": "Команд сегодня",
     "sgl_confirmWrite": "%s будет установлено на %s. Адаптер записывает значение, считывает его обратно и протоколирует результат.",
     "sgl_confirmWriteTitle": "Записать в инвертор?",
     "sgl_connected": "подключено",
@@ -188,6 +189,7 @@
     "sgl_result_ok": "записано",
     "sgl_result_readOnly": "только чтение",
     "sgl_result_rejected": "вне диапазона",
+    "sgl_result_unchanged": "без изменений (не отправлено)",
     "sgl_result_unconfirmed": "не подтверждено",
     "sgl_running": "работает",
     "sgl_save": "Сохранить",
@@ -195,6 +197,8 @@
     "sgl_selectionN": "выбор из %s значений",
     "sgl_showInactive": "также не считываемые",
     "sgl_skipTest": "Без теста",
+    "sgl_skipUnchangedWrites": "Не записывать неизменённые значения",
+    "sgl_skipUnchangedWritesHelp": "Команда со значением, которое устройство уже сообщает, не отправляется через WiNet; состояние подтверждается (ack) значением устройства. Только для опрашиваемых регистров с актуальным значением.",
     "sgl_stConnection": "Подключение",
     "sgl_stGroup": "Группа %s (%s s)",
     "sgl_stGroupName": "Группа %s",
@@ -275,5 +279,8 @@
     "sgl_writeCheck_warn": "записать и предупредить в журнале",
     "sgl_writeLogEmpty": "Команд записи пока нет.",
     "sgl_writeLogTitle": "Последние команды записи",
-    "sgl_writeSent": "команда отправлена – ожидание подтверждения"
+    "sgl_writeSent": "команда отправлена – ожидание подтверждения",
+    "sgl_writeWarnPerDay": "Предупреждать при более … команд записи на регистр в день",
+    "sgl_writeWarnPerDayHelp": "Одно предупреждение в журнале на регистр в день; 0 = без предупреждения. Счётчики: info.write.registers.*",
+    "sgl_writtenN": "записано: %s"
 }

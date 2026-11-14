@@ -20,6 +20,7 @@ const {
     flag,
     checkWriteValue,
     extract,
+    sameRaw,
 } = require('./lib/registers');
 const { mergeCatalog, GROUP_RENAMES, templateStates, statesIn } = require('./lib/catalog');
 const { explain, resolve, implausible } = require('./lib/convert');
@@ -30,6 +31,8 @@ const {
     T,
     DIAG,
     WRITE_DIAG,
+    REGISTER_WRITE_DIAG,
+    registerWriteKey,
     LAST_VALUE_UPDATE,
     groupChannelName,
     timingWarnings,
@@ -80,6 +83,10 @@ class SungrowLocal extends utils.Adapter {
         this.regsById = new Map();
         /** full ID -> last value written to the state */
         this.lastVal = new Map();
+        /** full ID -> time the device last reported the value (poll or confirmation read) */
+        this.lastValAt = new Map();
+        /** group name -> poll interval in ms (age limit of a device value for "skip unchanged writes") */
+        this.groupInterval = new Map();
         /** diagnostic counters per group key */
         this.diag = new Map();
         /** failures in a row per group (for the log) */
@@ -224,6 +231,7 @@ class SungrowLocal extends utils.Adapter {
                 blocks,
             };
             groups.push(group);
+            this.groupInterval.set(name, group.interval);
             for (const b of blocks) {
                 this.unitPause.set(b.deviceId, Math.max(this.unitPause.get(b.deviceId) || 0, group.pauseAfter));
             }
@@ -261,7 +269,10 @@ class SungrowLocal extends utils.Adapter {
 
         await this.createRegisterObjects(regs);
         // diagnostics only for groups that read something (a group without ticked registers has no channel)
-        await this.createDiagnostics(groups.filter(g => g.blocks.length));
+        await this.createDiagnostics(
+            groups.filter(g => g.blocks.length),
+            regs.filter(r => r.write),
+        );
         await this.subscribeStatesAsync('holdingRegisters.*');
         await this.subscribeStatesAsync('inputRegisters.*');
 
@@ -315,6 +326,7 @@ class SungrowLocal extends utils.Adapter {
                     continue;
                 }
                 const id = `${this.namespace}.${reg.id}`;
+                this.lastValAt.set(id, Date.now());
                 if (!this.checked.has(id)) {
                     // one hint per register and start: helps with wrong type, factor or word order
                     this.checked.add(id);
@@ -337,6 +349,13 @@ class SungrowLocal extends utils.Adapter {
         p.on('readback', ({ reg, val, requested, written }) => {
             const id = `${this.namespace}.${reg.id}`;
             this.lastVal.set(id, val);
+            this.lastValAt.set(id, Date.now());
+            if (written) {
+                this.background(
+                    () => this.count(registerWriteKey(reg.id), { writtenToday: 1, writtenTotal: 1 }),
+                    'write counter',
+                );
+            }
             // ack=true after the confirmation read - also when the value did not change
             this.background(() => this.setState(reg.id, val, true), 'confirmed value');
             if (written && requested !== undefined && Number(requested) !== val && String(requested) !== String(val)) {
@@ -796,8 +815,9 @@ class SungrowLocal extends utils.Adapter {
      * Creates the diagnostic states per group and loads the persisted counters.
      *
      * @param {{name: string, description?: string}[]} groups Active groups
+     * @param {import('./lib/registers').Reg[]} [writable] Registers released for writing (write counters)
      */
-    async createDiagnostics(groups) {
+    async createDiagnostics(groups, writable = []) {
         const today = dayKey(new Date());
         // 0.5.0: diagnostics of the renamed default groups (info.groups.akku -> info.groups.battery ...)
         await this.migrateGroupObjects(groups.map(g => g.name));
@@ -816,7 +836,20 @@ class SungrowLocal extends utils.Adapter {
         const channels = [
             ...groups.map(g => ({ key: groupKey(g.name), name: groupChannelName(g.name, g.description), defs: DIAG })),
             { key: WRITE_DIAG.key, name: T.channelWrite, defs: WRITE_DIAG.states },
+            ...writable.map(r => ({
+                key: registerWriteKey(r.id),
+                name: this.displayName(r),
+                defs: REGISTER_WRITE_DIAG,
+            })),
         ];
+        const wantedKeys = new Set(channels.map(c => c.key));
+        if (writable.length) {
+            await this.extendObjectAsync('info.write.registers', {
+                type: 'folder',
+                common: { name: T.channelRegisterWrites },
+                native: {},
+            });
+        }
         for (const ch of channels) {
             await this.extendObjectAsync(`info.${ch.key}`, { type: 'channel', common: { name: ch.name }, native: {} });
             const counters = {};
@@ -860,8 +893,26 @@ class SungrowLocal extends utils.Adapter {
         });
         for (const row of existing.rows) {
             const key = row.id.substring(this.namespace.length + 'info.'.length + 1);
-            if (!this.diag.has(key)) {
+            if (!wantedKeys.has(key)) {
                 await this.removeChannel(row.id, 'its poll group is not active');
+            }
+        }
+        // write counters of registers that are no longer released for writing
+        const counters = await this.getObjectViewAsync('system', 'channel', {
+            startkey: `${this.namespace}.info.write.registers.`,
+            endkey: `${this.namespace}.info.write.registers.香`,
+        });
+        for (const row of counters.rows) {
+            const key = row.id.substring(this.namespace.length + 'info.'.length + 1);
+            if (!wantedKeys.has(key)) {
+                await this.removeChannel(row.id, 'the register is no longer released for writing');
+            }
+        }
+        if (!writable.length) {
+            const folder = await this.getObjectAsync('info.write.registers');
+            const left = await this.getForeignObjectsAsync(`${this.namespace}.info.write.registers.*`);
+            if (folder && !Object.keys(left || {}).length) {
+                await this.delObjectAsync('info.write.registers');
             }
         }
     }
@@ -956,6 +1007,9 @@ class SungrowLocal extends utils.Adapter {
         if (!reg) {
             return;
         }
+        if (reg.write) {
+            this.countCommand(reg);
+        }
         if (!reg.write) {
             if (reg.regType === 'holdingRegs') {
                 // holding register that is not released for writing (tab "Control")
@@ -993,6 +1047,14 @@ class SungrowLocal extends utils.Adapter {
         }
         if (problem) {
             this.log.warn(`${id}: implausible value - ${problem} (written anyway; the check only warns)`);
+        }
+        if (this.isUnchangedWrite(reg, id, state.val)) {
+            // the device holds this value already: nothing goes over the WiNet, the command is confirmed
+            // with the device value (ack=true, scripts waiting for the confirmation go on)
+            this.log.debug(`${id}: ${state.val} = device value - not sent (skip unchanged writes)`);
+            this.logWrite(reg, state.val, 'unchanged', String(this.lastVal.get(id)));
+            this.restoreValue(id);
+            return;
         }
         // the confirmation must set ack=true even if the value does not change
         this.lastVal.delete(id);
@@ -1321,10 +1383,20 @@ class SungrowLocal extends utils.Adapter {
      *
      * @param {import('./lib/registers').Reg} reg Register
      * @param {unknown} value Requested value
-     * @param {'ok'|'mismatch'|'failed'|'unconfirmed'|'readOnly'|'notReleased'|'rejected'} result Outcome
+     * @param {'ok'|'mismatch'|'failed'|'unconfirmed'|'readOnly'|'notReleased'|'rejected'|'unchanged'} result Outcome
      * @param {string} [detail] Device value or error
      */
     logWrite(reg, value, result, detail) {
+        const top = this.writeLog[0];
+        if (result === 'unchanged' && top && top.result === 'unchanged' && top.id === reg.id) {
+            // a script that repeats the device value: one entry with a counter instead of a full log
+            top.ts = Date.now();
+            top.value = value === undefined ? null : value;
+            top.times = (top.times || 1) + 1;
+            top.detail = `${detail || ''} (${top.times}×)`;
+            this.background(() => this.setState('info.write.log', JSON.stringify(this.writeLog), true), 'write log');
+            return;
+        }
         this.writeLog.unshift({
             ts: Date.now(),
             id: reg.id,
@@ -1335,6 +1407,49 @@ class SungrowLocal extends utils.Adapter {
         });
         this.writeLog.length = Math.min(this.writeLog.length, WRITE_LOG_MAX);
         this.background(() => this.setState('info.write.log', JSON.stringify(this.writeLog), true), 'write log');
+    }
+
+    /**
+     * A write command that would not change the device: setting "skip unchanged writes" (default on), the
+     * device value is known and recent (polled register, at most two poll intervals + 10 s old), and both
+     * give the same raw register words after factor/offset/rounding.
+     *
+     * @param {import('./lib/registers').Reg} reg Register
+     * @param {string} id Full state ID
+     * @param {unknown} val Requested value
+     * @returns {boolean} true = do not send
+     */
+    isUnchangedWrite(reg, id, val) {
+        if (this.config.skipUnchangedWrites === false || !reg.poll || !this.lastVal.has(id)) {
+            return false;
+        }
+        const interval = this.groupInterval.get(reg.group);
+        const at = this.lastValAt.get(id);
+        if (!interval || at === undefined || Date.now() - at > 2 * interval + 10000) {
+            return false;
+        }
+        return sameRaw(reg, val, this.lastVal.get(id));
+    }
+
+    /**
+     * Counts a write command of a register released for writing (commandsToday/commandsTotal) and warns once a
+     * day when it exceeds the limit (setting "writeWarnPerDay", default 50, 0 = off).
+     *
+     * @param {import('./lib/registers').Reg} reg Register
+     */
+    countCommand(reg) {
+        const key = registerWriteKey(reg.id);
+        this.background(async () => {
+            await this.count(key, { commandsToday: 1, commandsTotal: 1 });
+            const d = this.diag.get(key);
+            const raw = this.config.writeWarnPerDay;
+            const limit = raw === undefined || raw === null || raw === '' ? 50 : Math.max(0, num(raw, 50));
+            if (d && limit && d.commandsToday === limit + 1) {
+                this.log.warn(
+                    `${reg.id}: more than ${limit} write commands today - a script or visualisation writes this register very often. Every write goes over the WiNet to the inverter (Sungrow advises against frequent writes)${this.config.skipUnchangedWrites === false ? '' : '; commands with the current device value are not sent'}. See info.${key}.`,
+                );
+            }
+        }, 'write counter');
     }
 
     /**

@@ -61,6 +61,8 @@ export interface Native {
     overviewTiles?: string[];
     readOnly?: boolean;
     writeCheck?: string;
+    skipUnchangedWrites?: boolean;
+    writeWarnPerDay?: number | string;
     [k: string]: unknown;
 }
 

@@ -49,6 +49,7 @@
     "sgl_colResult": "Result",
     "sgl_colTime": "Time",
     "sgl_colValue": "Current value",
+    "sgl_colWritesToday": "Commands today",
     "sgl_confirmWrite": "%s will be set to %s. The adapter writes it, reads it back and logs the result.",
     "sgl_confirmWriteTitle": "Write to the inverter?",
     "sgl_connected": "connected",
@@ -188,6 +189,7 @@
     "sgl_result_ok": "written",
     "sgl_result_readOnly": "read only",
     "sgl_result_rejected": "outside the range",
+    "sgl_result_unchanged": "unchanged (not sent)",
     "sgl_result_unconfirmed": "not confirmed",
     "sgl_running": "running",
     "sgl_save": "Save",
@@ -195,6 +197,8 @@
     "sgl_selectionN": "selection of %s values",
     "sgl_showInactive": "also not read",
     "sgl_skipTest": "Without test",
+    "sgl_skipUnchangedWrites": "Skip unchanged writes",
+    "sgl_skipUnchangedWritesHelp": "A command with the value the device reports already is not sent over the WiNet; the state is confirmed (ack) with the device value. Only for polled registers whose value is recent.",
     "sgl_stConnection": "Connection",
     "sgl_stGroup": "Group %s (%s s)",
     "sgl_stGroupName": "Group %s",
@@ -275,5 +279,8 @@
     "sgl_writeCheck_warn": "write and warn in the log",
     "sgl_writeLogEmpty": "No write commands yet.",
     "sgl_writeLogTitle": "Last write commands",
-    "sgl_writeSent": "command sent - waiting for the confirmation"
+    "sgl_writeSent": "command sent - waiting for the confirmation",
+    "sgl_writeWarnPerDay": "Warn above … write commands per register and day",
+    "sgl_writeWarnPerDayHelp": "One warning in the log per register and day; 0 = no warning. Counters: info.write.registers.*",
+    "sgl_writtenN": "%s written"
 }

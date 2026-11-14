@@ -161,6 +161,8 @@
         "port": 502,
         "readOnly": false,
         "writeCheck": "warn",
+        "skipUnchangedWrites": true,
+        "writeWarnPerDay": 50,
         "requestGap": 100,
         "reconnectAfter": 3,
         "reconnectDelay": 20,

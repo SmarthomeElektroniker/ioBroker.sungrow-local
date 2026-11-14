@@ -50,7 +50,13 @@ const RESULT_COLORS: Record<string, 'success' | 'warning' | 'error' | 'default' 
     readOnly: 'default',
     notReleased: 'default',
     rejected: 'error',
+    unchanged: 'info',
 };
+
+/** State ID of the write counters of a register (lib/diagnostics.js registerWriteKey) */
+function writeCounterId(stateId: string, counter: string): string {
+    return `info.write.registers.${stateId.replace(/\./g, '_')}.${counter}`;
+}
 
 function RangeField(props: { value: unknown; label: string; onCommit: (v: string) => void }): React.JSX.Element {
     const [v, setV] = React.useState(props.value === undefined || props.value === null ? '' : String(props.value));
@@ -237,12 +243,57 @@ function ValueCell(props: {
     );
 }
 
+/** Write commands of a register today (red above the warning limit) and how many reached the device */
+function WriteCounter(props: { commands: any; written: any; limit: number }): React.JSX.Element {
+    const c = props.commands && typeof props.commands.val === 'number' ? props.commands.val : null;
+    const w = props.written && typeof props.written.val === 'number' ? props.written.val : null;
+    if (c === null) {
+        return (
+            <Typography
+                variant="body2"
+                color="text.secondary"
+            >
+                –
+            </Typography>
+        );
+    }
+    const over = props.limit > 0 && c > props.limit;
+    return (
+        <Box>
+            <Typography
+                variant="body2"
+                color={over ? 'error' : undefined}
+                sx={{ fontWeight: over ? 600 : 400 }}
+            >
+                {c}
+            </Typography>
+            <Typography
+                variant="caption"
+                color="text.secondary"
+            >
+                {t('writtenN', w === null ? 0 : w)}
+            </Typography>
+        </Box>
+    );
+}
+
 export function ControlView(props: ConfigGenericProps & { onData: (d: Native) => void }): React.JSX.Element {
     const data = props.data as Native;
     const [showAll, setShowAll] = React.useState(false);
     const holding = allRows(data).filter(r => r.regType === 'holdingRegs');
     const list = showAll ? holding : holding.filter(r => isActive(r) || r.row.allowWrite);
-    const states = useStates(props, [...list.map(r => rowStateId(r.regType, r.row)), 'info.write.log'], 5000);
+    const states = useStates(
+        props,
+        [
+            ...list.map(r => rowStateId(r.regType, r.row)),
+            ...list.flatMap(r => [
+                writeCounterId(rowStateId(r.regType, r.row), 'commandsToday'),
+                writeCounterId(rowStateId(r.regType, r.row), 'writtenToday'),
+            ]),
+            'info.write.log',
+        ],
+        5000,
+    );
     let log: any[] = [];
     try {
         const s = states['info.write.log'];
@@ -317,6 +368,46 @@ export function ControlView(props: ConfigGenericProps & { onData: (d: Native) =>
                         {t('writeCheckHelp')}
                     </Typography>
                 </Box>
+                <Box sx={{ p: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+                    <FormControlLabel
+                        control={
+                            <Switch
+                                checked={data.skipUnchangedWrites !== false}
+                                onChange={e => setNative({ skipUnchangedWrites: e.target.checked })}
+                            />
+                        }
+                        label={<Typography sx={{ fontWeight: 600 }}>{t('skipUnchangedWrites')}</Typography>}
+                    />
+                    <Typography
+                        variant="body2"
+                        color="text.secondary"
+                    >
+                        {t('skipUnchangedWritesHelp')}
+                    </Typography>
+                </Box>
+                <Box sx={{ p: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+                    <TextField
+                        size="small"
+                        type="number"
+                        fullWidth
+                        label={t('writeWarnPerDay')}
+                        value={data.writeWarnPerDay === undefined ? 50 : data.writeWarnPerDay}
+                        onChange={e =>
+                            setNative({
+                                writeWarnPerDay:
+                                    e.target.value === '' ? 0 : Math.max(0, parseInt(e.target.value, 10) || 0),
+                            })
+                        }
+                        slotProps={{ htmlInput: { min: 0, step: 1 } }}
+                    />
+                    <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ mt: 1 }}
+                    >
+                        {t('writeWarnPerDayHelp')}
+                    </Typography>
+                </Box>
             </Box>
             {data.readOnly ? (
                 <Alert
@@ -361,6 +452,7 @@ export function ControlView(props: ConfigGenericProps & { onData: (d: Native) =>
                             <TableCell>{t('colRegister')}</TableCell>
                             <TableCell>{t('colValue')}</TableCell>
                             <TableCell>{t('colRange')}</TableCell>
+                            <TableCell>{t('colWritesToday')}</TableCell>
                             <TableCell>{t('colAllowWrite')}</TableCell>
                         </TableRow>
                     </TableHead>
@@ -436,6 +528,17 @@ export function ControlView(props: ConfigGenericProps & { onData: (d: Native) =>
                                                 />
                                             </Box>
                                         )}
+                                    </TableCell>
+                                    <TableCell>
+                                        <WriteCounter
+                                            commands={
+                                                states[writeCounterId(rowStateId(ref.regType, ref.row), 'commandsToday')]
+                                            }
+                                            written={
+                                                states[writeCounterId(rowStateId(ref.regType, ref.row), 'writtenToday')]
+                                            }
+                                            limit={data.writeWarnPerDay === undefined ? 50 : Number(data.writeWarnPerDay)}
+                                        />
                                     </TableCell>
                                     <TableCell>
                                         <Switch
@@ -531,7 +634,10 @@ export function ControlView(props: ConfigGenericProps & { onData: (d: Native) =>
 export default class Control extends ConfigGeneric<ConfigGenericProps, ConfigGenericState> {
     onData = (data: Native): void => {
         this.props.onChange(data, undefined, () => {
-            this.props.oContext.forceUpdate(['holdingRegs', 'readOnly', 'writeCheck'], data);
+            this.props.oContext.forceUpdate(
+                ['holdingRegs', 'readOnly', 'writeCheck', 'skipUnchangedWrites', 'writeWarnPerDay'],
+                data,
+            );
         });
     };
 

@@ -49,6 +49,7 @@
     "sgl_colResult": "Resultado",
     "sgl_colTime": "Hora",
     "sgl_colValue": "Valor atual",
+    "sgl_colWritesToday": "Comandos hoje",
     "sgl_confirmWrite": "%s será definido como %s. O adaptador escreve o valor, lê-o de volta e regista o resultado.",
     "sgl_confirmWriteTitle": "Escrever no inversor?",
     "sgl_connected": "ligado",
@@ -188,6 +189,7 @@
     "sgl_result_ok": "escrito",
     "sgl_result_readOnly": "só leitura",
     "sgl_result_rejected": "fora do intervalo",
+    "sgl_result_unchanged": "inalterado (não enviado)",
     "sgl_result_unconfirmed": "não confirmado",
     "sgl_running": "em execução",
     "sgl_save": "Guardar",
@@ -195,6 +197,8 @@
     "sgl_selectionN": "seleção de %s valores",
     "sgl_showInactive": "também não lidos",
     "sgl_skipTest": "Sem teste",
+    "sgl_skipUnchangedWrites": "Não escrever valores inalterados",
+    "sgl_skipUnchangedWritesHelp": "Um comando com o valor que o dispositivo já indica não é enviado pelo WiNet; o estado é confirmado (ack) com o valor do dispositivo. Apenas para registos consultados com valor recente.",
     "sgl_stConnection": "Ligação",
     "sgl_stGroup": "Grupo %s (%s s)",
     "sgl_stGroupName": "Grupo %s",
@@ -275,5 +279,8 @@
     "sgl_writeCheck_warn": "escrever e avisar no log",
     "sgl_writeLogEmpty": "Ainda sem comandos de escrita.",
     "sgl_writeLogTitle": "Últimos comandos de escrita",
-    "sgl_writeSent": "comando enviado – a aguardar confirmação"
+    "sgl_writeSent": "comando enviado – a aguardar confirmação",
+    "sgl_writeWarnPerDay": "Avisar acima de … comandos de escrita por registo e dia",
+    "sgl_writeWarnPerDayHelp": "Um aviso no registo por registo e dia; 0 = sem aviso. Contadores: info.write.registers.*",
+    "sgl_writtenN": "%s escritos"
 }

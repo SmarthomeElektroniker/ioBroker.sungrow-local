@@ -49,6 +49,7 @@
     "sgl_colResult": "结果",
     "sgl_colTime": "时间",
     "sgl_colValue": "当前值",
+    "sgl_colWritesToday": "今日命令",
     "sgl_confirmWrite": "%s 将被设置为 %s。适配器写入该值、回读并记录结果。",
     "sgl_confirmWriteTitle": "写入逆变器？",
     "sgl_connected": "已连接",
@@ -188,6 +189,7 @@
     "sgl_result_ok": "已写入",
     "sgl_result_readOnly": "只读",
     "sgl_result_rejected": "超出范围",
+    "sgl_result_unchanged": "未改变（未发送）",
     "sgl_result_unconfirmed": "未确认",
     "sgl_running": "运行中",
     "sgl_save": "保存",
@@ -195,6 +197,8 @@
     "sgl_selectionN": "从 %s 个值中选择",
     "sgl_showInactive": "也显示未读取的",
     "sgl_skipTest": "跳过测试",
+    "sgl_skipUnchangedWrites": "跳过未改变的写入",
+    "sgl_skipUnchangedWritesHelp": "如果命令的值与设备已报告的值相同，则不会通过 WiNet 发送；状态将以设备值确认 (ack)。仅适用于已轮询且值为最新的寄存器。",
     "sgl_stConnection": "连接",
     "sgl_stGroup": "组 %s（%s s）",
     "sgl_stGroupName": "组 %s",
@@ -275,5 +279,8 @@
     "sgl_writeCheck_warn": "写入并在日志中警告",
     "sgl_writeLogEmpty": "尚无写入命令。",
     "sgl_writeLogTitle": "最近的写入命令",
-    "sgl_writeSent": "命令已发送 – 等待确认"
+    "sgl_writeSent": "命令已发送 – 等待确认",
+    "sgl_writeWarnPerDay": "每个寄存器每天写入命令超过 … 次时警告",
+    "sgl_writeWarnPerDayHelp": "每个寄存器每天在日志中警告一次；0 = 不警告。计数器：info.write.registers.*",
+    "sgl_writtenN": "已写入 %s"
 }

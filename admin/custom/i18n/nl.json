@@ -49,6 +49,7 @@
     "sgl_colResult": "Resultaat",
     "sgl_colTime": "Tijd",
     "sgl_colValue": "Huidige waarde",
+    "sgl_colWritesToday": "Opdrachten vandaag",
     "sgl_confirmWrite": "%s wordt ingesteld op %s. De adapter schrijft de waarde, leest ze terug en logt het resultaat.",
     "sgl_confirmWriteTitle": "Naar de omvormer schrijven?",
     "sgl_connected": "verbonden",
@@ -188,6 +189,7 @@
     "sgl_result_ok": "geschreven",
     "sgl_result_readOnly": "alleen lezen",
     "sgl_result_rejected": "buiten het bereik",
+    "sgl_result_unchanged": "ongewijzigd (niet verzonden)",
     "sgl_result_unconfirmed": "niet bevestigd",
     "sgl_running": "draait",
     "sgl_save": "Opslaan",
@@ -195,6 +197,8 @@
     "sgl_selectionN": "keuze uit %s waarden",
     "sgl_showInactive": "ook niet gelezen",
     "sgl_skipTest": "Zonder test",
+    "sgl_skipUnchangedWrites": "Ongewijzigde waarden niet schrijven",
+    "sgl_skipUnchangedWritesHelp": "Een opdracht met de waarde die het apparaat al meldt, gaat niet via de WiNet; de state wordt bevestigd (ack) met de apparaatwaarde. Alleen voor uitgelezen registers met een actuele waarde.",
     "sgl_stConnection": "Verbinding",
     "sgl_stGroup": "Groep %s (%s s)",
     "sgl_stGroupName": "Groep %s",
@@ -275,5 +279,8 @@
     "sgl_writeCheck_warn": "schrijven en waarschuwen in het log",
     "sgl_writeLogEmpty": "Nog geen schrijfcommando's.",
     "sgl_writeLogTitle": "Laatste schrijfcommando's",
-    "sgl_writeSent": "opdracht verzonden – wacht op bevestiging"
+    "sgl_writeSent": "opdracht verzonden – wacht op bevestiging",
+    "sgl_writeWarnPerDay": "Waarschuwen boven … schrijfopdrachten per register en dag",
+    "sgl_writeWarnPerDayHelp": "Eén waarschuwing in het logboek per register en dag; 0 = geen waarschuwing. Tellers: info.write.registers.*",
+    "sgl_writtenN": "%s geschreven"
 }

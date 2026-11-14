@@ -49,6 +49,7 @@
     "sgl_colResult": "Результат",
     "sgl_colTime": "Час",
     "sgl_colValue": "Поточне значення",
+    "sgl_colWritesToday": "Команд сьогодні",
     "sgl_confirmWrite": "%s буде встановлено на %s. Адаптер записує значення, зчитує його назад і журналює результат.",
     "sgl_confirmWriteTitle": "Записати в інвертор?",
     "sgl_connected": "підключено",
@@ -188,6 +189,7 @@
     "sgl_result_ok": "записано",
     "sgl_result_readOnly": "лише читання",
     "sgl_result_rejected": "поза діапазоном",
+    "sgl_result_unchanged": "без змін (не надіслано)",
     "sgl_result_unconfirmed": "не підтверджено",
     "sgl_running": "працює",
     "sgl_save": "Зберегти",
@@ -195,6 +197,8 @@
     "sgl_selectionN": "вибір з %s значень",
     "sgl_showInactive": "також незчитувані",
     "sgl_skipTest": "Без тесту",
+    "sgl_skipUnchangedWrites": "Не записувати незмінені значення",
+    "sgl_skipUnchangedWritesHelp": "Команда зі значенням, яке пристрій уже повідомляє, не надсилається через WiNet; стан підтверджується (ack) значенням пристрою. Лише для опитуваних регістрів з актуальним значенням.",
     "sgl_stConnection": "З'єднання",
     "sgl_stGroup": "Група %s (%s s)",
     "sgl_stGroupName": "Група %s",
@@ -275,5 +279,8 @@
     "sgl_writeCheck_warn": "записати й попередити в журналі",
     "sgl_writeLogEmpty": "Команд запису ще не було.",
     "sgl_writeLogTitle": "Останні команди запису",
-    "sgl_writeSent": "команду надіслано – очікування підтвердження"
+    "sgl_writeSent": "команду надіслано – очікування підтвердження",
+    "sgl_writeWarnPerDay": "Попереджати понад … команд запису на регістр за день",
+    "sgl_writeWarnPerDayHelp": "Одне попередження в журналі на регістр за день; 0 = без попередження. Лічильники: info.write.registers.*",
+    "sgl_writtenN": "записано: %s"
 }
