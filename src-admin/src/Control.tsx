@@ -409,6 +409,61 @@ export function ControlView(props: ConfigGenericProps & { onData: (d: Native) =>
                     </Typography>
                 </Box>
             </Box>
+            <Box
+                sx={{
+                    p: 2,
+                    mb: 2,
+                    borderRadius: 3,
+                    border: '1px solid',
+                    borderColor: data.batteryControl ? 'warning.main' : 'divider',
+                }}
+            >
+                <FormControlLabel
+                    control={
+                        <Switch
+                            checked={data.batteryControl === true}
+                            onChange={e => setNative({ batteryControl: e.target.checked })}
+                        />
+                    }
+                    label={<Typography sx={{ fontWeight: 600 }}>{t('batteryControl')}</Typography>}
+                />
+                <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: data.batteryControl ? 2 : 0 }}
+                >
+                    {t('batteryControlHelp')}
+                </Typography>
+                {data.batteryControl ? (
+                    <Box
+                        sx={{
+                            display: 'grid',
+                            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' },
+                            gap: 2,
+                        }}
+                    >
+                        {(
+                            [
+                                ['batteryMaxMinutes', 240, 1],
+                                ['batteryMinPause', 60, 0],
+                                ['batteryMaxPerDay', 12, 1],
+                            ] as [string, number, number][]
+                        ).map(([key, def, min]) => (
+                            <TextField
+                                key={key}
+                                size="small"
+                                type="number"
+                                label={t(key)}
+                                value={data[key] === undefined ? def : (data[key] as number)}
+                                onChange={e =>
+                                    setNative({ [key]: Math.max(min, parseInt(e.target.value, 10) || min) })
+                                }
+                                slotProps={{ htmlInput: { min, step: 1 } }}
+                            />
+                        ))}
+                    </Box>
+                ) : null}
+            </Box>
             {data.readOnly ? (
                 <Alert
                     severity="warning"
@@ -635,7 +690,17 @@ export default class Control extends ConfigGeneric<ConfigGenericProps, ConfigGen
     onData = (data: Native): void => {
         this.props.onChange(data, undefined, () => {
             this.props.oContext.forceUpdate(
-                ['holdingRegs', 'readOnly', 'writeCheck', 'skipUnchangedWrites', 'writeWarnPerDay'],
+                [
+                    'holdingRegs',
+                    'readOnly',
+                    'writeCheck',
+                    'skipUnchangedWrites',
+                    'writeWarnPerDay',
+                    'batteryControl',
+                    'batteryMaxMinutes',
+                    'batteryMinPause',
+                    'batteryMaxPerDay',
+                ],
                 data,
             );
         });

@@ -25,6 +25,7 @@ const {
 const { mergeCatalog, GROUP_RENAMES, templateStates, statesIn, withHexCodes } = require('./lib/catalog');
 const { explain, resolve, implausible } = require('./lib/convert');
 const { Poller } = require('./lib/poller');
+const { BatteryController, STATES: BATTERY_STATES } = require('./lib/batteryControl');
 const { analyse } = require('./lib/load');
 const { SungrowDeviceManagement } = require('./lib/deviceManager');
 const {
@@ -107,6 +108,8 @@ class SungrowLocal extends utils.Adapter {
         this.wizardRunning = false;
         /** device manager: read-only cards for inverter, battery and grid meter (dm:* messages) */
         this.deviceManagement = new SungrowDeviceManagement(this);
+        /** safe battery control (control.battery.*, off by default) */
+        this.battery = new BatteryController(this);
     }
 
     /**
@@ -277,6 +280,7 @@ class SungrowLocal extends utils.Adapter {
         );
         await this.subscribeStatesAsync('holdingRegisters.*');
         await this.subscribeStatesAsync('inputRegisters.*');
+        await this.setupBatteryControl();
 
         const host = String(c.host || '').trim();
         if (!host) {
@@ -319,6 +323,9 @@ class SungrowLocal extends utils.Adapter {
         p.on('connection', on => {
             this.background(() => this.setStateChangedAsync('info.connection', on, true), 'info.connection');
             this.log[on ? 'info' : 'warn'](on ? 'Connected to the gateway' : 'Connection to the gateway lost');
+            if (on) {
+                this.battery.onConnected();
+            }
         });
         p.on('connectFailed', ({ error }) => this.log.warn(`Connect failed: ${error}`));
         p.on('reconnect', ({ reason }) => this.background(() => this.onReconnect(reason), 'reconnect counter'));
@@ -358,8 +365,18 @@ class SungrowLocal extends utils.Adapter {
                     'write counter',
                 );
             }
-            // ack=true after the confirmation read - also when the value did not change
-            this.background(() => this.setState(reg.id, val, true), 'confirmed value');
+            // ack=true after the confirmation read - also when the value did not change (only for registers of
+            // the tables: the battery control also writes registers that are not ticked)
+            if (this.regsById.has(id)) {
+                this.background(() => this.setState(reg.id, val, true), 'confirmed value');
+            }
+            if (written) {
+                const ok = requested === undefined || Number(requested) === val || String(requested) === String(val);
+                this.background(
+                    () => this.battery.onConfirm(reg, ok, ok ? undefined : `device reports ${val}`),
+                    'battery control',
+                );
+            }
             if (written && requested !== undefined && Number(requested) !== val && String(requested) !== String(val)) {
                 this.log.warn(`${reg.id}: wrote ${requested}, device reports ${val}`);
                 this.logWrite(reg, requested, 'mismatch', String(val));
@@ -368,15 +385,88 @@ class SungrowLocal extends utils.Adapter {
                 this.logWrite(reg, requested !== undefined ? requested : val, 'ok', String(val));
             }
         });
-        p.on('readbackFailed', ({ reg, error }) => {
+        p.on('readbackFailed', ({ reg, error, written }) => {
             this.log.warn(`${reg.id}: confirmation read failed (${error}) - value follows with the next poll`);
             this.logWrite(reg, undefined, 'unconfirmed', String(error));
+            if (written) {
+                this.background(() => this.battery.onConfirm(reg, false, `not confirmed: ${error}`), 'battery control');
+            }
         });
         p.on('writeFailed', ({ reg, requested, error }) => {
             this.log.warn(`${reg.id}: writing ${requested} failed: ${error}`);
             this.logWrite(reg, requested, 'failed', String(error));
             this.background(() => this.count(WRITE_DIAG.key, { failedTotal: 1 }, error), 'write counter');
+            this.background(() => this.battery.onConfirm(reg, false, String(error)), 'battery control');
         });
+    }
+
+    /**
+     * Objects and state of the battery control (control.battery.*). Switched off: the objects are removed
+     * (except states with custom settings) - unless a hold/charge mode is still stored: then the control
+     * returns to normal after the connect first.
+     */
+    async setupBatteryControl() {
+        const enabled = this.config.batteryControl === true;
+        const exists = await this.getObjectAsync('control.battery');
+        if (!enabled && !exists) {
+            return;
+        }
+        if (enabled) {
+            await this.extendObjectAsync('control', {
+                type: 'folder',
+                common: { name: { en: 'Control', de: 'Steuerung' } },
+                native: {},
+            });
+            await this.extendObjectAsync('control.battery', {
+                type: 'channel',
+                common: {
+                    name: {
+                        en: 'Battery control (experimental)',
+                        de: 'Akkusteuerung (experimentell)',
+                        ru: 'Управление аккумулятором (экспериментально)',
+                        pt: 'Controlo da bateria (experimental)',
+                        nl: 'Batterijbesturing (experimenteel)',
+                        fr: 'Pilotage de la batterie (expérimental)',
+                        it: 'Controllo batteria (sperimentale)',
+                        es: 'Control de batería (experimental)',
+                        pl: 'Sterowanie akumulatorem (eksperymentalne)',
+                        uk: 'Керування акумулятором (експериментально)',
+                        'zh-cn': '电池控制（实验性）',
+                    },
+                },
+                native: {},
+            });
+            for (const [k, common] of Object.entries(BATTERY_STATES)) {
+                await this.extendObjectAsync(`control.battery.${k}`, { type: 'state', common, native: {} });
+            }
+            await this.subscribeStatesAsync('control.battery.*');
+        }
+        await this.battery.restore();
+        if (!enabled && !this.battery.fallbackOnConnect) {
+            await this.removeChannel(`${this.namespace}.control.battery`, 'battery control is switched off');
+            const left = await this.getForeignObjectsAsync(`${this.namespace}.control.*`);
+            if (!Object.keys(left || {}).length) {
+                await this.delObjectAsync('control');
+            }
+        }
+    }
+
+    /**
+     * Commands to control.battery.* (mode starts the command; duration and target level are only stored).
+     *
+     * @param {string} id Full state ID
+     * @param {ioBroker.State} state Command
+     */
+    onBatteryCommand(id, state) {
+        const key = id.substring(`${this.namespace}.control.battery.`.length);
+        if (key === 'mode') {
+            this.background(() => this.battery.command(String(state.val)), 'battery control');
+        } else if (key === 'minutes' || key === 'targetSoc') {
+            const v = Number(state.val);
+            if (Number.isFinite(v)) {
+                this.background(() => this.setState(id, v, true), 'battery control');
+            }
+        }
     }
 
     /**
@@ -1004,6 +1094,10 @@ class SungrowLocal extends utils.Adapter {
         if (!state || state.ack) {
             return;
         }
+        if (id.startsWith(`${this.namespace}.control.battery.`)) {
+            this.onBatteryCommand(id, state);
+            return;
+        }
         const reg = this.regsById.get(id);
         this.log.debug(`command ${id} = ${state.val}${reg ? '' : ' (unknown register)'}`);
         if (!reg) {
@@ -1467,6 +1561,7 @@ class SungrowLocal extends utils.Adapter {
     /** @param {() => void} callback Done */
     onUnload(callback) {
         this.unloading = true;
+        this.battery.stop();
         const done = () => {
             try {
                 callback();

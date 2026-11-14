@@ -63,6 +63,7 @@ export interface Native {
     writeCheck?: string;
     skipUnchangedWrites?: boolean;
     writeWarnPerDay?: number | string;
+    batteryControl?: boolean;
     [k: string]: unknown;
 }
 
