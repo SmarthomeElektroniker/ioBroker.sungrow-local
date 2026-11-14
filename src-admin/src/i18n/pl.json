@@ -254,6 +254,8 @@
     "sgl_verbAdded": "Dodano",
     "sgl_verbChanged": "Zmieniono",
     "sgl_verbDeactivated": "Dezaktywowano",
+    "sgl_wallboxEms": "Rejestry EMS wallbox (eksperymentalne)",
+    "sgl_wallboxEmsHelp": "Domyślnie wyłączone. Zapis rejestrów wallbox w EMS falownika (33539–33549: zwolnienie, tryb ładowania, ilość, prąd, czasy, pobór z sieci) wymaga tego przełącznika oprócz zwolnienia dla rejestru. Format czasu terminu i czasu rozpoczęcia/zakończenia jest niewyjaśniony (wartości surowe). Najpierw zapisz tryb, potem zależne od niego wartości.",
     "sgl_warn_roundTooLong": "Zmierzona runda (%s ms) jest dłuższa niż interwał.",
     "sgl_warn_skipRisk": "Może pomijać rundy: grupa „%s” robi pauzę %s ms po każdym zapytaniu.",
     "sgl_warn_skipSure": "Pomija rundy: krótszy niż pauza grupy „%s” (%s ms).",

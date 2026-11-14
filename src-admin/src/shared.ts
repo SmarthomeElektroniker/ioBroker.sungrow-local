@@ -64,6 +64,7 @@ export interface Native {
     skipUnchangedWrites?: boolean;
     writeWarnPerDay?: number | string;
     batteryControl?: boolean;
+    wallboxEms?: boolean;
     [k: string]: unknown;
 }
 

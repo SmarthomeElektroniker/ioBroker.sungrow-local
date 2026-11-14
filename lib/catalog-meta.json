@@ -1,5 +1,5 @@
 {
- "version": 7,
+ "version": 8,
  "registers": {
   "holdingRegs:1:45000": {
    "doc": 5000,
@@ -3983,6 +3983,375 @@
     "SH20T": "ok"
    }
   },
+  "holdingRegs:1:73540": {
+   "doc": 33540,
+   "theme": "control",
+   "profile": "erweitert",
+   "name": {
+    "en": "Wallbox charging released",
+    "de": "Wallbox Laden freigegeben",
+    "ru": "Зарядка wallbox разрешена",
+    "pt": "Carga da wallbox liberada",
+    "nl": "Wallbox laden vrijgegeven",
+    "fr": "Charge wallbox autorisée",
+    "it": "Carica wallbox abilitata",
+    "es": "Carga del wallbox habilitada",
+    "pl": "Ładowanie wallbox zwolnione",
+    "uk": "Заряджання wallbox дозволено",
+    "zh-cn": "充电桩允许充电"
+   },
+   "desc": {
+    "en": "Wallbox setting in the EMS of the inverter - experimental.",
+    "de": "Wallbox-Einstellung im EMS des Wechselrichters – experimentell.",
+    "ru": "Настройка wallbox в EMS инвертора — экспериментально.",
+    "pt": "Definição da wallbox no EMS do inversor – experimental.",
+    "nl": "Wallbox-instelling in de EMS van de omvormer – experimenteel.",
+    "fr": "Réglage wallbox dans l'EMS de l'onduleur – expérimental.",
+    "it": "Impostazione wallbox nell'EMS dell'inverter – sperimentale.",
+    "es": "Ajuste del wallbox en el EMS del inversor – experimental.",
+    "pl": "Ustawienie wallbox w EMS falownika – eksperymentalne.",
+    "uk": "Налаштування wallbox в EMS інвертора — експериментально.",
+    "zh-cn": "逆变器 EMS 中的充电桩设置——实验性。"
+   },
+   "descDefault": "Wallbox (EMS): charging released",
+   "statesDefault": "85:Disable;170:Enable",
+   "states": {
+    "85": {
+     "en": "Disabled",
+     "de": "Aus",
+     "ru": "Выкл.",
+     "pt": "Desativado",
+     "nl": "Uit",
+     "fr": "Désactivé",
+     "it": "Disattivato",
+     "es": "Desactivado",
+     "pl": "Wył.",
+     "uk": "Вимк.",
+     "zh-cn": "禁用"
+    },
+    "170": {
+     "en": "Enabled",
+     "de": "An",
+     "ru": "Вкл.",
+     "pt": "Ativado",
+     "nl": "Aan",
+     "fr": "Activé",
+     "it": "Attivato",
+     "es": "Activado",
+     "pl": "Wł.",
+     "uk": "Увімк.",
+     "zh-cn": "启用"
+    }
+   }
+  },
+  "holdingRegs:1:73541": {
+   "doc": 33541,
+   "theme": "control",
+   "profile": "erweitert",
+   "name": {
+    "en": "Wallbox charging mode",
+    "de": "Wallbox Lademodus",
+    "ru": "Режим зарядки wallbox",
+    "pt": "Modo de carga da wallbox",
+    "nl": "Wallbox laadmodus",
+    "fr": "Mode de charge wallbox",
+    "it": "Modalità di carica wallbox",
+    "es": "Modo de carga del wallbox",
+    "pl": "Tryb ładowania wallbox",
+    "uk": "Режим заряджання wallbox",
+    "zh-cn": "充电桩充电模式"
+   },
+   "desc": {
+    "en": "Wallbox setting in the EMS of the inverter - experimental.",
+    "de": "Wallbox-Einstellung im EMS des Wechselrichters – experimentell.",
+    "ru": "Настройка wallbox в EMS инвертора — экспериментально.",
+    "pt": "Definição da wallbox no EMS do inversor – experimental.",
+    "nl": "Wallbox-instelling in de EMS van de omvormer – experimenteel.",
+    "fr": "Réglage wallbox dans l'EMS de l'onduleur – expérimental.",
+    "it": "Impostazione wallbox nell'EMS dell'inverter – sperimentale.",
+    "es": "Ajuste del wallbox en el EMS del inversor – experimental.",
+    "pl": "Ustawienie wallbox w EMS falownika – eksperymentalne.",
+    "uk": "Налаштування wallbox в EMS інвертора — експериментально.",
+    "zh-cn": "逆变器 EMS 中的充电桩设置——实验性。"
+   },
+   "descDefault": "Wallbox (EMS): charging mode",
+   "statesDefault": "160:Fast charging;161:PV surplus;162:Amount and deadline;163:User-defined",
+   "states": {
+    "160": {
+     "en": "Fast charging",
+     "de": "Schnellladen",
+     "ru": "Быстрая зарядка",
+     "pt": "Carga rápida",
+     "nl": "Snelladen",
+     "fr": "Charge rapide",
+     "it": "Carica rapida",
+     "es": "Carga rápida",
+     "pl": "Szybkie ładowanie",
+     "uk": "Швидке заряджання",
+     "zh-cn": "快速充电"
+    },
+    "161": {
+     "en": "PV surplus",
+     "de": "PV-Überschuss",
+     "ru": "Излишки PV",
+     "pt": "Excedente PV",
+     "nl": "PV-overschot",
+     "fr": "Surplus PV",
+     "it": "Surplus PV",
+     "es": "Excedente PV",
+     "pl": "Nadwyżka PV",
+     "uk": "Надлишок PV",
+     "zh-cn": "PV 余电"
+    },
+    "162": {
+     "en": "Amount and deadline",
+     "de": "Menge und Frist",
+     "ru": "Объём и срок",
+     "pt": "Quantidade e prazo",
+     "nl": "Hoeveelheid en deadline",
+     "fr": "Quantité et échéance",
+     "it": "Quantità e scadenza",
+     "es": "Cantidad y plazo",
+     "pl": "Ilość i termin",
+     "uk": "Обсяг і термін",
+     "zh-cn": "电量和截止时间"
+    },
+    "163": {
+     "en": "User-defined",
+     "de": "Benutzerdefiniert",
+     "ru": "Пользовательский",
+     "pt": "Definido pelo utilizador",
+     "nl": "Door gebruiker gedefinieerd",
+     "fr": "Défini par l'utilisateur",
+     "it": "Definito dall'utente",
+     "es": "Definido por el usuario",
+     "pl": "Zdefiniowany przez użytkownika",
+     "uk": "Користувацький",
+     "zh-cn": "用户自定义"
+    }
+   }
+  },
+  "holdingRegs:1:73542": {
+   "doc": 33542,
+   "theme": "control",
+   "profile": "erweitert",
+   "name": {
+    "en": "Wallbox charging amount",
+    "de": "Wallbox Lademenge",
+    "ru": "Объём зарядки wallbox",
+    "pt": "Quantidade de carga da wallbox",
+    "nl": "Wallbox laadhoeveelheid",
+    "fr": "Quantité de charge wallbox",
+    "it": "Quantità di carica wallbox",
+    "es": "Cantidad de carga del wallbox",
+    "pl": "Ilość ładowania wallbox",
+    "uk": "Обсяг заряджання wallbox",
+    "zh-cn": "充电桩充电量"
+   },
+   "desc": {
+    "en": "Wallbox setting in the EMS of the inverter - experimental.",
+    "de": "Wallbox-Einstellung im EMS des Wechselrichters – experimentell.",
+    "ru": "Настройка wallbox в EMS инвертора — экспериментально.",
+    "pt": "Definição da wallbox no EMS do inversor – experimental.",
+    "nl": "Wallbox-instelling in de EMS van de omvormer – experimenteel.",
+    "fr": "Réglage wallbox dans l'EMS de l'onduleur – expérimental.",
+    "it": "Impostazione wallbox nell'EMS dell'inverter – sperimentale.",
+    "es": "Ajuste del wallbox en el EMS del inversor – experimental.",
+    "pl": "Ustawienie wallbox w EMS falownika – eksperymentalne.",
+    "uk": "Налаштування wallbox в EMS інвертора — експериментально.",
+    "zh-cn": "逆变器 EMS 中的充电桩设置——实验性。"
+   },
+   "descDefault": "Wallbox (EMS): energy to charge (mode amount and deadline)"
+  },
+  "holdingRegs:1:73543": {
+   "doc": 33543,
+   "theme": "control",
+   "profile": "erweitert",
+   "name": {
+    "en": "Wallbox deadline (raw)",
+    "de": "Wallbox Frist (roh)",
+    "ru": "Срок wallbox (сырое значение)",
+    "pt": "Prazo da wallbox (bruto)",
+    "nl": "Wallbox deadline (ruw)",
+    "fr": "Échéance wallbox (brut)",
+    "it": "Scadenza wallbox (grezzo)",
+    "es": "Plazo del wallbox (bruto)",
+    "pl": "Termin wallbox (surowy)",
+    "uk": "Термін wallbox (сире значення)",
+    "zh-cn": "充电桩截止时间（原始值）"
+   },
+   "desc": {
+    "en": "Wallbox setting in the EMS of the inverter - raw value, time format not clarified.",
+    "de": "Wallbox-Einstellung im EMS des Wechselrichters – Rohwert, Zeitformat ungeklärt.",
+    "ru": "Настройка wallbox в EMS инвертора — сырое значение, формат времени не выяснен.",
+    "pt": "Definição da wallbox no EMS do inversor – valor bruto, formato de hora não esclarecido.",
+    "nl": "Wallbox-instelling in de EMS van de omvormer – ruwe waarde, tijdformaat niet opgehelderd.",
+    "fr": "Réglage wallbox dans l'EMS de l'onduleur – valeur brute, format horaire non éclairci.",
+    "it": "Impostazione wallbox nell'EMS dell'inverter – valore grezzo, formato orario non chiarito.",
+    "es": "Ajuste del wallbox en el EMS del inversor – valor bruto, formato de hora no aclarado.",
+    "pl": "Ustawienie wallbox w EMS falownika – wartość surowa, format czasu niewyjaśniony.",
+    "uk": "Налаштування wallbox в EMS інвертора — сире значення, формат часу не з’ясовано.",
+    "zh-cn": "逆变器 EMS 中的充电桩设置——原始值，时间格式未明确。"
+   },
+   "descDefault": "Wallbox (EMS): deadline (mode amount and deadline), raw value - time format not clarified"
+  },
+  "holdingRegs:1:73545": {
+   "doc": 33545,
+   "theme": "control",
+   "profile": "erweitert",
+   "name": {
+    "en": "Wallbox charging current",
+    "de": "Wallbox Ladestrom",
+    "ru": "Ток зарядки wallbox",
+    "pt": "Corrente de carga da wallbox",
+    "nl": "Wallbox laadstroom",
+    "fr": "Courant de charge wallbox",
+    "it": "Corrente di carica wallbox",
+    "es": "Corriente de carga del wallbox",
+    "pl": "Prąd ładowania wallbox",
+    "uk": "Струм заряджання wallbox",
+    "zh-cn": "充电桩充电电流"
+   },
+   "desc": {
+    "en": "Wallbox setting in the EMS of the inverter - experimental.",
+    "de": "Wallbox-Einstellung im EMS des Wechselrichters – experimentell.",
+    "ru": "Настройка wallbox в EMS инвертора — экспериментально.",
+    "pt": "Definição da wallbox no EMS do inversor – experimental.",
+    "nl": "Wallbox-instelling in de EMS van de omvormer – experimenteel.",
+    "fr": "Réglage wallbox dans l'EMS de l'onduleur – expérimental.",
+    "it": "Impostazione wallbox nell'EMS dell'inverter – sperimentale.",
+    "es": "Ajuste del wallbox en el EMS del inversor – experimental.",
+    "pl": "Ustawienie wallbox w EMS falownika – eksperymentalne.",
+    "uk": "Налаштування wallbox в EMS інвертора — експериментально.",
+    "zh-cn": "逆变器 EMS 中的充电桩设置——实验性。"
+   },
+   "descDefault": "Wallbox (EMS): charging current (mode user-defined)"
+  },
+  "holdingRegs:1:73546": {
+   "doc": 33546,
+   "theme": "control",
+   "profile": "erweitert",
+   "name": {
+    "en": "Wallbox start time (raw)",
+    "de": "Wallbox Startzeit (roh)",
+    "ru": "Время начала wallbox (сырое значение)",
+    "pt": "Hora de início da wallbox (bruto)",
+    "nl": "Wallbox starttijd (ruw)",
+    "fr": "Heure de début wallbox (brut)",
+    "it": "Ora di inizio wallbox (grezzo)",
+    "es": "Hora de inicio del wallbox (bruto)",
+    "pl": "Czas rozpoczęcia wallbox (surowy)",
+    "uk": "Час початку wallbox (сире значення)",
+    "zh-cn": "充电桩开始时间（原始值）"
+   },
+   "desc": {
+    "en": "Wallbox setting in the EMS of the inverter - raw value, time format not clarified.",
+    "de": "Wallbox-Einstellung im EMS des Wechselrichters – Rohwert, Zeitformat ungeklärt.",
+    "ru": "Настройка wallbox в EMS инвертора — сырое значение, формат времени не выяснен.",
+    "pt": "Definição da wallbox no EMS do inversor – valor bruto, formato de hora não esclarecido.",
+    "nl": "Wallbox-instelling in de EMS van de omvormer – ruwe waarde, tijdformaat niet opgehelderd.",
+    "fr": "Réglage wallbox dans l'EMS de l'onduleur – valeur brute, format horaire non éclairci.",
+    "it": "Impostazione wallbox nell'EMS dell'inverter – valore grezzo, formato orario non chiarito.",
+    "es": "Ajuste del wallbox en el EMS del inversor – valor bruto, formato de hora no aclarado.",
+    "pl": "Ustawienie wallbox w EMS falownika – wartość surowa, format czasu niewyjaśniony.",
+    "uk": "Налаштування wallbox в EMS інвертора — сире значення, формат часу не з’ясовано.",
+    "zh-cn": "逆变器 EMS 中的充电桩设置——原始值，时间格式未明确。"
+   },
+   "descDefault": "Wallbox (EMS): start time (mode user-defined), raw value - time format not clarified"
+  },
+  "holdingRegs:1:73548": {
+   "doc": 33548,
+   "theme": "control",
+   "profile": "erweitert",
+   "name": {
+    "en": "Wallbox end time (raw)",
+    "de": "Wallbox Endzeit (roh)",
+    "ru": "Время окончания wallbox (сырое значение)",
+    "pt": "Hora de fim da wallbox (bruto)",
+    "nl": "Wallbox eindtijd (ruw)",
+    "fr": "Heure de fin wallbox (brut)",
+    "it": "Ora di fine wallbox (grezzo)",
+    "es": "Hora de fin del wallbox (bruto)",
+    "pl": "Czas zakończenia wallbox (surowy)",
+    "uk": "Час завершення wallbox (сире значення)",
+    "zh-cn": "充电桩结束时间（原始值）"
+   },
+   "desc": {
+    "en": "Wallbox setting in the EMS of the inverter - raw value, time format not clarified.",
+    "de": "Wallbox-Einstellung im EMS des Wechselrichters – Rohwert, Zeitformat ungeklärt.",
+    "ru": "Настройка wallbox в EMS инвертора — сырое значение, формат времени не выяснен.",
+    "pt": "Definição da wallbox no EMS do inversor – valor bruto, formato de hora não esclarecido.",
+    "nl": "Wallbox-instelling in de EMS van de omvormer – ruwe waarde, tijdformaat niet opgehelderd.",
+    "fr": "Réglage wallbox dans l'EMS de l'onduleur – valeur brute, format horaire non éclairci.",
+    "it": "Impostazione wallbox nell'EMS dell'inverter – valore grezzo, formato orario non chiarito.",
+    "es": "Ajuste del wallbox en el EMS del inversor – valor bruto, formato de hora no aclarado.",
+    "pl": "Ustawienie wallbox w EMS falownika – wartość surowa, format czasu niewyjaśniony.",
+    "uk": "Налаштування wallbox в EMS інвертора — сире значення, формат часу не з’ясовано.",
+    "zh-cn": "逆变器 EMS 中的充电桩设置——原始值，时间格式未明确。"
+   },
+   "descDefault": "Wallbox (EMS): end time (mode user-defined), raw value - time format not clarified"
+  },
+  "holdingRegs:1:73550": {
+   "doc": 33550,
+   "theme": "control",
+   "profile": "erweitert",
+   "name": {
+    "en": "Wallbox grid power",
+    "de": "Wallbox Netzbezug",
+    "ru": "Сетевое питание wallbox",
+    "pt": "Energia da rede para a wallbox",
+    "nl": "Wallbox netstroom",
+    "fr": "Électricité du réseau pour la wallbox",
+    "it": "Prelievo dalla rete wallbox",
+    "es": "Energía de la red para el wallbox",
+    "pl": "Pobór z sieci wallbox",
+    "uk": "Мережеве живлення wallbox",
+    "zh-cn": "充电桩电网取电"
+   },
+   "desc": {
+    "en": "Wallbox setting in the EMS of the inverter - experimental.",
+    "de": "Wallbox-Einstellung im EMS des Wechselrichters – experimentell.",
+    "ru": "Настройка wallbox в EMS инвертора — экспериментально.",
+    "pt": "Definição da wallbox no EMS do inversor – experimental.",
+    "nl": "Wallbox-instelling in de EMS van de omvormer – experimenteel.",
+    "fr": "Réglage wallbox dans l'EMS de l'onduleur – expérimental.",
+    "it": "Impostazione wallbox nell'EMS dell'inverter – sperimentale.",
+    "es": "Ajuste del wallbox en el EMS del inversor – experimental.",
+    "pl": "Ustawienie wallbox w EMS falownika – eksperymentalne.",
+    "uk": "Налаштування wallbox в EMS інвертора — експериментально.",
+    "zh-cn": "逆变器 EMS 中的充电桩设置——实验性。"
+   },
+   "descDefault": "Wallbox (EMS): PV surplus charging with or without grid power",
+   "statesDefault": "85:PV surplus without grid power;170:PV surplus with grid power",
+   "states": {
+    "85": {
+     "en": "PV surplus without grid power",
+     "de": "PV-Überschuss ohne Netzbezug",
+     "ru": "Излишки PV без сети",
+     "pt": "Excedente PV sem energia da rede",
+     "nl": "PV-overschot zonder netstroom",
+     "fr": "Surplus PV sans réseau",
+     "it": "Surplus PV senza rete",
+     "es": "Excedente PV sin red",
+     "pl": "Nadwyżka PV bez poboru z sieci",
+     "uk": "Надлишок PV без мережі",
+     "zh-cn": "仅 PV 余电（不取电网）"
+    },
+    "170": {
+     "en": "PV surplus with grid power",
+     "de": "PV-Überschuss mit Netzbezug",
+     "ru": "Излишки PV с сетью",
+     "pt": "Excedente PV com energia da rede",
+     "nl": "PV-overschot met netstroom",
+     "fr": "Surplus PV avec réseau",
+     "it": "Surplus PV con rete",
+     "es": "Excedente PV con red",
+     "pl": "Nadwyżka PV z poborem z sieci",
+     "uk": "Надлишок PV з мережею",
+     "zh-cn": "PV 余电（可取电网）"
+    }
+   }
+  },
   "inputRegs:1:32582": {
    "doc": 2582,
    "theme": "info",
@@ -4365,9 +4734,6 @@
     "zh-cn": "AC输出类型：单相、三相带或不带中性线。"
    },
    "descDefault": "Output type (0 single phase, 1 3P4L, 2 3P3L)",
-   "tested": {
-    "SH20T": "ok"
-   },
    "statesDefault": "0:Single phase;1:3P4L;2:3P3L",
    "states": {
     "0": {
@@ -4409,6 +4775,9 @@
      "uk": "Трифазний, 3 проводи (3P3L)",
      "zh-cn": "三相三线 (3P3L)"
     }
+   },
+   "tested": {
+    "SH20T": "ok"
    }
   },
   "inputRegs:1:35003": {
@@ -10643,6 +11012,520 @@
    "descDefault": "BMS alarm code 2",
    "tested": {
     "SH20T": "ok"
+   }
+  },
+  "inputRegs:3:51300": {
+   "doc": 21300,
+   "theme": "grid",
+   "profile": "erweitert",
+   "name": {
+    "en": "Wallbox energy total",
+    "de": "Wallbox Energie gesamt",
+    "ru": "Энергия wallbox, всего",
+    "pt": "Energia da wallbox total",
+    "nl": "Wallbox energie totaal",
+    "fr": "Énergie wallbox totale",
+    "it": "Energia wallbox totale",
+    "es": "Energía del wallbox total",
+    "pl": "Energia wallbox łącznie",
+    "uk": "Енергія wallbox, загалом",
+    "zh-cn": "充电桩总电量"
+   },
+   "desc": {
+    "en": "Sungrow wallbox, read through the WiNet forwarding (unit = forwarding ID).",
+    "de": "Sungrow-Wallbox, gelesen über die Weiterleitung des WiNet (Unit = Weiterleitungs-ID).",
+    "ru": "Wallbox Sungrow, чтение через переадресацию WiNet (unit = ID переадресации).",
+    "pt": "Wallbox Sungrow, lida através do reencaminhamento do WiNet (unit = ID de reencaminhamento).",
+    "nl": "Sungrow-wallbox, gelezen via de doorsturing van de WiNet (unit = doorstuur-ID).",
+    "fr": "Wallbox Sungrow, lue via le transfert du WiNet (unit = ID de transfert).",
+    "it": "Wallbox Sungrow, letta tramite l'inoltro del WiNet (unit = ID di inoltro).",
+    "es": "Wallbox Sungrow, leído mediante el reenvío del WiNet (unit = ID de reenvío).",
+    "pl": "Wallbox Sungrow, odczyt przez przekierowanie WiNet (unit = ID przekierowania).",
+    "uk": "Wallbox Sungrow, читання через переадресацію WiNet (unit = ID переадресації).",
+    "zh-cn": "Sungrow 充电桩，通过 WiNet 转发读取（unit = 转发 ID）。"
+   },
+   "descDefault": "Wallbox: energy charged in total"
+  },
+  "inputRegs:3:51302": {
+   "doc": 21302,
+   "theme": "grid",
+   "profile": "erweitert",
+   "name": {
+    "en": "Wallbox voltage phase A",
+    "de": "Wallbox Spannung Phase A",
+    "ru": "Напряжение wallbox, фаза A",
+    "pt": "Tensão da wallbox fase A",
+    "nl": "Wallbox spanning fase A",
+    "fr": "Tension wallbox phase A",
+    "it": "Tensione wallbox fase A",
+    "es": "Tensión del wallbox fase A",
+    "pl": "Napięcie wallbox faza A",
+    "uk": "Напруга wallbox, фаза A",
+    "zh-cn": "充电桩 A 相电压"
+   },
+   "desc": {
+    "en": "Sungrow wallbox, read through the WiNet forwarding (unit = forwarding ID).",
+    "de": "Sungrow-Wallbox, gelesen über die Weiterleitung des WiNet (Unit = Weiterleitungs-ID).",
+    "ru": "Wallbox Sungrow, чтение через переадресацию WiNet (unit = ID переадресации).",
+    "pt": "Wallbox Sungrow, lida através do reencaminhamento do WiNet (unit = ID de reencaminhamento).",
+    "nl": "Sungrow-wallbox, gelezen via de doorsturing van de WiNet (unit = doorstuur-ID).",
+    "fr": "Wallbox Sungrow, lue via le transfert du WiNet (unit = ID de transfert).",
+    "it": "Wallbox Sungrow, letta tramite l'inoltro del WiNet (unit = ID di inoltro).",
+    "es": "Wallbox Sungrow, leído mediante el reenvío del WiNet (unit = ID de reenvío).",
+    "pl": "Wallbox Sungrow, odczyt przez przekierowanie WiNet (unit = ID przekierowania).",
+    "uk": "Wallbox Sungrow, читання через переадресацію WiNet (unit = ID переадресації).",
+    "zh-cn": "Sungrow 充电桩，通过 WiNet 转发读取（unit = 转发 ID）。"
+   },
+   "descDefault": "Wallbox: charging voltage phase A"
+  },
+  "inputRegs:3:51303": {
+   "doc": 21303,
+   "theme": "grid",
+   "profile": "erweitert",
+   "name": {
+    "en": "Wallbox current phase A",
+    "de": "Wallbox Strom Phase A",
+    "ru": "Ток wallbox, фаза A",
+    "pt": "Corrente da wallbox fase A",
+    "nl": "Wallbox stroom fase A",
+    "fr": "Courant wallbox phase A",
+    "it": "Corrente wallbox fase A",
+    "es": "Corriente del wallbox fase A",
+    "pl": "Prąd wallbox faza A",
+    "uk": "Струм wallbox, фаза A",
+    "zh-cn": "充电桩 A 相电流"
+   },
+   "desc": {
+    "en": "Sungrow wallbox, read through the WiNet forwarding (unit = forwarding ID).",
+    "de": "Sungrow-Wallbox, gelesen über die Weiterleitung des WiNet (Unit = Weiterleitungs-ID).",
+    "ru": "Wallbox Sungrow, чтение через переадресацию WiNet (unit = ID переадресации).",
+    "pt": "Wallbox Sungrow, lida através do reencaminhamento do WiNet (unit = ID de reencaminhamento).",
+    "nl": "Sungrow-wallbox, gelezen via de doorsturing van de WiNet (unit = doorstuur-ID).",
+    "fr": "Wallbox Sungrow, lue via le transfert du WiNet (unit = ID de transfert).",
+    "it": "Wallbox Sungrow, letta tramite l'inoltro del WiNet (unit = ID di inoltro).",
+    "es": "Wallbox Sungrow, leído mediante el reenvío del WiNet (unit = ID de reenvío).",
+    "pl": "Wallbox Sungrow, odczyt przez przekierowanie WiNet (unit = ID przekierowania).",
+    "uk": "Wallbox Sungrow, читання через переадресацію WiNet (unit = ID переадресації).",
+    "zh-cn": "Sungrow 充电桩，通过 WiNet 转发读取（unit = 转发 ID）。"
+   },
+   "descDefault": "Wallbox: charging current phase A"
+  },
+  "inputRegs:3:51304": {
+   "doc": 21304,
+   "theme": "grid",
+   "profile": "erweitert",
+   "name": {
+    "en": "Wallbox voltage phase B",
+    "de": "Wallbox Spannung Phase B",
+    "ru": "Напряжение wallbox, фаза B",
+    "pt": "Tensão da wallbox fase B",
+    "nl": "Wallbox spanning fase B",
+    "fr": "Tension wallbox phase B",
+    "it": "Tensione wallbox fase B",
+    "es": "Tensión del wallbox fase B",
+    "pl": "Napięcie wallbox faza B",
+    "uk": "Напруга wallbox, фаза B",
+    "zh-cn": "充电桩 B 相电压"
+   },
+   "desc": {
+    "en": "Sungrow wallbox, read through the WiNet forwarding (unit = forwarding ID).",
+    "de": "Sungrow-Wallbox, gelesen über die Weiterleitung des WiNet (Unit = Weiterleitungs-ID).",
+    "ru": "Wallbox Sungrow, чтение через переадресацию WiNet (unit = ID переадресации).",
+    "pt": "Wallbox Sungrow, lida através do reencaminhamento do WiNet (unit = ID de reencaminhamento).",
+    "nl": "Sungrow-wallbox, gelezen via de doorsturing van de WiNet (unit = doorstuur-ID).",
+    "fr": "Wallbox Sungrow, lue via le transfert du WiNet (unit = ID de transfert).",
+    "it": "Wallbox Sungrow, letta tramite l'inoltro del WiNet (unit = ID di inoltro).",
+    "es": "Wallbox Sungrow, leído mediante el reenvío del WiNet (unit = ID de reenvío).",
+    "pl": "Wallbox Sungrow, odczyt przez przekierowanie WiNet (unit = ID przekierowania).",
+    "uk": "Wallbox Sungrow, читання через переадресацію WiNet (unit = ID переадресації).",
+    "zh-cn": "Sungrow 充电桩，通过 WiNet 转发读取（unit = 转发 ID）。"
+   },
+   "descDefault": "Wallbox: charging voltage phase B"
+  },
+  "inputRegs:3:51305": {
+   "doc": 21305,
+   "theme": "grid",
+   "profile": "erweitert",
+   "name": {
+    "en": "Wallbox current phase B",
+    "de": "Wallbox Strom Phase B",
+    "ru": "Ток wallbox, фаза B",
+    "pt": "Corrente da wallbox fase B",
+    "nl": "Wallbox stroom fase B",
+    "fr": "Courant wallbox phase B",
+    "it": "Corrente wallbox fase B",
+    "es": "Corriente del wallbox fase B",
+    "pl": "Prąd wallbox faza B",
+    "uk": "Струм wallbox, фаза B",
+    "zh-cn": "充电桩 B 相电流"
+   },
+   "desc": {
+    "en": "Sungrow wallbox, read through the WiNet forwarding (unit = forwarding ID).",
+    "de": "Sungrow-Wallbox, gelesen über die Weiterleitung des WiNet (Unit = Weiterleitungs-ID).",
+    "ru": "Wallbox Sungrow, чтение через переадресацию WiNet (unit = ID переадресации).",
+    "pt": "Wallbox Sungrow, lida através do reencaminhamento do WiNet (unit = ID de reencaminhamento).",
+    "nl": "Sungrow-wallbox, gelezen via de doorsturing van de WiNet (unit = doorstuur-ID).",
+    "fr": "Wallbox Sungrow, lue via le transfert du WiNet (unit = ID de transfert).",
+    "it": "Wallbox Sungrow, letta tramite l'inoltro del WiNet (unit = ID di inoltro).",
+    "es": "Wallbox Sungrow, leído mediante el reenvío del WiNet (unit = ID de reenvío).",
+    "pl": "Wallbox Sungrow, odczyt przez przekierowanie WiNet (unit = ID przekierowania).",
+    "uk": "Wallbox Sungrow, читання через переадресацію WiNet (unit = ID переадресації).",
+    "zh-cn": "Sungrow 充电桩，通过 WiNet 转发读取（unit = 转发 ID）。"
+   },
+   "descDefault": "Wallbox: charging current phase B"
+  },
+  "inputRegs:3:51306": {
+   "doc": 21306,
+   "theme": "grid",
+   "profile": "erweitert",
+   "name": {
+    "en": "Wallbox voltage phase C",
+    "de": "Wallbox Spannung Phase C",
+    "ru": "Напряжение wallbox, фаза C",
+    "pt": "Tensão da wallbox fase C",
+    "nl": "Wallbox spanning fase C",
+    "fr": "Tension wallbox phase C",
+    "it": "Tensione wallbox fase C",
+    "es": "Tensión del wallbox fase C",
+    "pl": "Napięcie wallbox faza C",
+    "uk": "Напруга wallbox, фаза C",
+    "zh-cn": "充电桩 C 相电压"
+   },
+   "desc": {
+    "en": "Sungrow wallbox, read through the WiNet forwarding (unit = forwarding ID).",
+    "de": "Sungrow-Wallbox, gelesen über die Weiterleitung des WiNet (Unit = Weiterleitungs-ID).",
+    "ru": "Wallbox Sungrow, чтение через переадресацию WiNet (unit = ID переадресации).",
+    "pt": "Wallbox Sungrow, lida através do reencaminhamento do WiNet (unit = ID de reencaminhamento).",
+    "nl": "Sungrow-wallbox, gelezen via de doorsturing van de WiNet (unit = doorstuur-ID).",
+    "fr": "Wallbox Sungrow, lue via le transfert du WiNet (unit = ID de transfert).",
+    "it": "Wallbox Sungrow, letta tramite l'inoltro del WiNet (unit = ID di inoltro).",
+    "es": "Wallbox Sungrow, leído mediante el reenvío del WiNet (unit = ID de reenvío).",
+    "pl": "Wallbox Sungrow, odczyt przez przekierowanie WiNet (unit = ID przekierowania).",
+    "uk": "Wallbox Sungrow, читання через переадресацію WiNet (unit = ID переадресації).",
+    "zh-cn": "Sungrow 充电桩，通过 WiNet 转发读取（unit = 转发 ID）。"
+   },
+   "descDefault": "Wallbox: charging voltage phase C"
+  },
+  "inputRegs:3:51307": {
+   "doc": 21307,
+   "theme": "grid",
+   "profile": "erweitert",
+   "name": {
+    "en": "Wallbox current phase C",
+    "de": "Wallbox Strom Phase C",
+    "ru": "Ток wallbox, фаза C",
+    "pt": "Corrente da wallbox fase C",
+    "nl": "Wallbox stroom fase C",
+    "fr": "Courant wallbox phase C",
+    "it": "Corrente wallbox fase C",
+    "es": "Corriente del wallbox fase C",
+    "pl": "Prąd wallbox faza C",
+    "uk": "Струм wallbox, фаза C",
+    "zh-cn": "充电桩 C 相电流"
+   },
+   "desc": {
+    "en": "Sungrow wallbox, read through the WiNet forwarding (unit = forwarding ID).",
+    "de": "Sungrow-Wallbox, gelesen über die Weiterleitung des WiNet (Unit = Weiterleitungs-ID).",
+    "ru": "Wallbox Sungrow, чтение через переадресацию WiNet (unit = ID переадресации).",
+    "pt": "Wallbox Sungrow, lida através do reencaminhamento do WiNet (unit = ID de reencaminhamento).",
+    "nl": "Sungrow-wallbox, gelezen via de doorsturing van de WiNet (unit = doorstuur-ID).",
+    "fr": "Wallbox Sungrow, lue via le transfert du WiNet (unit = ID de transfert).",
+    "it": "Wallbox Sungrow, letta tramite l'inoltro del WiNet (unit = ID di inoltro).",
+    "es": "Wallbox Sungrow, leído mediante el reenvío del WiNet (unit = ID de reenvío).",
+    "pl": "Wallbox Sungrow, odczyt przez przekierowanie WiNet (unit = ID przekierowania).",
+    "uk": "Wallbox Sungrow, читання через переадресацію WiNet (unit = ID переадресації).",
+    "zh-cn": "Sungrow 充电桩，通过 WiNet 转发读取（unit = 转发 ID）。"
+   },
+   "descDefault": "Wallbox: charging current phase C"
+  },
+  "inputRegs:3:51308": {
+   "doc": 21308,
+   "theme": "grid",
+   "profile": "erweitert",
+   "name": {
+    "en": "Wallbox charging power",
+    "de": "Wallbox Ladeleistung",
+    "ru": "Мощность зарядки wallbox",
+    "pt": "Potência de carga da wallbox",
+    "nl": "Wallbox laadvermogen",
+    "fr": "Puissance de charge wallbox",
+    "it": "Potenza di carica wallbox",
+    "es": "Potencia de carga del wallbox",
+    "pl": "Moc ładowania wallbox",
+    "uk": "Потужність заряджання wallbox",
+    "zh-cn": "充电桩充电功率"
+   },
+   "desc": {
+    "en": "Sungrow wallbox, read through the WiNet forwarding (unit = forwarding ID).",
+    "de": "Sungrow-Wallbox, gelesen über die Weiterleitung des WiNet (Unit = Weiterleitungs-ID).",
+    "ru": "Wallbox Sungrow, чтение через переадресацию WiNet (unit = ID переадресации).",
+    "pt": "Wallbox Sungrow, lida através do reencaminhamento do WiNet (unit = ID de reencaminhamento).",
+    "nl": "Sungrow-wallbox, gelezen via de doorsturing van de WiNet (unit = doorstuur-ID).",
+    "fr": "Wallbox Sungrow, lue via le transfert du WiNet (unit = ID de transfert).",
+    "it": "Wallbox Sungrow, letta tramite l'inoltro del WiNet (unit = ID di inoltro).",
+    "es": "Wallbox Sungrow, leído mediante el reenvío del WiNet (unit = ID de reenvío).",
+    "pl": "Wallbox Sungrow, odczyt przez przekierowanie WiNet (unit = ID przekierowania).",
+    "uk": "Wallbox Sungrow, читання через переадресацію WiNet (unit = ID переадресації).",
+    "zh-cn": "Sungrow 充电桩，通过 WiNet 转发读取（unit = 转发 ID）。"
+   },
+   "descDefault": "Wallbox: charging power"
+  },
+  "inputRegs:3:51310": {
+   "doc": 21310,
+   "theme": "grid",
+   "profile": "erweitert",
+   "name": {
+    "en": "Wallbox energy of the session",
+    "de": "Wallbox Energie des Ladevorgangs",
+    "ru": "Энергия wallbox за сеанс",
+    "pt": "Energia da wallbox na sessão",
+    "nl": "Wallbox energie van de laadsessie",
+    "fr": "Énergie wallbox de la session",
+    "it": "Energia wallbox della sessione",
+    "es": "Energía del wallbox de la sesión",
+    "pl": "Energia wallbox w sesji",
+    "uk": "Енергія wallbox за сеанс",
+    "zh-cn": "充电桩本次充电电量"
+   },
+   "desc": {
+    "en": "Sungrow wallbox, read through the WiNet forwarding (unit = forwarding ID).",
+    "de": "Sungrow-Wallbox, gelesen über die Weiterleitung des WiNet (Unit = Weiterleitungs-ID).",
+    "ru": "Wallbox Sungrow, чтение через переадресацию WiNet (unit = ID переадресации).",
+    "pt": "Wallbox Sungrow, lida através do reencaminhamento do WiNet (unit = ID de reencaminhamento).",
+    "nl": "Sungrow-wallbox, gelezen via de doorsturing van de WiNet (unit = doorstuur-ID).",
+    "fr": "Wallbox Sungrow, lue via le transfert du WiNet (unit = ID de transfert).",
+    "it": "Wallbox Sungrow, letta tramite l'inoltro del WiNet (unit = ID di inoltro).",
+    "es": "Wallbox Sungrow, leído mediante el reenvío del WiNet (unit = ID de reenvío).",
+    "pl": "Wallbox Sungrow, odczyt przez przekierowanie WiNet (unit = ID przekierowania).",
+    "uk": "Wallbox Sungrow, читання через переадресацію WiNet (unit = ID переадресації).",
+    "zh-cn": "Sungrow 充电桩，通过 WiNet 转发读取（unit = 转发 ID）。"
+   },
+   "descDefault": "Wallbox: energy of the current charging session"
+  },
+  "inputRegs:3:51314": {
+   "doc": 21314,
+   "theme": "grid",
+   "profile": "erweitert",
+   "name": {
+    "en": "Wallbox start mode",
+    "de": "Wallbox Startart",
+    "ru": "Способ запуска wallbox",
+    "pt": "Modo de arranque da wallbox",
+    "nl": "Wallbox startwijze",
+    "fr": "Mode de démarrage wallbox",
+    "it": "Modalità di avvio wallbox",
+    "es": "Modo de inicio del wallbox",
+    "pl": "Sposób uruchomienia wallbox",
+    "uk": "Спосіб запуску wallbox",
+    "zh-cn": "充电桩启动方式"
+   },
+   "desc": {
+    "en": "Sungrow wallbox, read through the WiNet forwarding (unit = forwarding ID).",
+    "de": "Sungrow-Wallbox, gelesen über die Weiterleitung des WiNet (Unit = Weiterleitungs-ID).",
+    "ru": "Wallbox Sungrow, чтение через переадресацию WiNet (unit = ID переадресации).",
+    "pt": "Wallbox Sungrow, lida através do reencaminhamento do WiNet (unit = ID de reencaminhamento).",
+    "nl": "Sungrow-wallbox, gelezen via de doorsturing van de WiNet (unit = doorstuur-ID).",
+    "fr": "Wallbox Sungrow, lue via le transfert du WiNet (unit = ID de transfert).",
+    "it": "Wallbox Sungrow, letta tramite l'inoltro del WiNet (unit = ID di inoltro).",
+    "es": "Wallbox Sungrow, leído mediante el reenvío del WiNet (unit = ID de reenvío).",
+    "pl": "Wallbox Sungrow, odczyt przez przekierowanie WiNet (unit = ID przekierowania).",
+    "uk": "Wallbox Sungrow, читання через переадресацію WiNet (unit = ID переадресації).",
+    "zh-cn": "Sungrow 充电桩，通过 WiNet 转发读取（unit = 转发 ID）。"
+   },
+   "descDefault": "Wallbox: how the charging was started",
+   "statesDefault": "0:Stopped;1:Start with EMS;2:Start by swiping",
+   "states": {
+    "0": {
+     "en": "Stopped",
+     "de": "Gestoppt",
+     "ru": "Остановлено",
+     "pt": "Parado",
+     "nl": "Gestopt",
+     "fr": "Arrêté",
+     "it": "Fermo",
+     "es": "Detenido",
+     "pl": "Zatrzymane",
+     "uk": "Зупинено",
+     "zh-cn": "已停止"
+    },
+    "1": {
+     "en": "Started by the EMS",
+     "de": "Start durch das EMS",
+     "ru": "Запуск через EMS",
+     "pt": "Iniciado pelo EMS",
+     "nl": "Gestart door de EMS",
+     "fr": "Démarré par l'EMS",
+     "it": "Avviato dall'EMS",
+     "es": "Iniciado por el EMS",
+     "pl": "Uruchomione przez EMS",
+     "uk": "Запуск через EMS",
+     "zh-cn": "由 EMS 启动"
+    },
+    "2": {
+     "en": "Started with a card",
+     "de": "Start per Karte",
+     "ru": "Запуск картой",
+     "pt": "Iniciado com cartão",
+     "nl": "Gestart met een kaart",
+     "fr": "Démarré par carte",
+     "it": "Avviato con tessera",
+     "es": "Iniciado con tarjeta",
+     "pl": "Uruchomione kartą",
+     "uk": "Запуск карткою",
+     "zh-cn": "刷卡启动"
+    }
+   }
+  },
+  "inputRegs:3:51317": {
+   "doc": 21317,
+   "theme": "grid",
+   "profile": "erweitert",
+   "name": {
+    "en": "Wallbox charging status",
+    "de": "Wallbox Ladestatus",
+    "ru": "Статус зарядки wallbox",
+    "pt": "Estado de carga da wallbox",
+    "nl": "Wallbox laadstatus",
+    "fr": "État de charge wallbox",
+    "it": "Stato di carica wallbox",
+    "es": "Estado de carga del wallbox",
+    "pl": "Status ładowania wallbox",
+    "uk": "Статус заряджання wallbox",
+    "zh-cn": "充电桩充电状态"
+   },
+   "desc": {
+    "en": "Sungrow wallbox, read through the WiNet forwarding (unit = forwarding ID).",
+    "de": "Sungrow-Wallbox, gelesen über die Weiterleitung des WiNet (Unit = Weiterleitungs-ID).",
+    "ru": "Wallbox Sungrow, чтение через переадресацию WiNet (unit = ID переадресации).",
+    "pt": "Wallbox Sungrow, lida através do reencaminhamento do WiNet (unit = ID de reencaminhamento).",
+    "nl": "Sungrow-wallbox, gelezen via de doorsturing van de WiNet (unit = doorstuur-ID).",
+    "fr": "Wallbox Sungrow, lue via le transfert du WiNet (unit = ID de transfert).",
+    "it": "Wallbox Sungrow, letta tramite l'inoltro del WiNet (unit = ID di inoltro).",
+    "es": "Wallbox Sungrow, leído mediante el reenvío del WiNet (unit = ID de reenvío).",
+    "pl": "Wallbox Sungrow, odczyt przez przekierowanie WiNet (unit = ID przekierowania).",
+    "uk": "Wallbox Sungrow, читання через переадресацію WiNet (unit = ID переадресації).",
+    "zh-cn": "Sungrow 充电桩，通过 WiNet 转发读取（unit = 转发 ID）。"
+   },
+   "descDefault": "Wallbox: charging status",
+   "statesDefault": "1:Idle;2:Standby;3:Charging;4:Charging suspended (charger);5:Charging suspended (vehicle);6:Charging completed;7:Reserved;8:Disabled;9:Fault",
+   "states": {
+    "1": {
+     "en": "Idle",
+     "de": "Frei",
+     "ru": "Свободна",
+     "pt": "Livre",
+     "nl": "Vrij",
+     "fr": "Libre",
+     "it": "Libera",
+     "es": "Libre",
+     "pl": "Wolna",
+     "uk": "Вільна",
+     "zh-cn": "空闲"
+    },
+    "2": {
+     "en": "Standby",
+     "de": "Bereitschaft",
+     "ru": "Ожидание",
+     "pt": "Em espera",
+     "nl": "Stand-by",
+     "fr": "Veille",
+     "it": "In attesa",
+     "es": "En espera",
+     "pl": "Czuwanie",
+     "uk": "Очікування",
+     "zh-cn": "待机"
+    },
+    "3": {
+     "en": "Charging",
+     "de": "Lädt",
+     "ru": "Зарядка",
+     "pt": "A carregar",
+     "nl": "Laden",
+     "fr": "En charge",
+     "it": "In carica",
+     "es": "Cargando",
+     "pl": "Ładowanie",
+     "uk": "Заряджання",
+     "zh-cn": "充电中"
+    },
+    "4": {
+     "en": "Charging paused (charger)",
+     "de": "Laden pausiert (Wallbox)",
+     "ru": "Зарядка приостановлена (зарядное устройство)",
+     "pt": "Carga em pausa (carregador)",
+     "nl": "Laden gepauzeerd (laadpaal)",
+     "fr": "Charge suspendue (borne)",
+     "it": "Carica sospesa (stazione)",
+     "es": "Carga pausada (cargador)",
+     "pl": "Ładowanie wstrzymane (ładowarka)",
+     "uk": "Заряджання призупинено (зарядний пристрій)",
+     "zh-cn": "充电暂停（充电桩）"
+    },
+    "5": {
+     "en": "Charging paused (vehicle)",
+     "de": "Laden pausiert (Fahrzeug)",
+     "ru": "Зарядка приостановлена (автомобиль)",
+     "pt": "Carga em pausa (veículo)",
+     "nl": "Laden gepauzeerd (voertuig)",
+     "fr": "Charge suspendue (véhicule)",
+     "it": "Carica sospesa (veicolo)",
+     "es": "Carga pausada (vehículo)",
+     "pl": "Ładowanie wstrzymane (pojazd)",
+     "uk": "Заряджання призупинено (автомобіль)",
+     "zh-cn": "充电暂停（车辆）"
+    },
+    "6": {
+     "en": "Charging completed",
+     "de": "Laden beendet",
+     "ru": "Зарядка завершена",
+     "pt": "Carga concluída",
+     "nl": "Laden voltooid",
+     "fr": "Charge terminée",
+     "it": "Carica completata",
+     "es": "Carga completada",
+     "pl": "Ładowanie zakończone",
+     "uk": "Заряджання завершено",
+     "zh-cn": "充电完成"
+    },
+    "7": {
+     "en": "Reserved",
+     "de": "Reserviert",
+     "ru": "Зарезервировано",
+     "pt": "Reservado",
+     "nl": "Gereserveerd",
+     "fr": "Réservé",
+     "it": "Riservato",
+     "es": "Reservado",
+     "pl": "Zarezerwowane",
+     "uk": "Зарезервовано",
+     "zh-cn": "保留"
+    },
+    "8": {
+     "en": "Disabled",
+     "de": "Deaktiviert",
+     "ru": "Отключено",
+     "pt": "Desativado",
+     "nl": "Uitgeschakeld",
+     "fr": "Désactivé",
+     "it": "Disattivato",
+     "es": "Desactivado",
+     "pl": "Wyłączone",
+     "uk": "Вимкнено",
+     "zh-cn": "已禁用"
+    },
+    "9": {
+     "en": "Fault",
+     "de": "Störung",
+     "ru": "Неисправность",
+     "pt": "Falha",
+     "nl": "Storing",
+     "fr": "Défaut",
+     "it": "Guasto",
+     "es": "Fallo",
+     "pl": "Usterka",
+     "uk": "Несправність",
+     "zh-cn": "故障"
+    }
    }
   }
  }

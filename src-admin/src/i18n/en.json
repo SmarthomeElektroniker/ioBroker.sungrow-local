@@ -254,6 +254,8 @@
     "sgl_verbAdded": "Added",
     "sgl_verbChanged": "Changed",
     "sgl_verbDeactivated": "Deactivated",
+    "sgl_wallboxEms": "Wallbox EMS registers (experimental)",
+    "sgl_wallboxEmsHelp": "Off by default. Writing the wallbox registers of the inverter EMS (33539-33549: release, charging mode, amount, current, times, grid power) needs this switch in addition to the release per register. The time format of the deadline and start/end times is not clarified (raw values). Write the mode first, then the values that depend on it.",
     "sgl_warn_roundTooLong": "The measured round (%s ms) is longer than the interval.",
     "sgl_warn_skipRisk": "Can skip rounds: group \"%s\" pauses %s ms after each request.",
     "sgl_warn_skipSure": "Skips rounds: shorter than the pause of group \"%s\" (%s ms).",

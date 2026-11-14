@@ -464,6 +464,31 @@ export function ControlView(props: ConfigGenericProps & { onData: (d: Native) =>
                     </Box>
                 ) : null}
             </Box>
+            <Box
+                sx={{
+                    p: 2,
+                    mb: 2,
+                    borderRadius: 3,
+                    border: '1px solid',
+                    borderColor: data.wallboxEms ? 'warning.main' : 'divider',
+                }}
+            >
+                <FormControlLabel
+                    control={
+                        <Switch
+                            checked={data.wallboxEms === true}
+                            onChange={e => setNative({ wallboxEms: e.target.checked })}
+                        />
+                    }
+                    label={<Typography sx={{ fontWeight: 600 }}>{t('wallboxEms')}</Typography>}
+                />
+                <Typography
+                    variant="body2"
+                    color="text.secondary"
+                >
+                    {t('wallboxEmsHelp')}
+                </Typography>
+            </Box>
             {data.readOnly ? (
                 <Alert
                     severity="warning"
@@ -700,6 +725,7 @@ export default class Control extends ConfigGeneric<ConfigGenericProps, ConfigGen
                     'batteryMaxMinutes',
                     'batteryMinPause',
                     'batteryMaxPerDay',
+                    'wallboxEms',
                 ],
                 data,
             );

@@ -254,6 +254,8 @@
     "sgl_verbAdded": "已添加",
     "sgl_verbChanged": "已更改",
     "sgl_verbDeactivated": "已停用",
+    "sgl_wallboxEms": "充电桩 EMS 寄存器（实验性）",
+    "sgl_wallboxEmsHelp": "默认关闭。写入逆变器 EMS 中的充电桩寄存器（33539–33549：允许充电、充电模式、电量、电流、时间、电网取电）除了按寄存器放行外，还需要打开此开关。截止时间和开始/结束时间的时间格式尚未明确（原始值）。请先写入模式，再写入依赖于模式的值。",
     "sgl_warn_roundTooLong": "实测轮次（%s ms）长于间隔。",
     "sgl_warn_skipRisk": "可能跳过轮次：组“%s”在每次请求后暂停 %s ms。",
     "sgl_warn_skipSure": "会跳过轮次：短于组“%s”的暂停时间（%s ms）。",

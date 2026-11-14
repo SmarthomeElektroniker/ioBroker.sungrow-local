@@ -254,6 +254,8 @@
     "sgl_verbAdded": "Adicionado",
     "sgl_verbChanged": "Alterado",
     "sgl_verbDeactivated": "Desativado",
+    "sgl_wallboxEms": "Registos EMS da wallbox (experimental)",
+    "sgl_wallboxEmsHelp": "Desligado por defeito. Escrever os registos da wallbox no EMS do inversor (33539–33549: liberação, modo de carga, quantidade, corrente, horas, energia da rede) requer este interruptor além da liberação por registo. O formato de hora do prazo e das horas de início/fim não está esclarecido (valores brutos). Escrever primeiro o modo, depois os valores que dele dependem.",
     "sgl_warn_roundTooLong": "A ronda medida (%s ms) é mais longa do que o intervalo.",
     "sgl_warn_skipRisk": "Pode saltar rondas: o grupo \"%s\" faz uma pausa de %s ms após cada pedido.",
     "sgl_warn_skipSure": "Salta rondas: mais curto do que a pausa do grupo \"%s\" (%s ms).",

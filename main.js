@@ -64,6 +64,17 @@ function customInstances(obj) {
     return Object.keys(c).filter(k => c[k] && typeof c[k] === 'object');
 }
 
+/**
+ * EMS registers of a Sungrow wallbox at the inverter (protocol 33539-33549, alias 73540-73550, unit 1):
+ * writing needs the switch "wallbox EMS" (experimental, off by default) in addition to the register release.
+ *
+ * @param {import('./lib/registers').Reg} reg Register
+ * @returns {boolean} Wallbox EMS register
+ */
+function isWallboxEms(reg) {
+    return reg.regType === 'holdingRegs' && reg.deviceId === 1 && reg.alias >= 73540 && reg.alias <= 73550;
+}
+
 /** Entries kept in info.write.log */
 const WRITE_LOG_MAX = 25;
 
@@ -1122,6 +1133,17 @@ class SungrowLocal extends utils.Adapter {
             // read-only operation (e.g. first days after the migration): never write to the inverter
             this.log.warn(`${id}: read-only mode - write of ${state.val} rejected`);
             this.logWrite(reg, state.val, 'readOnly');
+            if (this.lastVal.has(id)) {
+                this.restoreValue(id);
+            }
+            return;
+        }
+        if (isWallboxEms(reg) && this.config.wallboxEms !== true) {
+            // experimental: the EMS registers of the wallbox need the switch "wallbox EMS" in addition
+            this.log.warn(
+                `${id}: wallbox EMS control is switched off (experimental, tab "Control") - write of ${state.val} rejected`,
+            );
+            this.logWrite(reg, state.val, 'notReleased', 'wallbox EMS off');
             if (this.lastVal.has(id)) {
                 this.restoreValue(id);
             }

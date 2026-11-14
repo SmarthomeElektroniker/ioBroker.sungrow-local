@@ -101,7 +101,7 @@ describe('migration to template v4: value tables (states) of writable registers'
         assert.ok(withStates.length >= 20, String(withStates.length));
         for (const [key, m] of withStates) {
             // 0.5.1: also the operating state 43000 and the output type 35002 (input registers)
-            assert.ok(key.startsWith('holdingRegs:') || ['inputRegs:1:43000', 'inputRegs:1:35002'].includes(key), key);
+            assert.ok(key.startsWith('holdingRegs:') || ['inputRegs:1:43000', 'inputRegs:1:35002', 'inputRegs:3:51314', 'inputRegs:3:51317'].includes(key), key);
             assert.deepStrictEqual(Object.keys(m.states), Object.keys(R.parseStates(m.statesDefault)), key);
             for (const texts of Object.values(m.states)) {
                 for (const l of langs) {

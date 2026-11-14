@@ -254,6 +254,8 @@
     "sgl_verbAdded": "Toegevoegd",
     "sgl_verbChanged": "Gewijzigd",
     "sgl_verbDeactivated": "Gedeactiveerd",
+    "sgl_wallboxEms": "Wallbox-EMS-registers (experimenteel)",
+    "sgl_wallboxEmsHelp": "Standaard uit. Het schrijven van de wallbox-registers in de EMS van de omvormer (33539–33549: vrijgave, laadmodus, hoeveelheid, stroom, tijden, netstroom) vereist deze schakelaar naast de vrijgave per register. Het tijdformaat van deadline en start-/eindtijd is niet opgehelderd (ruwe waarden). Eerst de modus schrijven, daarna de waarden die ervan afhangen.",
     "sgl_warn_roundTooLong": "De gemeten ronde (%s ms) is langer dan het interval.",
     "sgl_warn_skipRisk": "Kan rondes overslaan: groep \"%s\" pauzeert %s ms na elke aanvraag.",
     "sgl_warn_skipSure": "Slaat rondes over: korter dan de pauze van groep \"%s\" (%s ms).",

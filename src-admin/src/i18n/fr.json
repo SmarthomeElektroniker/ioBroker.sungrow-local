@@ -254,6 +254,8 @@
     "sgl_verbAdded": "Ajouté",
     "sgl_verbChanged": "Modifié",
     "sgl_verbDeactivated": "Désactivé",
+    "sgl_wallboxEms": "Registres EMS de la wallbox (expérimental)",
+    "sgl_wallboxEmsHelp": "Désactivé par défaut. L'écriture des registres wallbox de l'EMS de l'onduleur (33539–33549 : autorisation, mode de charge, quantité, courant, horaires, réseau) nécessite cet interrupteur en plus de l'autorisation par registre. Le format horaire de l'échéance et des heures de début/fin n'est pas éclairci (valeurs brutes). Écrire d'abord le mode, puis les valeurs qui en dépendent.",
     "sgl_warn_roundTooLong": "La ronde mesurée (%s ms) est plus longue que l'intervalle.",
     "sgl_warn_skipRisk": "Peut sauter des rondes : le groupe « %s » fait une pause de %s ms après chaque requête.",
     "sgl_warn_skipSure": "Saute des rondes : plus court que la pause du groupe « %s » (%s ms).",
