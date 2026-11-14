@@ -190,15 +190,35 @@ export function rowDescription(regType: RegType, row: Row): string {
 }
 
 /** Value table of a row: translated template texts while the states column is unchanged, otherwise the own texts */
+/** Sungrow codes written in hexadecimal (same list as lib/catalog.js HEX_CODES) */
+const HEX_CODES = new Set([0x55, 0xaa, 0xbb, 0xcc, 0xee, 0xa0, 0xa1, 0xa2, 0xa3]);
+
+/** "170": "Enable" -> "Enable (0xAA)" for tables of hex codes only (lib/catalog.js withHexCodes) */
+export function withHexCodes(states: Record<string, string> | undefined): Record<string, string> | undefined {
+    if (!states) {
+        return states;
+    }
+    const keys = Object.keys(states);
+    if (!keys.length || !keys.every(k => /^\d+$/.test(k) && HEX_CODES.has(Number(k)))) {
+        return states;
+    }
+    return Object.fromEntries(
+        keys.map(k => {
+            const text = String(states[k]);
+            return [k, /0x[0-9a-f]{2}/i.test(text) ? text : `${text} (0x${Number(k).toString(16).toUpperCase()})`];
+        }),
+    );
+}
+
 export function stateTexts(regType: RegType, row: Row): Record<string, string> | undefined {
     const m = metaOf(regType, row) as
         (MetaEntry & { states?: Record<string, Record<string, string>>; statesDefault?: string }) | undefined;
     const own = String(row.states || '').trim();
     if (m?.states && (!own || own === m.statesDefault)) {
         const l = lang();
-        return Object.fromEntries(Object.entries(m.states).map(([k, tx]) => [k, tx[l] || tx.en]));
+        return withHexCodes(Object.fromEntries(Object.entries(m.states).map(([k, tx]) => [k, tx[l] || tx.en])));
     }
-    return parseStates(own) || undefined;
+    return withHexCodes(parseStates(own) || undefined);
 }
 
 /** Short explanation of one value of a value table (template only) */

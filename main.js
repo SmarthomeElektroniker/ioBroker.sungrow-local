@@ -22,7 +22,7 @@ const {
     extract,
     sameRaw,
 } = require('./lib/registers');
-const { mergeCatalog, GROUP_RENAMES, templateStates, statesIn } = require('./lib/catalog');
+const { mergeCatalog, GROUP_RENAMES, templateStates, statesIn, withHexCodes } = require('./lib/catalog');
 const { explain, resolve, implausible } = require('./lib/convert');
 const { Poller } = require('./lib/poller');
 const { analyse } = require('./lib/load');
@@ -188,6 +188,8 @@ class SungrowLocal extends utils.Adapter {
             if (st) {
                 r.states = st;
             }
+            // own tables too: "170: An" -> "An (0xAA)"
+            r.states = withHexCodes(r.states);
             this.regsById.set(`${this.namespace}.${r.id}`, r);
         }
 

@@ -226,3 +226,33 @@ describe('languages: device manager shows the values in the language', () => {
         assert.strictEqual(formatRow('states', { value: 99 }, 'de', { 0: 'Betrieb' }), '99');
     });
 });
+
+describe('value tables: hexadecimal codes (0.6.0)', () => {
+    const { withHexCodes, statesIn, templateStates } = require('../../lib/catalog');
+
+    it('tables of hex codes get the code in the text, other tables stay', () => {
+        assert.deepStrictEqual(withHexCodes({ 85: 'Aus', 170: 'An' }), { 85: 'Aus (0x55)', 170: 'An (0xAA)' });
+        assert.deepStrictEqual(withHexCodes({ 170: 'On (0xAA)', 85: 'Off (0x55)' }), {
+            170: 'On (0xAA)',
+            85: 'Off (0x55)',
+        });
+        assert.deepStrictEqual(withHexCodes({ 160: 'Fast', 161: 'PV surplus', 162: 'Amount', 163: 'Custom' }), {
+            160: 'Fast (0xA0)',
+            161: 'PV surplus (0xA1)',
+            162: 'Amount (0xA2)',
+            163: 'Custom (0xA3)',
+        });
+        // not only hex codes: unchanged
+        const ems = { 0: 'Self-consumption', 2: 'Forced mode' };
+        assert.deepStrictEqual(withHexCodes(ems), ems);
+        assert.deepStrictEqual(withHexCodes({ 206: 'Stop', 207: 'Start' }), { 206: 'Stop', 207: 'Start' });
+        assert.strictEqual(withHexCodes(undefined), undefined);
+    });
+
+    it('translated template tables carry the code in every language', () => {
+        const multi = templateStates('holdingRegs', 1, 53011, '');
+        assert.ok(multi);
+        assert.deepStrictEqual(Object.values(statesIn(multi, 'de')).sort(), ['An (0xAA)', 'Aus (0x55)']);
+        assert.ok(Object.values(statesIn(multi, 'zh-cn')).every(t => /\(0x(55|AA)\)$/.test(t)));
+    });
+});
