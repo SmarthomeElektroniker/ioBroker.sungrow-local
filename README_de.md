@@ -40,12 +40,24 @@ Der Adapter ist ein unabhängiges Projekt und steht in keiner Verbindung zu Sung
   sofort `ECONNRESET` – die IP des ioBroker-Rechners (nach NAT) im WiNet eintragen.
 - Die Vorgabetabellen sind englisch beschriftet; Namen, Klartexte, Einheiten und Grenzen lassen sich in den
   Registertabellen ändern, ohne dass sich die IDs ändern.
-- **Register-Vorlage:** Neben den vorab gelesenen Registern stehen 187 weitere bekannte Sungrow-Register im
-  Katalog (109 Input, 78 Holding, nicht aktiv; Namen in 11 Sprachen): Gerätetyp, Seriennummer, Firmware, MPPT 4, Akkuleistung und
+- **Register-Vorlage:** Neben den vorab gelesenen Registern stehen 206 weitere bekannte Sungrow-Register im
+  Katalog (120 Input, 86 Holding, nicht aktiv; Namen in 11 Sprachen; seit 0.6.0 auch die Wallbox, experimentell): Gerätetyp, Seriennummer, Firmware, MPPT 4, Akkuleistung und
   -strom mit Vorzeichen, Zähler des Energiezählers, Monatserträge, Fehlercodes, Akkustrom/-temperatur des SBH,
   Uhr, Einspeisebegrenzung, Lade-/Entladegrenzen, Zwangsladung u. a. Häkchen setzen und speichern – das Register
   wird im Leseblock seiner Gruppe mitgelesen. Quellen: Home-Assistant-Integration von mkaiser (MIT) und die
-  Registerliste der Referenzanlage. Abhaken eines bisher gelesenen Registers löscht dessen Datenpunkt.
+  Registerliste der Referenzanlage. Abhaken eines bisher gelesenen Registers löscht dessen Datenpunkt – außer er hat
+  eigene Einstellungen (History, InfluxDB, SQL …, seit 0.6.0): dann bleibt er mit `native.orphaned = true` stehen,
+  und eine Warnung im Log nennt ihn bei jedem Start.
+- **Gleiche Werte nicht schreiben** (0.6.0, ab Werk an): Ein Befehl mit dem Wert, den das Gerät bereits meldet,
+  geht nicht über den WiNet; der Datenpunkt wird trotzdem mit `ack=true` bestätigt. **Schreibzähler je Register**
+  unter `info.write.registers.*` und eine Warnung je Register und Tag ab N Befehlen (Vorgabe 50).
+- **Akkusteuerung** (0.6.0, experimentell, ab Werk **aus**): `control.battery.mode` = normal / halten / laden mit
+  Zeitlimit und Rückkehr zu normal (auch nach einem Neustart), Mindestpause und Tageslimit; Laden über das
+  Zwangsladefenster des Wechselrichters statt Dauerbefehlen. Nur gegen eine Attrappe getestet. Details in der
+  [README](README.md#battery-control-experimental).
+- **Wallbox** (0.6.0, experimentell): Messwerte über die Weiterleitung des WiNet (Unit = Weiterleitungs-ID) und die
+  EMS-Register 33539–33549 des Wechselrichters; Schreiben braucht zusätzlich den Schalter „Wallbox-EMS-Register“.
+  Das Zeitformat von Frist/Start/Ende ist ungeklärt (Rohwerte).
 - **Umrechnungshilfe** (eigener Reiter): Adresse in allen Schreibweisen (Sungrow-Doku ab 1 wie SunGather/openHAB;
   Protokolladresse ab 0 wie Excel-/Registerlisten, Home Assistant, evcc, ioBroker.modbus ohne Aliase; Spalte
   „Adresse“ = Protokoll + 30001/40001; Modicon 6-stellig), automatische Erkennung wo eindeutig, bekanntes Register

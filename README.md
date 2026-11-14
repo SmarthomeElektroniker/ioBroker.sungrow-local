@@ -43,6 +43,15 @@ during which the bus is blocked. With a generic Modbus instance this leads to:
   *do not use write multiple registers* also for 32-bit values) and read back immediately. `ack=true` is set
   only with the confirmed value – also when the same value was written again.
 - **Read-only mode** (reject writes and reset the state), e.g. for the first days after a migration.
+- **Skip unchanged writes** (default on, 0.6.0): a command whose value the device reports already (same raw
+  value after factor/offset, polled register, value not older than two poll intervals + 10 s) is not sent over the
+  WiNet; the state is confirmed with `ack=true` all the same. Sungrow advises against frequent writes to RW
+  registers through the WiNet.
+- **Write counters per register** (0.6.0) under `info.write.registers.<register>.*` (commands and confirmed
+  writes, today and in total) and one warning per register and day above N commands (default 50) – scripts that
+  write all the time become visible.
+- **Battery control and wallbox registers** (0.6.0, experimental, **off by default**) – see
+  [Battery control](#battery-control-experimental) and [Wallbox](#wallbox-experimental).
 - **Plain text and limits** per register (`states` as `value:text;value:text`, `min`, `max`). A write outside
   these limits is logged as a warning and still sent.
 - **Diagnostics per group** under `info.groups.<group>.*`: response time, last success, last error,
@@ -113,7 +122,7 @@ The register tables contain every register this adapter knows, **ticked** ones a
 
 - **Ticked by default** are exactly the registers of the earlier versions – an update changes nothing that is
   read and no state ID.
-- **Unticked** are 74 input and 26 holding registers: device type (with model names), serial number and firmware
+- **Unticked** are the further known registers (since 0.6.0: 120 input and 86 holding, including the wallbox rows): device type (with model names), serial number and firmware
   versions, MPPT 4, signed battery power and current (newer firmware), precise grid frequency, energy meter
   voltages/currents/totals, monthly PV yields, alarm and fault codes, battery current and temperature of the
   SBH (unit 2), system clock, export limitation, load adjustment, battery charge/discharge power limits, forced
@@ -121,7 +130,10 @@ The register tables contain every register this adapter knows, **ticked** ones a
 - Tick a row and save: the register is added to the request blocks of its group (e.g. battery current and
   temperature of unit 2 lie inside the existing battery request – no additional request). Rarely changing values
   are in the group `info` (once per hour).
-- **Unticking** a register that was read before removes its data point (including history settings).
+- **Unticking** a register that was read before removes its data point – **unless it has custom settings**
+  (history, InfluxDB, SQL …, since 0.6.0): then the object stays with `native.orphaned = true`, receives no more
+  values and a warning on every start names it. Remove the settings (or the object) by hand when the recorded
+  data is no longer needed. Ticking the register again removes the mark.
 - Existing installations get the template once on the first start of 0.3.0 (the instance restarts once); rows
   you configured yourself always win – a template row that overlaps one of your registers is not added.
 - Column *source / note* tells where a row comes from:
@@ -173,10 +185,60 @@ data types in different ways. The tab **Conversion helper** puts one register in
 | `info.connection`, `info.reconnects`, `info.lastReconnect`, `info.queueLength`, `info.lastValueUpdate` | connection |
 | `info.groups.<group>.*` | diagnostics and heartbeat per poll group (defaults: `live`, `energy`, `control`, `battery`, `info`) |
 | `info.write.*` | diagnostics of writes |
+| `info.write.registers.<register>.*` | write commands and confirmed writes per released register (today/total) |
+| `control.battery.*` | battery control (only when switched on): `mode`, `minutes`, `targetSoc`, `active`, `until`, `lastResult` |
 
 `<address>` is the *Address* column in the ioBroker.modbus alias notation: input register = 30001 + protocol
 address, holding register = 40001 + protocol address – i.e. Sungrow document number + 30000 / + 40000 (battery level:
 document 13023, protocol 13022, ID `43023_…`). `<name>` is the *name* column with spaces and dots replaced by `_`. The *description* column becomes the object name.
+
+## Battery control (experimental)
+
+**Off by default.** Switch it on in the tab *Control*. Then `control.battery.mode` accepts three modes; the
+adapter writes the needed registers itself (they do not have to be ticked) with the normal write path
+(write before the next read, confirmation read):
+
+| Mode | Registers written (Sungrow document numbers) | Effect |
+|---|---|---|
+| `normal` | forced-charging window off (33208 = 0x55), command stop (13051 = 0xCC), EMS mode self-consumption (13050 = 0) | normal operation |
+| `hold` | window off, command stop, EMS forced mode (13050 = 2) | the battery neither charges nor discharges |
+| `charge` | command stop, self-consumption, forced-charging window 1 from now for `minutes` up to `targetSoc` (33209–33214), window on (33208 = 0xAA) last | the inverter charges in its own time window |
+
+Safety:
+
+- `hold` and `charge` end after `minutes` (1 … *maximum duration*, default 240 min); the adapter then returns to
+  `normal`. The end is stored in `control.battery.until`: after an adapter restart an expired mode returns to
+  `normal` right after the connect. The charge window ends at 23:59 at the latest and is ended by the inverter
+  itself – no repeated commands.
+- Minimum pause between two changes (default 60 s) and a maximum of hold/charge commands per day (default 12);
+  `normal` is always allowed. Nothing is written while the instance is read-only.
+- If a register of `hold`/`charge` cannot be written or confirmed, the adapter returns to `normal`.
+- **While the adapter is stopped nothing returns to normal** – `hold` (forced mode) stays active in the inverter
+  until the adapter runs again.
+- The forced-charging window is a time of day of the **inverter clock** (check it: Sungrow document 5000 ff.).
+  Some firmware versions ignore it, and a max. SoC (13058/33031) below the target level limits the charge.
+  The registers come from the Sungrow protocol V1.1.11 and the reference list; **writing was only tested against a
+  simulated WiNet**, not on a real inverter.
+
+## Wallbox (experimental)
+
+Template version 8 adds the Sungrow AC wallbox (AC007/AC011E/AC22E) – all rows **unticked**:
+
+- **Readings** (input registers 21299–21316: total and session energy, voltage/current per phase, charging power,
+  start mode, charging status) through the **forwarding of the WiNet-S2**: the unit is the *forwarding Modbus ID*
+  of the wallbox in the WiNet device list (often 2 or 3; the template uses 3 – change the unit column if your list
+  says otherwise; unit 2 is often the battery). Group `energy` (60 s).
+- **EMS registers at the inverter** (holding, unit 1, Sungrow protocol addresses 33539–33549, IDs `73540_…` –
+  `73550_…`): charging released (0x55/0xAA), charging mode (0xA0 fast, 0xA1 PV surplus, 0xA2 amount and deadline,
+  0xA3 user-defined), amount (0.1 kWh), current (0.1 A), PV surplus with/without grid power, and three 32-bit
+  times (deadline, start, end) as **raw values: their time format is not clarified** (one source says Unix time,
+  another says not). Write the mode first, then the values that depend on it.
+- Writing these EMS registers needs the switch **"Wallbox EMS registers"** (tab *Control*, off by default) **in
+  addition** to the release per register.
+- According to the [ha-modbus-manager documentation](https://github.com/TCzerny/ha-modbus-manager) the inverter
+  mirrors only these EMS registers, and only when a wallbox is connected to its RS485; larger SH-T hybrids with an
+  AC22E usually need the iHomeManager. Sources: TCzerny/ha-modbus-manager (MIT) and forum posts; **not tested on a
+  real wallbox**.
 
 ## Migration from ioBroker.modbus
 
