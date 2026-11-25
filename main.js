@@ -314,6 +314,7 @@ class SungrowLocal extends utils.Adapter {
             writeMaxAge: Math.max(1, num(c.writeMaxAge, 60)) * 1000,
             doNotUseWriteMultipleRegisters: c.doNotUseWriteMultipleRegisters !== false,
             round,
+            plausibilityConfirm: Math.max(0, Math.round(num(c.plausibilityConfirm, 3))),
             createClient: () => new ModbusRTU(),
             timers: {
                 setTimeout: (cb, ms) => this.setTimeout(cb, ms),
@@ -361,6 +362,9 @@ class SungrowLocal extends utils.Adapter {
                 }
             }
         });
+        p.on('implausible', ev =>
+            this.log.info(`${ev.reg ? ev.reg.id : `Group ${ev.group}: ${ev.block}`}: ${ev.text}`),
+        );
         p.on('request', ev => this.background(() => this.onRequest(ev), 'request diagnostics'));
         p.on('skipped', ({ group }) =>
             this.background(() => this.count(groupKey(group), { skippedToday: 1 }), 'skip counter'),

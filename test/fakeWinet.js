@@ -12,6 +12,8 @@
  * - `stall(true)` stops answering everything (dead gateway with open socket).
  * - `kick()` closes all client sockets (gateway restart / network loss).
  * - `short(unit, n, missing)` answers the next n reads of a unit with `missing` registers less than asked.
+ * - `zeros(unit, n)` answers the next n reads of a unit with the right length but only 0 words (seen at the
+ *   real WiNet-S2 for the battery, unit 2: SoC, voltage, totals all 0 for one round).
  */
 
 const net = require('node:net');
@@ -36,6 +38,7 @@ async function createFakeWinet(opts = {}) {
             exceptions: new Set(),
             shortCount: 0,
             shortBy: 0,
+            zeroCount: 0,
             ...u,
         };
     }
@@ -110,11 +113,17 @@ async function createFakeWinet(opts = {}) {
                     rec.short = true;
                     qty = Math.max(0, qtyOrVal - u.shortBy);
                 }
+                let zero = false;
+                if (u.zeroCount > 0) {
+                    u.zeroCount--;
+                    rec.zeros = true;
+                    zero = true;
+                }
                 pdu = Buffer.alloc(2 + qty * 2);
                 pdu[0] = fc;
                 pdu[1] = qty * 2;
                 for (let i = 0; i < qty; i++) {
-                    pdu.writeUInt16BE(map.get(addr + i) || 0, 2 + i * 2);
+                    pdu.writeUInt16BE(zero ? 0 : map.get(addr + i) || 0, 2 + i * 2);
                 }
             }
         } else if (fc === 6) {
@@ -197,6 +206,9 @@ async function createFakeWinet(opts = {}) {
         short(unit, n, missing) {
             units[unit].shortCount = n;
             units[unit].shortBy = missing;
+        },
+        zeros(unit, n) {
+            units[unit].zeroCount = n;
         },
         stall(on) {
             state.stalled = on;

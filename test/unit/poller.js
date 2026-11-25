@@ -86,6 +86,7 @@ function makePoller(fake, over = {}) {
         reconnect: [],
         skipped: [],
         round: [],
+        implausible: [],
     };
     for (const k of Object.keys(ev)) {
         p.on(k, e => ev[k].push({ t: Date.now(), ...(typeof e === 'object' ? e : { value: e }) }));
@@ -256,6 +257,51 @@ describe('poller against the simulated WiNet-S2', function () {
         assert.ok(shortReq);
         await until(() => ev.request.filter(r => r.ok).length >= 3, 3000);
         assert.strictEqual(ev.reconnect.length, 0, 'an answer proves the link');
+    });
+
+    it('an all-zero battery answer is held back as a read error: SoC keeps its value, no reconnect', async () => {
+        const { p, ev } = makePoller(fake);
+        poller = p;
+        p.start();
+        await until(() => valuesOf(ev, 'inputRegisters.2.40744_Battery_level').length >= 1);
+        // one round of the gateway with right length but only 0 words (WiNet-S2, 25.11.2026: SoC 0 % at 86.8 %)
+        fake.zeros(2, 1);
+        await until(() => fake.state.requests.some(r => r.zeros));
+        await until(() => ev.request.some(r => r.group === 'akku' && r.ok && r.t > Date.now() - 2000) && fake.state.requests.filter(r => r.unit === 2).length >= 3, 6000);
+        const bad = ev.request.find(r => r.group === 'akku' && !r.ok);
+        assert.ok(bad, 'the zero answer is reported as a failed request');
+        assert.ok(bad.implausible && !bad.timeout, JSON.stringify(bad));
+        assert.match(bad.error, /all 9 registers 0/);
+        const soc = valuesOf(ev, 'inputRegisters.2.40744_Battery_level').map(v => v.val);
+        assert.ok(!soc.includes(0), `no 0 published: ${soc.join(',')}`);
+        assert.ok(soc.every(v => v === 97), soc.join(','));
+        assert.strictEqual(ev.reconnect.length, 0, 'an answer proves the link');
+    });
+
+    it('all-zero answers that repeat are taken over from the third one on (a block that really is 0)', async () => {
+        const { p, ev } = makePoller(fake);
+        poller = p;
+        p.start();
+        await until(() => valuesOf(ev, 'inputRegisters.2.40744_Battery_level').length >= 1);
+        fake.set(2, 'input', 10740, [0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        await until(() => valuesOf(ev, 'inputRegisters.2.40744_Battery_level').some(v => v.val === 0), 8000);
+        const held = ev.request.filter(r => r.group === 'akku' && r.implausible);
+        assert.strictEqual(held.length, 2, 'two answers held back, the third one taken over');
+        assert.ok(ev.implausible.some(e => e.accepted && /taken over/.test(e.text)));
+        // further zero answers pass at once
+        const n = ev.request.filter(r => r.group === 'akku').length;
+        await until(() => ev.request.filter(r => r.group === 'akku').length >= n + 2, 6000);
+        assert.strictEqual(ev.request.filter(r => r.group === 'akku' && r.implausible).length, 2);
+    });
+
+    it('plausibilityConfirm 0 switches the check off (zero answer published at once)', async () => {
+        const { p, ev } = makePoller(fake, { plausibilityConfirm: 0 });
+        poller = p;
+        p.start();
+        await until(() => valuesOf(ev, 'inputRegisters.2.40744_Battery_level').length >= 1);
+        fake.zeros(2, 1);
+        await until(() => valuesOf(ev, 'inputRegisters.2.40744_Battery_level').some(v => v.val === 0), 6000);
+        assert.strictEqual(ev.request.filter(r => r.implausible).length, 0);
     });
 
     it('writes go before the next read, are confirmed by reading back and report the device value', async () => {
